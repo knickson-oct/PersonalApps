@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Trail Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#3FB8E8;
+    --sky-deep:#1C8FC9;
+    --sun:#FFC93C;
+    --grass:#57B96B;
+    --coral:#FF6F5E;
+    --cream:#FFF8EA;
+    --ink:#233752;
+    --path:#E4CFA1;
+    --card:#FFFFFF;
+    --shadow: 0 6px 0 rgba(35,55,82,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Nunito',sans-serif;
+    background:
+      radial-gradient(circle at 15% 8%, #ffffff55 0%, transparent 40%),
+      linear-gradient(180deg, var(--sky) 0%, var(--sky) 30%, #BFE9F5 55%, var(--cream) 56%, var(--cream) 100%);
+    color:var(--ink);
+    min-height:100%;
+    overscroll-behavior:none;
+    -webkit-tap-highlight-color: transparent;
+    user-select:none;
+  }
+  h1,h2,h3,.display{font-family:'Baloo 2',sans-serif;}
+  button{font-family:inherit;}
+
+  /* Sun + clouds */
+  .sun{position:fixed;top:18px;right:22px;width:56px;height:56px;border-radius:50%;
+    background:var(--sun); box-shadow:0 0 0 8px #FFC93C33; z-index:0;}
+  .cloud{position:fixed;background:#fff;border-radius:50px;opacity:.9;z-index:0;}
+  .cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%;}
+  .c1{width:70px;height:26px;top:40px;left:8%;}
+  .c1::before{width:34px;height:34px;top:-16px;left:8px;}
+  .c1::after{width:26px;height:26px;top:-12px;left:36px;}
+  .c2{width:50px;height:20px;top:90px;left:60%;}
+  .c2::before{width:24px;height:24px;top:-11px;left:6px;}
+  .c2::after{width:18px;height:18px;top:-8px;left:26px;}
+
+  .app{position:relative;z-index:1;max-width:520px;margin:0 auto;min-height:100vh;
+    display:flex;flex-direction:column;padding:16px 16px 40px;}
+
+  /* Header */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .brand{display:flex;align-items:center;gap:8px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,0.12);}
+  .brand .flag{font-size:26px;}
+  .brand span.title{font-weight:800;font-size:22px;letter-spacing:0.5px;}
+  .gear{background:rgba(255,255,255,0.35);border:none;border-radius:14px;width:40px;height:40px;
+    font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+  .sync-badge{display:block;width:100%;border:none;border-radius:12px;padding:7px 10px;
+    font-size:12px;font-weight:800;cursor:pointer;text-align:center;margin-top:2px;font-family:inherit;
+    background:rgba(255,255,255,0.55);color:var(--ink);}
+  .sync-badge.synced{background:#E4F7E8;color:#2C7A3F;}
+  .sync-badge.syncing{background:#FFF3D6;color:#9A6B00;}
+  .sync-badge.error{background:#FFE1DC;color:#B3392B;}
+
+  /* Explorer switcher */
+  .explorers{display:flex;gap:10px;margin:14px 0 6px;}
+  .explorer-btn{flex:1;background:rgba(255,255,255,0.85);border:3px solid transparent;border-radius:20px;
+    padding:10px 8px;text-align:center;cursor:pointer;box-shadow:var(--shadow);}
+  .explorer-btn.active{border-color:var(--coral);background:#fff;}
+  .explorer-btn .avatar{display:flex;align-items:center;justify-content:center;}
+  .explorer-btn .avatar svg{width:46px;height:auto;display:block;
+    filter:drop-shadow(0 3px 3px rgba(35,55,82,0.22));
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+  .explorer-btn.active .avatar svg{transform:scale(1.12);}
+  .explorer-btn:active .avatar svg{transform:scale(0.9);}
+
+  /* Playful squash-and-stretch when an avatar is tapped */
+  @keyframes avatarPop{
+    0%{transform:scale(1) translateY(0);}
+    25%{transform:scale(1.22,0.82) translateY(3px);}
+    50%{transform:scale(0.92,1.16) translateY(-7px);}
+    75%{transform:scale(1.06,0.96) translateY(1px);}
+    100%{transform:scale(1) translateY(0);}
+  }
+  .avatar-pop svg{animation:avatarPop .55s ease-out;}
+
+  /* Gentle idle bob so characters feel alive */
+  @keyframes idleBob{
+    0%,100%{transform:translateY(0) rotate(-1.5deg);}
+    50%{transform:translateY(-3px) rotate(1.5deg);}
+  }
+  .explorer-btn .name{font-weight:800;font-size:14px;margin-top:2px;}
+  .explorer-btn .pts{font-size:12px;color:var(--sky-deep);font-weight:700;}
+  .explorer-btn .dressup-hint{display:block;font-size:9.5px;font-weight:800;color:#a0adc0;margin-top:2px;}
+
+  /* Trail progress */
+  .trail-card{background:var(--card);border-radius:22px;padding:18px 16px 14px;box-shadow:var(--shadow);margin:14px 0;}
+  .trail-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .trail-head h2{margin:0;font-size:18px;}
+  .trail-head .goal-label{font-size:13px;font-weight:700;color:#7a8aa3;}
+  .trail-track{position:relative;height:54px;}
+  .trail-line{position:absolute;left:6px;right:6px;top:26px;height:10px;background:var(--path);
+    border-radius:10px;overflow:hidden;}
+  .trail-fill{height:100%;background:linear-gradient(90deg, var(--grass), #7ED18C);border-radius:10px;
+    transition:width .5s ease;}
+  .trail-flag-end{position:absolute;right:-2px;top:6px;font-size:26px;}
+  .hiker{position:absolute;top:-14px;transition:left .5s ease;transform:translateX(-50%);
+    filter:drop-shadow(0 4px 3px rgba(35,55,82,0.28));}
+  .hiker svg{width:42px;height:auto;display:block;animation:idleBob 2.8s ease-in-out infinite;
+    transform-origin:50% 90%;}
+  .hiker.avatar-pop svg{animation:avatarPop .55s ease-out;}
+  .trail-sub{margin-top:6px;font-size:13px;font-weight:700;color:#7a8aa3;text-align:center;}
+
+  /* Section titles */
+  .section-title{display:flex;align-items:center;gap:8px;margin:18px 0 10px;}
+  .section-title h2{margin:0;font-size:19px;}
+  .section-title .badge{background:var(--sun);color:var(--ink);font-weight:800;font-size:12px;
+    padding:2px 10px;border-radius:12px;}
+
+  /* View toggle */
+  .view-tabs{display:flex;gap:8px;margin:16px 0 4px;background:rgba(255,255,255,0.5);
+    padding:4px;border-radius:16px;}
+  .view-tab{flex:1;border:none;background:transparent;padding:9px 8px;border-radius:12px;
+    font-weight:800;font-size:14px;color:var(--ink);cursor:pointer;font-family:inherit;}
+  .view-tab.active{background:#fff;box-shadow:var(--shadow);}
+
+  /* Weekly view */
+  .week-card{background:var(--card);border-radius:22px;padding:16px 16px 10px;box-shadow:var(--shadow);margin:14px 0 6px;}
+  .week-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
+  .week-head h2{margin:0;font-size:18px;}
+  .week-total{font-weight:800;color:var(--sky-deep);font-size:14px;}
+  .week-chart{display:flex;justify-content:space-between;align-items:flex-end;height:110px;gap:6px;}
+  .week-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .week-bar-track{flex:1;display:flex;align-items:flex-end;width:100%;justify-content:center;}
+  .week-bar{width:60%;min-width:14px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,#7ED18C,var(--grass));
+    transition:height .4s ease;}
+  .week-bar-col.today .week-bar{background:linear-gradient(180deg,#FFDD7A,var(--sun));}
+  .week-bar-label{font-size:11px;font-weight:800;color:#8798af;margin-top:6px;}
+  .week-bar-col.today .week-bar-label{color:var(--ink);}
+  .week-bar-pts{font-size:11px;font-weight:700;color:var(--sky-deep);margin-top:1px;}
+  .trend-card{background:var(--card);border-radius:22px;padding:16px 14px;box-shadow:var(--shadow);
+    margin:0 0 6px;overflow-x:auto;}
+  .trend-table{display:grid;grid-template-columns:minmax(88px,1.3fr) repeat(7, 28px) 36px;
+    align-items:center;gap:6px 4px;min-width:340px;}
+  .trend-head-cell{font-size:10px;font-weight:800;color:#8798af;text-align:center;}
+  .trend-head-cell.today{color:var(--ink);}
+  .trend-head-total{font-size:10px;font-weight:800;color:#8798af;text-align:center;}
+  .trend-quest-name{display:flex;align-items:center;gap:6px;font-weight:800;font-size:13px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:6px 0;}
+  .trend-quest-name .ti{font-size:16px;flex-shrink:0;}
+  .trend-dot{width:22px;height:22px;border-radius:50%;border:2px solid #E4E9F0;display:flex;
+    align-items:center;justify-content:center;font-size:12px;color:#fff;margin:0 auto;font-weight:800;}
+  .trend-dot.done{background:var(--grass);border-color:var(--grass);}
+  .trend-total{font-size:12px;font-weight:800;color:var(--sky-deep);text-align:center;}
+  .trend-empty{grid-column:1 / -1;text-align:center;color:#8798af;font-weight:700;padding:14px 0;font-size:13px;}
+
+  /* Task list */
+  .tasks{display:flex;flex-direction:column;gap:10px;}
+  .task{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;
+    padding:12px 14px;box-shadow:var(--shadow);cursor:pointer;border:3px solid transparent;
+    transition:transform .12s ease, border-color .12s ease;}
+  .task:active{transform:scale(0.97);}
+  .task.done{border-color:var(--grass);background:#F2FBF3;}
+  .task .icon{font-size:30px;width:40px;text-align:center;}
+  .task .info{flex:1;}
+  .task .info .name{font-weight:800;font-size:16px;}
+  .task .info .pts{font-size:13px;color:var(--sky-deep);font-weight:700;}
+  .task .check{width:30px;height:30px;border-radius:50%;border:3px solid #DCE4EE;
+    display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .task.done .check{background:var(--grass);border-color:var(--grass);color:#fff;}
+  .empty-note{text-align:center;color:#8798af;font-weight:700;padding:20px 0;}
+
+  /* Rewards */
+  .rewards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .reward{background:var(--card);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:var(--shadow);
+    cursor:pointer;border:3px solid transparent;}
+  .reward .icon{font-size:30px;}
+  .reward .name{font-weight:800;font-size:14px;margin-top:4px;}
+  .reward .cost{font-size:12px;font-weight:700;color:var(--sky-deep);margin-top:2px;}
+  .reward.locked{opacity:0.55;}
+  .reward.claimable{border-color:var(--sun);}
+
+  footer{text-align:center;margin-top:26px;font-size:12px;color:#8798af;font-weight:700;}
+
+  /* Overlays */
+  .overlay{position:fixed;inset:0;background:rgba(20,30,50,0.55);display:none;
+    align-items:flex-end;justify-content:center;z-index:20;}
+  .overlay.show{display:flex;}
+  .sheet{background:var(--cream);width:100%;max-width:520px;border-radius:26px 26px 0 0;
+    padding:20px 18px 28px;max-height:86vh;overflow-y:auto;}
+  .sheet h3{margin-top:0;}
+  .sheet-close{float:right;background:#DCE4EE;border:none;width:34px;height:34px;border-radius:50%;
+    font-size:16px;cursor:pointer;}
+  .row-inline{display:flex;gap:8px;align-items:center;margin:10px 0;}
+  .field{width:100%;padding:10px 12px;border-radius:12px;border:2px solid #DCE4EE;font-family:inherit;font-size:15px;}
+  .field.small{width:70px;text-align:center;}
+  .btn{border:none;border-radius:14px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer;}
+  .btn-primary{background:var(--coral);color:#fff;box-shadow:0 4px 0 #C74C3E;}
+  .btn-secondary{background:#DCE4EE;color:var(--ink);}
+  .btn-full{width:100%;}
+  .manage-row{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px;flex-wrap:wrap;}
+  .manage-row .icon{font-size:22px;display:flex;align-items:center;justify-content:center;}
+  .manage-row .icon svg{width:30px;height:auto;display:block;
+    filter:drop-shadow(0 2px 2px rgba(35,55,82,0.18));}
+  .avatar-grid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+  .avatar-pick{background:linear-gradient(180deg,#ffffff,#F1F5FA);border:3px solid #DCE4EE;
+    border-radius:18px;width:62px;height:66px;padding:4px;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;
+    transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-color .2s ease, background .2s ease;}
+  .avatar-pick svg{width:100%;height:auto;display:block;
+    filter:drop-shadow(0 2px 2px rgba(35,55,82,0.2));}
+  .avatar-pick:active{transform:scale(0.92);}
+  .avatar-pick.sel{border-color:var(--coral);background:linear-gradient(180deg,#FFF1EE,#FFE0DA);
+    transform:scale(1.06);}
+  .manage-row .meta{flex:1;font-weight:700;font-size:14px;}
+  .manage-row .del{background:none;border:none;color:#C74C3E;font-size:13px;font-weight:800;cursor:pointer;padding:6px 4px;white-space:nowrap;}
+  .manage-row .del.edit{color:var(--sky-deep);}
+  .manage-row .del.save{color:var(--grass);}
+  .manage-row .del.cancel{color:#8798af;}
+  .manage-row .field{font-size:14px;padding:8px 10px;}
+  .manage-row .field.small{width:56px;}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .tab{flex:1;text-align:center;padding:8px;border-radius:12px;background:#fff;font-weight:800;cursor:pointer;font-size:13px;}
+  .tab.active{background:var(--ink);color:#fff;}
+  .tabpane{display:none;}
+  .tabpane.active{display:block;}
+  .emoji-pick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+  .emoji-pick button{font-size:20px;background:#fff;border:2px solid #DCE4EE;border-radius:10px;
+    width:40px;height:40px;cursor:pointer;}
+  .emoji-pick button.sel{border-color:var(--coral);background:#FFE7E3;}
+  .sync-help{font-size:13px;color:#5a6b85;line-height:1.5;margin:0 0 12px;}
+  .sync-note{font-size:11.5px;color:#8798af;line-height:1.5;margin:8px 0 12px;}
+  .sync-status-line{font-size:12px;font-weight:700;color:#5a6b85;text-align:center;margin-top:10px;}
+
+  /* Camp Locker (kid-facing dress-up) */
+  .locker-sheet{background:linear-gradient(180deg,#EAF7FD,var(--cream) 40%);}
+  .locker-stage{position:relative;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, #ffffff, #DCF0F9);
+    border-radius:22px;padding:10px;margin-bottom:10px;}
+  .locker-preview svg{width:132px;height:auto;display:block;
+    filter:drop-shadow(0 6px 6px rgba(35,55,82,0.22));}
+  .locker-preview.avatar-pop svg{animation:avatarPop .55s ease-out;}
+  .dice-btn{position:absolute;right:10px;bottom:10px;border:none;background:#fff;
+    width:48px;height:48px;border-radius:50%;font-size:24px;cursor:pointer;
+    box-shadow:0 4px 0 rgba(35,55,82,0.15);transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+  .dice-btn:active{transform:scale(0.86) rotate(25deg);}
+
+  .locker-unlock{text-align:center;font-size:12px;font-weight:800;color:#5a6b85;margin-bottom:10px;}
+
+  .locker-tabs{display:flex;gap:4px;margin-bottom:12px;}
+  .locker-tab{flex:1;border:none;background:#fff;border-radius:12px;padding:6px 1px;
+    font-size:17px;cursor:pointer;font-family:inherit;line-height:1.1;min-width:0;
+    box-shadow:0 3px 0 rgba(35,55,82,0.1);transition:transform .15s ease;}
+  .locker-tab span{display:block;font-size:8.5px;font-weight:800;color:#7a8aa3;margin-top:1px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .locker-tab.active{background:var(--ink);}
+  .locker-tab.active span{color:#fff;}
+  .locker-tab:active{transform:scale(0.93);}
+
+  .locker-options{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;
+    margin-bottom:14px;min-height:76px;}
+  .opt{position:relative;background:#fff;border:3px solid #DCE4EE;border-radius:18px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;padding:3px;
+    transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-color .2s ease;}
+  .opt:active{transform:scale(0.9);}
+  .opt.sel{border-color:var(--coral);background:#FFF1EE;transform:scale(1.07);}
+  .opt.mini-opt{width:62px;height:66px;}
+  .opt.mini-opt svg{width:100%;height:auto;display:block;}
+  .opt.swatch{width:50px;height:50px;border-radius:50%;padding:0;}
+  .opt.swatch .inner{width:100%;height:100%;border-radius:50%;}
+  .opt.locked .inner{filter:grayscale(1);opacity:0.32;}
+  .opt .lock{position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;font-size:15px;pointer-events:none;}
+  .opt .lock small{font-size:9px;font-weight:800;color:#5a6b85;background:#ffffffdd;
+    padding:0 4px;border-radius:6px;margin-top:1px;}
+  .freckle-toggle{width:auto;padding:10px 18px;}
+
+  /* Confetti */
+  .confetti-piece{position:fixed;top:-10px;width:10px;height:10px;z-index:50;pointer-events:none;
+    animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:0.9;}}
+
+  /* Celebration toast */
+  .toast{position:fixed;left:50%;top:16%;transform:translate(-50%,-20px);background:#fff;padding:16px 22px;
+    border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.18);text-align:center;z-index:60;opacity:0;
+    transition:all .35s ease;pointer-events:none;}
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+  .toast .big{font-size:40px;}
+  .toast .msg{font-weight:800;font-size:16px;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="sun"></div>
+<div class="cloud c1"></div>
+<div class="cloud c2"></div>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand"><span class="flag">🚩</span><span class="title">Trail Quest</span></div>
+    <button class="gear" id="gearBtn" title="Grown-up settings">⚙️</button>
+  </div>
+
+  <button class="sync-badge" id="syncBadge">⚠️ Not connected — tap to set up sharing</button>
+
+  <div class="explorers" id="explorerSwitcher"></div>
+
+  <div class="trail-card">
+    <div class="trail-head">
+      <h2 id="explorerName">Explorer</h2>
+      <span class="goal-label" id="goalLabel">no reward picked</span>
+    </div>
+    <div class="trail-track">
+      <div class="trail-line"><div class="trail-fill" id="trailFill" style="width:0%"></div></div>
+      <div class="hiker" id="hiker" style="left:0%">🧑‍🦰</div>
+      <div class="trail-flag-end">🏕️</div>
+    </div>
+    <div class="trail-sub" id="trailSub">0 points</div>
+  </div>
+
+  <div class="view-tabs" id="viewTabs">
+    <button class="view-tab active" data-view="today">Today</button>
+    <button class="view-tab" data-view="week">This Week</button>
+  </div>
+
+  <div id="todayView">
+    <div class="section-title"><h2>Today's Quests</h2><span class="badge" id="questCount">0/0</span></div>
+    <div class="tasks" id="taskList"></div>
+
+    <div class="section-title"><h2>Reward Camp</h2></div>
+    <div class="rewards" id="rewardList"></div>
+  </div>
+
+  <div id="weekView" style="display:none;">
+    <div class="week-card">
+      <div class="week-head">
+        <h2>This Week</h2>
+        <span class="week-total" id="weekTotal">0 pts</span>
+      </div>
+      <div class="week-chart" id="weekChart"></div>
+    </div>
+    <div class="section-title"><h2>Quest Trends</h2></div>
+    <div class="trend-card" id="trendCard">
+      <div class="trend-table" id="trendTable"></div>
+    </div>
+  </div>
+
+  <footer>Tap a quest when it's done. Ask a grown-up to unlock rewards. 🌲</footer>
+</div>
+
+<!-- Grown-up settings overlay -->
+<div class="overlay" id="settingsOverlay">
+  <div class="sheet">
+    <button class="sheet-close" id="closeSettings">✕</button>
+    <h3>Grown-up Settings</h3>
+    <div class="tabs">
+      <div class="tab active" data-tab="explorersTab">Explorers</div>
+      <div class="tab" data-tab="tasksTab">Quests</div>
+      <div class="tab" data-tab="rewardsTab">Rewards</div>
+      <div class="tab" data-tab="syncTab">Sync</div>
+    </div>
+
+    <div class="tabpane active" id="explorersTab">
+      <div id="explorerManageList"></div>
+      <div class="row-inline">
+        <input class="field" id="newExplorerName" placeholder="Explorer name">
+      </div>
+      <div class="avatar-grid" id="explorerAvatarPick"></div>
+      <button class="btn btn-primary btn-full" id="addExplorerBtn">Add Explorer</button>
+    </div>
+
+    <div class="tabpane" id="tasksTab">
+      <div id="taskManageList"></div>
+      <div class="row-inline">
+        <input class="field" id="newTaskName" placeholder="Quest name (e.g. Brush teeth)">
+        <input class="field small" id="newTaskPts" type="number" min="1" value="1">
+      </div>
+      <div class="emoji-pick" id="taskEmojiPick"></div>
+      <button class="btn btn-primary btn-full" id="addTaskBtn">Add Quest</button>
+    </div>
+
+    <div class="tabpane" id="rewardsTab">
+      <div id="rewardManageList"></div>
+      <div class="row-inline">
+        <input class="field" id="newRewardName" placeholder="Reward (e.g. Movie night)">
+        <input class="field small" id="newRewardPts" type="number" min="1" value="30">
+      </div>
+      <div class="emoji-pick" id="rewardEmojiPick"></div>
+      <button class="btn btn-primary btn-full" id="addRewardBtn">Add Reward</button>
+    </div>
+
+    <div class="tabpane" id="syncTab">
+      <p class="sync-help">Store data as a JSON file in a GitHub repo so every device sees the same points and quests. Host the app itself on GitHub Pages from the same repo.</p>
+      <div class="row-inline"><input class="field" id="syncOwner" placeholder="GitHub username or org"></div>
+      <div class="row-inline"><input class="field" id="syncRepo" placeholder="Repository name"></div>
+      <div class="row-inline"><input class="field" id="syncBranch" placeholder="Branch (default: main)"></div>
+      <div class="row-inline"><input class="field" id="syncPath" placeholder="File path (default: trailquest-data.json)"></div>
+      <div class="row-inline"><input class="field" id="syncToken" type="password" placeholder="Personal access token"></div>
+      <p class="sync-note">Use a <strong>fine-grained</strong> token scoped only to this repo, with "Contents: Read and write" permission. It's stored in this browser's local storage only — anyone with device access could read it, so don't reuse a token with broader access.</p>
+      <button class="btn btn-primary btn-full" id="syncConnectBtn">Save &amp; Connect</button>
+      <div class="row-inline" style="margin-top:8px;">
+        <button class="btn btn-secondary" id="syncPullBtn" style="flex:1;">Pull Latest</button>
+        <button class="btn btn-secondary" id="syncPushBtn" style="flex:1;">Push Now</button>
+      </div>
+      <button class="btn btn-secondary btn-full" id="syncDisconnectBtn" style="margin-top:8px;">Disconnect</button>
+      <p class="sync-status-line" id="syncStatusLine"></p>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="lockerOverlay">
+  <div class="sheet locker-sheet">
+    <button class="sheet-close" id="closeLocker">✕</button>
+    <h3 id="lockerTitle">Camp Locker</h3>
+    <div class="locker-stage">
+      <div class="locker-preview" id="lockerPreview"></div>
+      <button class="dice-btn" id="surpriseBtn" title="Surprise me!">🎲</button>
+    </div>
+    <div class="locker-unlock" id="lockerUnlock"></div>
+    <div class="locker-tabs" id="lockerTabs">
+      <button class="locker-tab active" data-cat="kind">🐲<span>Who</span></button>
+      <button class="locker-tab" data-cat="face">😊<span>Colour</span></button>
+      <button class="locker-tab" data-cat="hairStyle">💇<span>Hair</span></button>
+      <button class="locker-tab" data-cat="hairColour">🎨<span>Hair col</span></button>
+      <button class="locker-tab" data-cat="accessory">🎩<span>Gear</span></button>
+      <button class="locker-tab" data-cat="outfit">👕<span>Kit</span></button>
+    </div>
+    <div class="locker-options" id="lockerOptions"></div>
+    <button class="btn btn-primary btn-full" id="lockerDoneBtn">Done!</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="big" id="toastEmoji">🎉</div>
+  <div class="msg" id="toastMsg">Nice work!</div>
+</div>
+
+<div class="overlay" id="confirmOverlay">
+  <div class="sheet" style="text-align:center;">
+    <h3 id="confirmTitle">Give this reward?</h3>
+    <div id="confirmIcon" style="font-size:44px;margin:6px 0;"></div>
+    <div class="row-inline" style="justify-content:center;gap:12px;">
+      <button class="btn btn-secondary" id="confirmNo">Cancel</button>
+      <button class="btn btn-primary" id="confirmYes">Yes, give it!</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="removeOverlay">
+  <div class="sheet" style="text-align:center;">
+    <h3 id="removeTitle">Remove this?</h3>
+    <div class="row-inline" style="justify-content:center;gap:12px;">
+      <button class="btn btn-secondary" id="removeNo">Cancel</button>
+      <button class="btn btn-primary" id="removeYes">Remove</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Data ---------- */
+const STORAGE_KEY = 'trailquest_v1';
+const TASK_EMOJIS = ['🦷','🛏️','🧸','🎒','👕','🧼','📚','🍽️','🐾','🧹','🥾','☂️','🚿','⏰','📝','🧦'];
+const REWARD_EMOJIS = ['📺','🍦','🎬','🏞️','🎮','🧁','🎨','🚲','🛍️','⭐','🍕','🌙'];
+
+/* Illustrated avatar registry: each entry drives a small layered SVG character
+   (skin tone, hair color/style, accessory, accent color used for outfit + accessory) */
+const AVATARS = {
+  a1:  {skin:'#F4C299', hair:'#7A4A2B', hairStyle:'short',    accessory:'bandana',  accent:'#FF6F5E', freckles:true},
+  a2:  {skin:'#E8A672', hair:'#241B14', hairStyle:'curly',    accessory:'headband', accent:'#3FB8E8', freckles:false},
+  a3:  {skin:'#FFDCB5', hair:'#D94F30', hairStyle:'pigtails', accessory:'none',     accent:'#57B96B', freckles:true},
+  a4:  {skin:'#8D5A3B', hair:'#141414', hairStyle:'short',    accessory:'cap',      accent:'#FFC93C', freckles:false},
+  a5:  {skin:'#F4C299', hair:'#E8C468', hairStyle:'braid',    accessory:'glasses',  accent:'#B685FF', freckles:true},
+  a6:  {skin:'#C88A5A', hair:'#3B2314', hairStyle:'bun',      accessory:'bandana',  accent:'#57B96B', freckles:false},
+  a7:  {skin:'#FFE0C2', hair:'#5A3825', hairStyle:'curly',    accessory:'none',     accent:'#FF6F5E', freckles:true},
+  a8:  {skin:'#8D5A3B', hair:'#0F0F0F', hairStyle:'pigtails', accessory:'headband', accent:'#3FB8E8', freckles:false},
+  a9:  {skin:'#FFDCB5', hair:'#9C9C9C', hairStyle:'short',    accessory:'glasses',  accent:'#FFC93C', freckles:false},
+  a10: {skin:'#E8A672', hair:'#B24A2C', hairStyle:'braid',    accessory:'cap',      accent:'#B685FF', freckles:true}
+};
+const AVATAR_IDS = Object.keys(AVATARS);
+
+/* ---------- Customisable parts ----------
+   `unlock` = lifetime points needed. Kids unlock gear by earning over time
+   rather than spending their balance, so dressing up never competes with
+   saving for a real reward. Skin tones are never locked. */
+/* Character kinds — humans, animals, monsters and mythical creatures.
+   Half are available from the very first day so there's plenty to play with. */
+const KINDS = [
+  {id:'human',   name:'Kid',      unlock:0},
+  {id:'cat',     name:'Cat',      unlock:0},
+  {id:'dog',     name:'Puppy',    unlock:0},
+  {id:'bunny',   name:'Bunny',    unlock:0},
+  {id:'monster', name:'Monster',  unlock:0},
+  {id:'frog',    name:'Frog',     unlock:0},
+  {id:'bear',    name:'Bear',     unlock:12},
+  {id:'fox',     name:'Fox',      unlock:22},
+  {id:'dragon',  name:'Dragon',   unlock:35},
+  {id:'unicorn', name:'Unicorn',  unlock:50},
+  {id:'alien',   name:'Alien',    unlock:70},
+  {id:'yeti',    name:'Yeti',     unlock:95}
+];
+
+/* Body colours cover skin tones and creature colours alike — never locked,
+   so nobody is ever gated out of looking like themselves. */
+const SKIN_TONES = [
+  '#FFE0C2','#F4C299','#E8A672','#C88A5A','#8D5A3B','#5C3A24',
+  '#7BC96F','#5FB0E5','#8E7CC3','#F2789F','#EFD46A','#B7BFCB','#F6F1EA','#E8705A'
+];
+
+const HAIR_COLOURS = [
+  {c:'#241B14', unlock:0},  {c:'#5A3825', unlock:0},
+  {c:'#7A4A2B', unlock:0},  {c:'#B24A2C', unlock:0},
+  {c:'#E8C468', unlock:0},  {c:'#9C9C9C', unlock:0},
+  {c:'#6A4FB6', unlock:0},  {c:'#E85DA1', unlock:0},
+  {c:'#2FB3C9', unlock:40}, {c:'#4FBF6A', unlock:65}
+];
+
+const HAIR_STYLES = [
+  {id:'none',     name:'Bald',     unlock:0},
+  {id:'short',    name:'Short',    unlock:0},
+  {id:'curly',    name:'Curly',    unlock:0},
+  {id:'pigtails', name:'Pigtails', unlock:0},
+  {id:'bun',      name:'Bun',      unlock:0},
+  {id:'braid',    name:'Braid',    unlock:0},
+  {id:'ponytail', name:'Ponytail', unlock:25},
+  {id:'long',     name:'Long',     unlock:45},
+  {id:'spiky',    name:'Spiky',    unlock:60}
+];
+
+const ACCESSORIES = [
+  {id:'none',      name:'None',       unlock:0},
+  {id:'bandana',   name:'Bandana',    unlock:0},
+  {id:'headband',  name:'Headband',   unlock:0},
+  {id:'glasses',   name:'Glasses',    unlock:0},
+  {id:'cap',       name:'Cap',        unlock:0},
+  {id:'flower',    name:'Flower',     unlock:0},
+  {id:'partyhat',  name:'Party hat',  unlock:0},
+  {id:'mask',      name:'Hero mask',  unlock:0},
+  {id:'eyepatch',  name:'Eye patch',  unlock:10},
+  {id:'facepaint', name:'Face paint', unlock:20},
+  {id:'goggles',   name:'Goggles',    unlock:30},
+  {id:'sunhat',    name:'Sun hat',    unlock:55},
+  {id:'crown',     name:'Crown',      unlock:80}
+];
+
+const OUTFIT_COLOURS = [
+  {c:'#FF6F5E', unlock:0},  {c:'#3FB8E8', unlock:0},
+  {c:'#57B96B', unlock:0},  {c:'#FFC93C', unlock:0},
+  {c:'#B685FF', unlock:0},  {c:'#F2789F', unlock:0},
+  {c:'#2F9E8F', unlock:0},  {c:'#FF9F45', unlock:35},
+  {c:'#5C6BC0', unlock:60}, {c:'#1F2A44', unlock:85}
+];
+
+/* Accepts either a legacy preset id ('a1') or a full config object,
+   and always returns a complete, valid config. */
+function normalizeAvatar(v){
+  const base = AVATARS[AVATAR_IDS[0]];
+  if(typeof v === 'string') return {...(AVATARS[v] || base), kind:'human'};
+  if(v && typeof v === 'object'){
+    return {
+      kind:      v.kind      || 'human',
+      skin:      v.skin      || base.skin,
+      hair:      v.hair      || base.hair,
+      hairStyle: v.hairStyle || base.hairStyle,
+      accessory: v.accessory || 'none',
+      accent:    v.accent    || base.accent,
+      freckles:  !!v.freckles
+    };
+  }
+  return {...base, kind:'human'};
+}
+
+/* Builds the parts that make each creature distinct.
+   behind = drawn before the head, face = under the eyes, front = over the mouth. */
+function kindParts(kind, u, c){
+  const fur = `url(#skin_${u})`;
+  const innerEar = shade(c.skin, -0.28);
+  const muzzleCol = shade(c.skin, 0.32);
+  const nose = shade(c.skin, -0.55);
+  const P = {behind:'', face:'', front:'', eyes:null, brows:true, humanEars:true, humanNose:true};
+
+  const roundMuzzle = (ry, noseR) => `
+    <ellipse cx="50" cy="63" rx="16" ry="${ry}" fill="${muzzleCol}"/>
+    <ellipse cx="50" cy="57.5" rx="${noseR}" ry="${noseR*0.78}" fill="${nose}"/>
+    <ellipse cx="48.6" cy="56.4" rx="${noseR*0.35}" ry="${noseR*0.26}" fill="#ffffff" opacity="0.5"/>`;
+
+  const whiskers = `
+    <g stroke="${nose}" stroke-width="1.5" stroke-linecap="round" opacity="0.6">
+      <path d="M30,60 L16,57" fill="none"/><path d="M30,64 L15,64" fill="none"/>
+      <path d="M70,60 L84,57" fill="none"/><path d="M70,64 L85,64" fill="none"/>
+    </g>`;
+
+  switch(kind){
+    case 'cat':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <path d="M26,42 L22,12 L46,28 Z" fill="${fur}"/>
+        <path d="M74,42 L78,12 L54,28 Z" fill="${fur}"/>
+        <path d="M29,38 L27,20 L41,29 Z" fill="${innerEar}"/>
+        <path d="M71,38 L73,20 L59,29 Z" fill="${innerEar}"/>`;
+      P.face = roundMuzzle(11, 4);
+      P.front = whiskers;
+      break;
+
+    case 'dog':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <ellipse cx="20" cy="54" rx="10" ry="19" fill="${shade(c.skin,-0.18)}" transform="rotate(12 20 54)"/>
+        <ellipse cx="80" cy="54" rx="10" ry="19" fill="${shade(c.skin,-0.18)}" transform="rotate(-12 80 54)"/>`;
+      P.face = roundMuzzle(12, 4.6);
+      P.front = `<path d="M50,61 L50,66" stroke="${nose}" stroke-width="1.6" stroke-linecap="round" opacity="0.55"/>`;
+      break;
+
+    case 'bunny':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <ellipse cx="37" cy="14" rx="7.5" ry="23" fill="${fur}" transform="rotate(-9 37 14)"/>
+        <ellipse cx="63" cy="14" rx="7.5" ry="23" fill="${fur}" transform="rotate(9 63 14)"/>
+        <ellipse cx="37" cy="16" rx="3.6" ry="16" fill="#F4A6B8" transform="rotate(-9 37 16)"/>
+        <ellipse cx="63" cy="16" rx="3.6" ry="16" fill="#F4A6B8" transform="rotate(9 63 16)"/>`;
+      P.face = `
+        <ellipse cx="50" cy="62" rx="13" ry="9" fill="${muzzleCol}"/>
+        <path d="M46,56 L54,56 L50,60 Z" fill="#E8607A"/>`;
+      P.front = `
+        <rect x="46.5" y="66" width="7" height="8" rx="2" fill="#ffffff" stroke="${nose}" stroke-width="0.8"/>
+        <path d="M50,66 L50,74" stroke="${nose}" stroke-width="0.8"/>
+        ${whiskers}`;
+      break;
+
+    case 'bear':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <circle cx="26" cy="24" r="12" fill="${fur}"/>
+        <circle cx="74" cy="24" r="12" fill="${fur}"/>
+        <circle cx="26" cy="24" r="6" fill="${innerEar}"/>
+        <circle cx="74" cy="24" r="6" fill="${innerEar}"/>`;
+      P.face = roundMuzzle(11.5, 5);
+      break;
+
+    case 'fox':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <path d="M24,40 L18,8 L46,26 Z" fill="${fur}"/>
+        <path d="M76,40 L82,8 L54,26 Z" fill="${fur}"/>
+        <path d="M25,32 L22,14 L38,26 Z" fill="#3B2314"/>
+        <path d="M75,32 L78,14 L62,26 Z" fill="#3B2314"/>`;
+      P.face = `
+        <path d="M50,74 Q31,70 34,59 Q50,54 66,59 Q69,70 50,74 Z" fill="#FFF6EC"/>
+        <ellipse cx="50" cy="58" rx="4.6" ry="3.6" fill="#2B2B2B"/>
+        <ellipse cx="48.6" cy="57" rx="1.6" ry="1" fill="#ffffff" opacity="0.5"/>`;
+      P.front = whiskers;
+      break;
+
+    case 'frog':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <circle cx="32" cy="26" r="13" fill="${fur}"/>
+        <circle cx="68" cy="26" r="13" fill="${fur}"/>`;
+      P.eyes = `
+        <circle cx="32" cy="26" r="9" fill="#ffffff"/>
+        <circle cx="68" cy="26" r="9" fill="#ffffff"/>
+        <circle cx="32.5" cy="27" r="5" fill="#2B3A55"/>
+        <circle cx="68.5" cy="27" r="5" fill="#2B3A55"/>
+        <circle cx="30.5" cy="24.5" r="2" fill="#ffffff"/>
+        <circle cx="66.5" cy="24.5" r="2" fill="#ffffff"/>`;
+      P.face = `
+        <circle cx="41" cy="52" r="1.8" fill="${nose}" opacity="0.6"/>
+        <circle cx="59" cy="52" r="1.8" fill="${nose}" opacity="0.6"/>`;
+      P.front = `<path d="M32,62 Q50,74 68,62" stroke="${nose}" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.75"/>`;
+      break;
+
+    case 'monster':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <path d="M30,30 Q26,10 36,6 Q34,18 40,26 Z" fill="${shade(c.accent,-0.1)}"/>
+        <path d="M70,30 Q74,10 64,6 Q66,18 60,26 Z" fill="${shade(c.accent,-0.1)}"/>`;
+      P.eyes = `
+        <circle cx="50" cy="50" r="15" fill="#ffffff"/>
+        <circle cx="50" cy="50" r="15" fill="none" stroke="${shade(c.skin,-0.3)}" stroke-width="2"/>
+        <circle cx="51" cy="51" r="8.5" fill="#3FB8E8"/>
+        <circle cx="51" cy="51" r="4.5" fill="#1B2233"/>
+        <circle cx="47.5" cy="47" r="3.2" fill="#ffffff"/>
+        <circle cx="54" cy="55" r="1.5" fill="#ffffff" opacity="0.7"/>`;
+      P.front = `
+        <path d="M43,67 L46,73 L49,67 Z" fill="#ffffff"/>
+        <path d="M53,67 L56,73 L59,67 Z" fill="#ffffff"/>`;
+      break;
+
+    case 'dragon':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <path d="M30,28 Q22,12 32,6 Q32,18 42,24 Z" fill="#F0D48A"/>
+        <path d="M70,28 Q78,12 68,6 Q68,18 58,24 Z" fill="#F0D48A"/>
+        <g fill="${shade(c.skin,-0.3)}">
+          <path d="M44,10 L50,-1 L56,10 Z"/>
+          <path d="M33,16 L37,6 L43,15 Z"/>
+          <path d="M57,15 L63,6 L67,16 Z"/>
+        </g>`;
+      P.face = `
+        <ellipse cx="50" cy="64" rx="17" ry="12" fill="${muzzleCol}"/>
+        <ellipse cx="44" cy="59" rx="2.4" ry="3" fill="${nose}"/>
+        <ellipse cx="56" cy="59" rx="2.4" ry="3" fill="${nose}"/>`;
+      P.front = `
+        <path d="M40,68 L43,74 L46,68 Z" fill="#ffffff"/>
+        <path d="M54,68 L57,74 L60,68 Z" fill="#ffffff"/>`;
+      break;
+
+    case 'unicorn':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <path d="M28,40 L24,16 L44,30 Z" fill="${fur}"/>
+        <path d="M72,40 L76,16 L56,30 Z" fill="${fur}"/>
+        <path d="M50,22 L44,26 L50,-2 L56,26 Z" fill="url(#crown_${u})"/>
+        <path d="M46,18 L54,14" stroke="#D9950E" stroke-width="1.6" opacity="0.8"/>
+        <path d="M46.5,10 L53,7" stroke="#D9950E" stroke-width="1.4" opacity="0.8"/>`;
+      P.face = `
+        <ellipse cx="50" cy="64" rx="15" ry="11" fill="${muzzleCol}"/>
+        <ellipse cx="45" cy="60" rx="2" ry="2.6" fill="${nose}"/>
+        <ellipse cx="55" cy="60" rx="2" ry="2.6" fill="${nose}"/>`;
+      P.front = `<path d="M30,34 Q40,24 52,30" stroke="#E85DA1" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.85"/>`;
+      break;
+
+    case 'alien':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <path d="M36,26 Q30,8 24,4" stroke="${shade(c.skin,-0.2)}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+        <path d="M64,26 Q70,8 76,4" stroke="${shade(c.skin,-0.2)}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+        <circle cx="23" cy="3" r="5" fill="${c.accent}"/>
+        <circle cx="77" cy="3" r="5" fill="${c.accent}"/>`;
+      P.eyes = `
+        <ellipse cx="38" cy="52" rx="9" ry="12" fill="#1B2233" transform="rotate(-14 38 52)"/>
+        <ellipse cx="62" cy="52" rx="9" ry="12" fill="#1B2233" transform="rotate(14 62 52)"/>
+        <ellipse cx="35" cy="46" rx="3" ry="4" fill="#ffffff" opacity="0.85" transform="rotate(-14 35 46)"/>
+        <ellipse cx="59" cy="46" rx="3" ry="4" fill="#ffffff" opacity="0.85" transform="rotate(14 59 46)"/>`;
+      P.front = '';
+      break;
+
+    case 'yeti':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <g fill="${fur}">
+          <circle cx="24" cy="40" r="13"/><circle cx="30" cy="20" r="13"/>
+          <circle cx="50" cy="12" r="14"/><circle cx="70" cy="20" r="13"/>
+          <circle cx="76" cy="40" r="13"/><circle cx="22" cy="62" r="11"/>
+          <circle cx="78" cy="62" r="11"/>
+        </g>
+        <path d="M34,22 Q30,6 40,4 Q38,14 44,20 Z" fill="#E7ECF3"/>
+        <path d="M66,22 Q70,6 60,4 Q62,14 56,20 Z" fill="#E7ECF3"/>`;
+      P.face = `<ellipse cx="50" cy="62" rx="16" ry="11" fill="${muzzleCol}"/>
+        <ellipse cx="50" cy="56" rx="4.4" ry="3.4" fill="${nose}"/>`;
+      P.front = `
+        <path d="M42,66 L45,73 L48,66 Z" fill="#ffffff"/>
+        <path d="M52,66 L55,73 L58,66 Z" fill="#ffffff"/>`;
+      break;
+  }
+  return P;
+}
+
+function isUnlocked(item, lifetime){
+  return (item.unlock || 0) <= lifetime;
+}
+
+function resolveAvatarId(id){
+  return AVATARS[id] ? id : AVATAR_IDS[0];
+}
+
+/* Colour helpers so every avatar gets consistent light/shadow tones
+   derived from its own base colours (light source: upper-left). */
+function hexToRgb(hex){
+  const h = hex.replace('#','');
+  return {
+    r: parseInt(h.substring(0,2),16),
+    g: parseInt(h.substring(2,4),16),
+    b: parseInt(h.substring(4,6),16)
+  };
+}
+function shade(hex, amt){
+  const {r,g,b} = hexToRgb(hex);
+  const f = (v) => {
+    const out = amt > 0 ? v + (255 - v) * amt : v * (1 + amt);
+    return Math.max(0, Math.min(255, Math.round(out)));
+  };
+  return `rgb(${f(r)},${f(g)},${f(b)})`;
+}
+
+let avatarUid = 0;
+
+function avatarSVG(value, size){
+  const cfg = normalizeAvatar(value);
+  size = size || 48;
+  const u = 'av' + (avatarUid++);
+
+  const skinLight = shade(cfg.skin, 0.30);
+  const skinDark  = shade(cfg.skin, -0.30);
+  const hairLight = shade(cfg.hair, 0.38);
+  const hairDark  = shade(cfg.hair, -0.35);
+  const accLight  = shade(cfg.accent, 0.35);
+  const accDark   = shade(cfg.accent, -0.32);
+
+  /* Gradients + filters give the flat shapes actual volume */
+  const defs = `
+    <defs>
+      <radialGradient id="skin_${u}" cx="36%" cy="30%" r="78%">
+        <stop offset="0%" stop-color="${skinLight}"/>
+        <stop offset="55%" stop-color="${cfg.skin}"/>
+        <stop offset="100%" stop-color="${skinDark}"/>
+      </radialGradient>
+      <radialGradient id="hair_${u}" cx="32%" cy="22%" r="85%">
+        <stop offset="0%" stop-color="${hairLight}"/>
+        <stop offset="50%" stop-color="${cfg.hair}"/>
+        <stop offset="100%" stop-color="${hairDark}"/>
+      </radialGradient>
+      <linearGradient id="acc_${u}" x1="0%" y1="0%" x2="30%" y2="100%">
+        <stop offset="0%" stop-color="${accLight}"/>
+        <stop offset="60%" stop-color="${cfg.accent}"/>
+        <stop offset="100%" stop-color="${accDark}"/>
+      </linearGradient>
+      <radialGradient id="cheek_${u}" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#FF7A7A" stop-opacity="0.42"/>
+        <stop offset="100%" stop-color="#FF7A7A" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="gloss_${u}" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="crown_${u}" x1="0%" y1="0%" x2="20%" y2="100%">
+        <stop offset="0%" stop-color="#FFE9A8"/>
+        <stop offset="45%" stop-color="#FFC93C"/>
+        <stop offset="100%" stop-color="#D9950E"/>
+      </linearGradient>
+      <filter id="soft_${u}" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="2.2"/>
+      </filter>
+    </defs>`;
+
+  /* --- Hair back layer, with volume --- */
+  let hairBack = '';
+  if(cfg.hairStyle === 'none'){
+    hairBack = '';
+  } else if(cfg.hairStyle === 'curly'){
+    hairBack = `
+      <g fill="url(#hair_${u})">
+        <circle cx="24" cy="40" r="14"/>
+        <circle cx="34" cy="20" r="15"/>
+        <circle cx="52" cy="14" r="16"/>
+        <circle cx="70" cy="20" r="15"/>
+        <circle cx="78" cy="40" r="14"/>
+        <circle cx="50" cy="34" r="25"/>
+      </g>
+      <circle cx="40" cy="16" r="6.5" fill="${hairLight}" opacity="0.55" filter="url(#soft_${u})"/>`;
+  } else if(cfg.hairStyle === 'spiky'){
+    hairBack = `
+      <ellipse cx="50" cy="38" rx="30" ry="28" fill="url(#hair_${u})"/>
+      <g fill="url(#hair_${u})">
+        <path d="M22,28 L26,4 L38,24 Z"/>
+        <path d="M36,22 L44,0 L52,20 Z"/>
+        <path d="M50,20 L60,1 L64,23 Z"/>
+        <path d="M62,23 L74,6 L76,30 Z"/>
+      </g>
+      <path d="M40,18 L45,4 L48,17 Z" fill="${hairLight}" opacity="0.5"/>`;
+  } else {
+    hairBack = `
+      <ellipse cx="50" cy="38" rx="30" ry="28" fill="url(#hair_${u})"/>
+      <ellipse cx="38" cy="24" rx="12" ry="7" fill="${hairLight}" opacity="0.5"
+        transform="rotate(-18 38 24)" filter="url(#soft_${u})"/>`;
+  }
+
+  /* --- Hair extras --- */
+  let hairExtra = '';
+  if(cfg.hairStyle === 'pigtails'){
+    hairExtra = `
+      <circle cx="17" cy="55" r="10" fill="url(#hair_${u})"/>
+      <circle cx="83" cy="55" r="10" fill="url(#hair_${u})"/>
+      <circle cx="14" cy="51" r="3.4" fill="${hairLight}" opacity="0.6"/>
+      <circle cx="80" cy="51" r="3.4" fill="${hairLight}" opacity="0.6"/>
+      <rect x="13" y="45" width="9" height="11" rx="4" fill="url(#acc_${u})"/>
+      <rect x="77" y="45" width="9" height="11" rx="4" fill="url(#acc_${u})"/>`;
+  } else if(cfg.hairStyle === 'braid'){
+    hairExtra = `
+      <ellipse cx="77" cy="52" rx="7.5" ry="9" fill="url(#hair_${u})"/>
+      <ellipse cx="79" cy="66" rx="6.5" ry="8" fill="url(#hair_${u})"/>
+      <ellipse cx="78" cy="79" rx="5.5" ry="7" fill="url(#hair_${u})"/>
+      <ellipse cx="75" cy="49" rx="2.6" ry="3" fill="${hairLight}" opacity="0.6"/>
+      <rect x="73" y="84" width="10" height="6" rx="3" fill="url(#acc_${u})"/>`;
+  } else if(cfg.hairStyle === 'bun'){
+    hairExtra = `
+      <circle cx="50" cy="12" r="10" fill="url(#hair_${u})"/>
+      <circle cx="46" cy="8" r="3.6" fill="${hairLight}" opacity="0.6"/>`;
+  } else if(cfg.hairStyle === 'ponytail'){
+    hairExtra = `
+      <path d="M74,42 Q90,52 86,72 Q84,86 76,90 Q84,74 80,60 Q77,50 70,46 Z"
+        fill="url(#hair_${u})"/>
+      <path d="M78,50 Q86,60 83,72" stroke="${hairLight}" stroke-width="2.4"
+        fill="none" opacity="0.55" stroke-linecap="round"/>
+      <rect x="68" y="38" width="11" height="7" rx="3.5" fill="url(#acc_${u})"/>`;
+  } else if(cfg.hairStyle === 'long'){
+    hairExtra = `
+      <path d="M17,44 Q13,70 19,90 Q28,92 31,84 L31,50 Z" fill="url(#hair_${u})"/>
+      <path d="M83,44 Q87,70 81,90 Q72,92 69,84 L69,50 Z" fill="url(#hair_${u})"/>
+      <path d="M22,52 Q19,70 23,84" stroke="${hairLight}" stroke-width="2.4"
+        fill="none" opacity="0.5" stroke-linecap="round"/>`;
+  }
+
+  /* --- Accessories, now with gradient + highlight --- */
+  let accessory = '';
+  if(cfg.accessory === 'bandana'){
+    accessory = `
+      <path d="M20,36 Q50,17 80,36 L80,44 Q50,26 20,44 Z" fill="url(#acc_${u})"/>
+      <path d="M24,36 Q50,22 76,36" stroke="${accLight}" stroke-width="2.4" fill="none" opacity="0.7"/>
+      <circle cx="81" cy="41" r="5.5" fill="url(#acc_${u})"/>
+      <circle cx="79" cy="39" r="1.8" fill="${accLight}" opacity="0.8"/>`;
+  } else if(cfg.accessory === 'cap'){
+    accessory = `
+      <path d="M21,38 Q50,9 79,38 Q79,29 50,25 Q21,29 21,38 Z" fill="url(#acc_${u})"/>
+      <path d="M30,26 Q42,15 55,15" stroke="${accLight}" stroke-width="3" fill="none"
+        opacity="0.65" stroke-linecap="round"/>
+      <ellipse cx="29" cy="39" rx="15" ry="5.5" fill="url(#acc_${u})"/>
+      <ellipse cx="29" cy="37.5" rx="12" ry="2" fill="${accLight}" opacity="0.45"/>
+      <circle cx="50" cy="14" r="3.2" fill="${accDark}"/>`;
+  } else if(cfg.accessory === 'headband'){
+    accessory = `
+      <path d="M20,37 Q50,22 80,37" stroke="url(#acc_${u})" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M24,35 Q50,23 76,35" stroke="${accLight}" stroke-width="2.4" fill="none"
+        stroke-linecap="round" opacity="0.65"/>`;
+  } else if(cfg.accessory === 'glasses'){
+    accessory = `
+      <circle cx="40" cy="50" r="9" fill="#BFE9F5" opacity="0.28"/>
+      <circle cx="60" cy="50" r="9" fill="#BFE9F5" opacity="0.28"/>
+      <circle cx="40" cy="50" r="9" fill="none" stroke="#2B3A55" stroke-width="3"/>
+      <circle cx="60" cy="50" r="9" fill="none" stroke="#2B3A55" stroke-width="3"/>
+      <path d="M49,50 Q50,47.5 51,50" stroke="#2B3A55" stroke-width="3" fill="none"/>
+      <path d="M35,46 Q38,43 42,44" stroke="#ffffff" stroke-width="2.2" fill="none"
+        opacity="0.85" stroke-linecap="round"/>
+      <path d="M55,46 Q58,43 62,44" stroke="#ffffff" stroke-width="2.2" fill="none"
+        opacity="0.85" stroke-linecap="round"/>`;
+  } else if(cfg.accessory === 'flower'){
+    accessory = `
+      <g transform="translate(26,30)">
+        <g fill="url(#acc_${u})">
+          <ellipse cx="0" cy="-8" rx="5.5" ry="7"/>
+          <ellipse cx="8" cy="-2" rx="7" ry="5.5"/>
+          <ellipse cx="5" cy="7" rx="5.5" ry="7"/>
+          <ellipse cx="-5" cy="7" rx="5.5" ry="7"/>
+          <ellipse cx="-8" cy="-2" rx="7" ry="5.5"/>
+        </g>
+        <circle cx="0" cy="0" r="4.5" fill="#FFC93C"/>
+        <circle cx="-1.5" cy="-1.5" r="1.6" fill="#FFE9A8"/>
+      </g>`;
+  } else if(cfg.accessory === 'goggles'){
+    accessory = `
+      <path d="M18,36 Q50,20 82,36" stroke="${accDark}" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <g>
+        <rect x="27" y="24" width="20" height="16" rx="7" fill="#BFE9F5" opacity="0.55"/>
+        <rect x="53" y="24" width="20" height="16" rx="7" fill="#BFE9F5" opacity="0.55"/>
+        <rect x="27" y="24" width="20" height="16" rx="7" fill="none" stroke="url(#acc_${u})" stroke-width="3.5"/>
+        <rect x="53" y="24" width="20" height="16" rx="7" fill="none" stroke="url(#acc_${u})" stroke-width="3.5"/>
+        <rect x="45" y="29" width="10" height="5" rx="2.5" fill="url(#acc_${u})"/>
+        <path d="M31,28 Q34,26 38,27" stroke="#ffffff" stroke-width="2.2" fill="none"
+          opacity="0.9" stroke-linecap="round"/>
+        <path d="M57,28 Q60,26 64,27" stroke="#ffffff" stroke-width="2.2" fill="none"
+          opacity="0.9" stroke-linecap="round"/>
+      </g>`;
+  } else if(cfg.accessory === 'sunhat'){
+    accessory = `
+      <ellipse cx="50" cy="35" rx="42" ry="12" fill="url(#acc_${u})"/>
+      <ellipse cx="50" cy="33" rx="42" ry="11" fill="${accLight}" opacity="0.35"/>
+      <path d="M31,34 Q50,4 69,34 Q50,26 31,34 Z" fill="url(#acc_${u})"/>
+      <path d="M31,32 Q50,22 69,32" stroke="${accDark}" stroke-width="5" fill="none"/>
+      <path d="M38,20 Q46,10 55,10" stroke="${accLight}" stroke-width="3" fill="none"
+        opacity="0.6" stroke-linecap="round"/>`;
+  } else if(cfg.accessory === 'crown'){
+    accessory = `
+      <path d="M26,36 L26,16 L36,25 L43,10 L50,25 L57,10 L64,25 L74,16 L74,36 Z"
+        fill="url(#crown_${u})"/>
+      <path d="M26,32 L74,32 L74,37 L26,37 Z" fill="${shade('#E8A31C',-0.2)}"/>
+      <circle cx="43" cy="12" r="3" fill="${cfg.accent}"/>
+      <circle cx="57" cy="12" r="3" fill="${cfg.accent}"/>
+      <circle cx="50" cy="34.5" r="2.6" fill="${cfg.accent}"/>
+      <path d="M30,20 L32,30" stroke="#FFF0B8" stroke-width="2" opacity="0.7" stroke-linecap="round"/>`;
+  } else if(cfg.accessory === 'partyhat'){
+    accessory = `
+      <path d="M50,-2 L34,34 L66,34 Z" fill="url(#acc_${u})"/>
+      <path d="M50,-2 L42,34 L50,34 Z" fill="${accLight}" opacity="0.4"/>
+      <g fill="#ffffff" opacity="0.85">
+        <circle cx="45" cy="14" r="2.2"/><circle cx="55" cy="22" r="2.2"/><circle cx="44" cy="28" r="2"/>
+      </g>
+      <circle cx="50" cy="-3" r="5" fill="#FFC93C"/>
+      <ellipse cx="50" cy="34" rx="17" ry="4" fill="${accDark}"/>`;
+  } else if(cfg.accessory === 'mask'){
+    accessory = `
+      <path d="M26,44 Q50,36 74,44 Q76,56 66,58 Q58,59 50,54 Q42,59 34,58 Q24,56 26,44 Z"
+        fill="url(#acc_${u})"/>
+      <path d="M30,46 Q50,40 70,46" stroke="${accLight}" stroke-width="2.4" fill="none" opacity="0.65"/>
+      <ellipse cx="40" cy="50" rx="6.5" ry="5" fill="#ffffff" opacity="0.92"/>
+      <ellipse cx="60" cy="50" rx="6.5" ry="5" fill="#ffffff" opacity="0.92"/>`;
+  } else if(cfg.accessory === 'eyepatch'){
+    accessory = `
+      <path d="M22,42 Q50,34 78,46" stroke="#2B3A55" stroke-width="3" fill="none"/>
+      <rect x="50" y="43" width="19" height="16" rx="5" fill="#2B3A55"/>
+      <rect x="52" y="45" width="6" height="4" rx="2" fill="#4A5A78" opacity="0.8"/>`;
+  } else if(cfg.accessory === 'facepaint'){
+    accessory = `
+      <path d="M33,50 L35.6,55.4 L41.5,56 L37.2,60 L38.4,66 L33,63 L27.6,66 L28.8,60 L24.5,56 L30.4,55.4 Z"
+        fill="url(#acc_${u})" opacity="0.92"/>
+      <path d="M67,50 L69.6,55.4 L75.5,56 L71.2,60 L72.4,66 L67,63 L61.6,66 L62.8,60 L58.5,56 L64.4,55.4 Z"
+        fill="url(#acc_${u})" opacity="0.92"/>
+      <path d="M42,36 Q50,31 58,36" stroke="url(#acc_${u})" stroke-width="3" fill="none"
+        stroke-linecap="round" opacity="0.75"/>`;
+  }
+
+  const freckles = cfg.freckles ? `
+    <g fill="${shade(cfg.skin,-0.42)}" opacity="0.55">
+      <circle cx="34" cy="58" r="1.5"/>
+      <circle cx="39" cy="61" r="1.3"/>
+      <circle cx="61" cy="61" r="1.3"/>
+      <circle cx="66" cy="58" r="1.5"/>
+    </g>` : '';
+
+  const kp = kindParts(cfg.kind || 'human', u, {skin:cfg.skin, accent:cfg.accent});
+
+  const defaultEyes = `
+      <ellipse cx="41" cy="51" rx="4.6" ry="5" fill="#ffffff"/>
+      <ellipse cx="59" cy="51" rx="4.6" ry="5" fill="#ffffff"/>
+      <circle cx="41.4" cy="51.4" r="3.4" fill="#2B3A55"/>
+      <circle cx="59.4" cy="51.4" r="3.4" fill="#2B3A55"/>
+      <circle cx="40" cy="49.8" r="1.5" fill="#ffffff"/>
+      <circle cx="58" cy="49.8" r="1.5" fill="#ffffff"/>
+      <circle cx="42.6" cy="53" r="0.7" fill="#ffffff" opacity="0.7"/>
+      <circle cx="60.6" cy="53" r="0.7" fill="#ffffff" opacity="0.7"/>`;
+
+  const humanEars = kp.humanEars ? `
+    <circle cx="22" cy="55" r="6.5" fill="url(#skin_${u})"/>
+    <circle cx="78" cy="55" r="6.5" fill="url(#skin_${u})"/>
+    <circle cx="22" cy="55" r="2.6" fill="${skinDark}" opacity="0.45"/>
+    <circle cx="78" cy="55" r="2.6" fill="${skinDark}" opacity="0.45"/>` : '';
+
+  const brows = kp.brows ? `
+    <path d="M36,44 Q41,42 46,44" stroke="${hairDark}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M54,44 Q59,42 64,44" stroke="${hairDark}" stroke-width="2.2" fill="none" stroke-linecap="round"/>` : '';
+
+  const humanNose = kp.humanNose ? `
+    <path d="M50,55 Q52,58 49.5,59" stroke="${skinDark}" stroke-width="1.8" fill="none"
+      stroke-linecap="round" opacity="0.75"/>` : '';
+
+  // Creatures with their own muzzle get a smaller smile so it sits on the muzzle
+  const mouth = (kp.face || kp.eyes) ? `
+    <path d="M42,66 Q50,72 58,66" stroke="#2B3A55" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0.9"/>` : `
+    <path d="M40,63 Q50,71 60,63" stroke="#2B3A55" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M43.5,66.5 Q50,70.5 56.5,66.5 Q50,68.5 43.5,66.5 Z" fill="#E8607A" opacity="0.85"/>`;
+
+  return `<svg width="${size}" height="${Math.round(size*1.06)}" viewBox="0 0 100 106" xmlns="http://www.w3.org/2000/svg">
+    ${defs}
+
+    <!-- contact shadow grounds the character -->
+    <ellipse cx="50" cy="100" rx="30" ry="5" fill="#233752" opacity="0.16" filter="url(#soft_${u})"/>
+
+    ${kp.behind}
+    ${hairBack}
+
+    <!-- shoulders / body -->
+    <path d="M18,98 Q50,74 82,98 L82,106 L18,106 Z" fill="url(#acc_${u})"/>
+    <path d="M30,92 Q50,80 70,92" stroke="${accLight}" stroke-width="2.6" fill="none" opacity="0.45"/>
+
+    <!-- neck with shadow from the head above it -->
+    <rect x="43" y="70" width="14" height="14" rx="6" fill="${skinDark}"/>
+
+    ${humanEars}
+
+    <!-- head -->
+    <circle cx="50" cy="52" r="25" fill="url(#skin_${u})"/>
+    <!-- rim light along the lower-right edge -->
+    <path d="M72,62 A25,25 0 0,1 40,75" stroke="${skinLight}" stroke-width="2.6"
+      fill="none" opacity="0.4" stroke-linecap="round"/>
+    <!-- forehead highlight -->
+    <ellipse cx="40" cy="37" rx="11" ry="7" fill="#ffffff" opacity="0.22"
+      transform="rotate(-20 40 37)" filter="url(#soft_${u})"/>
+
+    ${hairExtra}
+
+    <!-- fringe casts a soft shadow on the forehead -->
+    <path d="M27,44 Q50,30 73,44 Q50,38 27,44 Z" fill="${skinDark}" opacity="0.28" filter="url(#soft_${u})"/>
+
+    <!-- cheeks -->
+    <circle cx="33" cy="59" r="8" fill="url(#cheek_${u})"/>
+    <circle cx="67" cy="59" r="8" fill="url(#cheek_${u})"/>
+
+    ${kp.face}
+
+    <!-- glossy eyes with catchlights -->
+    <g>${kp.eyes || defaultEyes}</g>
+
+    ${brows}
+    ${humanNose}
+    ${mouth}
+    ${kp.front}
+
+    ${freckles}
+    ${accessory}
+
+    <!-- overall top gloss ties the whole head together -->
+    <ellipse cx="44" cy="34" rx="16" ry="10" fill="url(#gloss_${u})" transform="rotate(-18 44 34)"/>
+  </svg>`;
+}
+
+function defaultData(){
+  return {
+    activeExplorer: 'e1',
+    explorers: [
+      {id:'e1', name:'Explorer 1', avatar:'a1', points:0, lifetime:0, tasksDoneToday:[], history:{}},
+      {id:'e2', name:'Explorer 2', avatar:'a2', points:0, lifetime:0, tasksDoneToday:[], history:{}}
+    ],
+    tasks: [
+      {id:'t1', name:'Brush teeth', icon:'🦷', points:1},
+      {id:'t2', name:'Make bed', icon:'🛏️', points:1},
+      {id:'t3', name:'Tidy toys', icon:'🧸', points:1},
+      {id:'t4', name:'Get dressed', icon:'👕', points:1},
+      {id:'t5', name:'Wash hands', icon:'🧼', points:1},
+      {id:'t6', name:'Pack school bag', icon:'🎒', points:1},
+      {id:'t7', name:'Read a book', icon:'📚', points:1},
+      {id:'t8', name:'Help set table', icon:'🍽️', points:1}
+    ],
+    rewards: [
+      {id:'r1', name:'Screen time', icon:'📺', points:20},
+      {id:'r2', name:'Ice cream', icon:'🍦', points:15},
+      {id:'r3', name:'Movie night', icon:'🎬', points:35},
+      {id:'r4', name:'Park trip', icon:'🏞️', points:30},
+      {id:'r5', name:'Pick a game', icon:'🎮', points:25},
+      {id:'r6', name:'Bake treats', icon:'🧁', points:40}
+    ],
+    lastResetDate: todayISO()
+  };
+}
+
+function todayISO(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function isoDateFromOffset(daysAgo){
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function pruneHistory(ex){
+  const cutoff = isoDateFromOffset(35);
+  Object.keys(ex.history).forEach(dateKey => {
+    if(dateKey < cutoff) delete ex.history[dateKey];
+  });
+}
+
+function applyDailyReset(data){
+  data.explorers.forEach(ex => {
+    if(!ex.tasksDoneToday) ex.tasksDoneToday = [];
+    if(!ex.history) ex.history = {};
+    if(typeof ex.lifetime !== 'number') ex.lifetime = 0;
+    // Older saves stored a preset id string; upgrade to an editable config
+    ex.avatar = normalizeAvatar(ex.avatar);
+  });
+  if(data.lastResetDate !== todayISO()){
+    data.explorers.forEach(ex => { ex.tasksDoneToday = []; pruneHistory(ex); });
+    data.lastResetDate = todayISO();
+  }
+  return data;
+}
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultData();
+    const data = applyDailyReset(JSON.parse(raw));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return data;
+  }catch(e){
+    console.error('Load failed, using defaults', e);
+    return defaultData();
+  }
+}
+
+function save(data){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+  catch(e){ console.error('Save failed', e); }
+  scheduleSync();
+}
+
+/* ---------- GitHub-backed shared storage ----------
+   The JSON data file lives inside a GitHub repo (ideally the same repo the app
+   is hosted from via GitHub Pages), so every device reading/writing the same
+   repo sees the same points, quests, and rewards. */
+const SYNC_CONFIG_KEY = 'trailquest_sync_config';
+let syncConfig = null;
+try{ syncConfig = JSON.parse(localStorage.getItem(SYNC_CONFIG_KEY)) || null; }catch(e){ syncConfig = null; }
+let currentSha = null;
+let syncTimer = null;
+let syncState = syncConfig ? 'syncing' : 'offline'; // offline | syncing | synced | error
+
+function utf8ToBase64(str){
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+function base64ToUtf8(b64){
+  const binary = atob(b64.replace(/\n/g, ''));
+  const bytes = new Uint8Array(binary.length);
+  for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function githubApiUrl(cfg){
+  return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path}`;
+}
+function githubHeaders(cfg){
+  return { 'Authorization': `Bearer ${cfg.token}`, 'Accept': 'application/vnd.github+json' };
+}
+
+function setSyncState(s){
+  syncState = s;
+  updateSyncBadge();
+}
+
+function updateSyncBadge(){
+  const badge = document.getElementById('syncBadge');
+  if(!badge) return;
+  badge.classList.remove('synced','syncing','error');
+  if(!syncConfig){
+    badge.textContent = '⚠️ Not connected — tap to set up sharing';
+  } else if(syncState === 'syncing'){
+    badge.classList.add('syncing');
+    badge.textContent = '⏳ Syncing…';
+  } else if(syncState === 'error'){
+    badge.classList.add('error');
+    badge.textContent = '❌ Sync error — tap to check settings';
+  } else {
+    badge.classList.add('synced');
+    badge.textContent = `☁️ Synced with ${syncConfig.owner}/${syncConfig.repo}`;
+  }
+}
+
+async function fetchFromGitHub(cfg){
+  setSyncState('syncing');
+  try{
+    const res = await fetch(`${githubApiUrl(cfg)}?ref=${encodeURIComponent(cfg.branch)}&_=${Date.now()}`, {
+      headers: githubHeaders(cfg)
+    });
+    if(res.status === 404){
+      currentSha = null;
+      setSyncState('synced');
+      return {exists:false};
+    }
+    if(!res.ok) throw new Error(`GitHub fetch failed (${res.status})`);
+    const json = await res.json();
+    currentSha = json.sha;
+    const remoteData = JSON.parse(base64ToUtf8(json.content));
+    setSyncState('synced');
+    return {exists:true, data:remoteData};
+  }catch(e){
+    console.error('Sync fetch error', e);
+    setSyncState('error');
+    return null;
+  }
+}
+
+async function pushToGitHub(){
+  if(!syncConfig) return;
+  setSyncState('syncing');
+  try{
+    const body = {
+      message: `Trail Quest update ${new Date().toISOString()}`,
+      content: utf8ToBase64(JSON.stringify(state, null, 2)),
+      branch: syncConfig.branch
+    };
+    if(currentSha) body.sha = currentSha;
+    let res = await fetch(githubApiUrl(syncConfig), {
+      method: 'PUT',
+      headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    if(res.status === 409){
+      const fresh = await fetch(`${githubApiUrl(syncConfig)}?ref=${encodeURIComponent(syncConfig.branch)}`, {headers: githubHeaders(syncConfig)});
+      if(fresh.ok){
+        const freshJson = await fresh.json();
+        currentSha = freshJson.sha;
+        body.sha = currentSha;
+        res = await fetch(githubApiUrl(syncConfig), {
+          method: 'PUT',
+          headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        });
+      }
+    }
+    if(!res.ok) throw new Error(`GitHub write failed (${res.status})`);
+    const resJson = await res.json();
+    currentSha = resJson.content.sha;
+    setSyncState('synced');
+  }catch(e){
+    console.error('Sync push error', e);
+    setSyncState('error');
+  }
+}
+
+function scheduleSync(){
+  if(!syncConfig) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { pushToGitHub(); }, 1200);
+}
+
+async function pullLatest(showBadge){
+  if(!syncConfig) return;
+  const result = await fetchFromGitHub(syncConfig);
+  if(result && result.exists){
+    state = applyDailyReset(result.data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render();
+  }
+}
+
+async function initSync(){
+  if(!syncConfig){ updateSyncBadge(); return; }
+  const result = await fetchFromGitHub(syncConfig);
+  if(result && result.exists){
+    state = applyDailyReset(result.data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render();
+  } else if(result && !result.exists){
+    // No file yet in the repo — create it from this device's current data
+    await pushToGitHub();
+  }
+  updateSyncBadge();
+  // Light periodic pull so other devices' changes show up without a manual refresh.
+  // Skipped whenever a local push is queued/in-flight, to avoid clobbering unsaved edits.
+  setInterval(() => {
+    if(syncConfig && !syncTimer && syncState !== 'syncing') pullLatest();
+  }, 60000);
+}
+
+let state = load();
+let pickedAvatarId = AVATAR_IDS[0];
+let pickedTaskEmoji = TASK_EMOJIS[0];
+let pickedRewardEmoji = REWARD_EMOJIS[0];
+let editingTaskIds = new Set();
+let editingRewardIds = new Set();
+let currentView = 'today';
+
+/* ---------- Helpers ---------- */
+function getActiveExplorer(){
+  return state.explorers.find(e => e.id === state.activeExplorer) || state.explorers[0];
+}
+function nextGoal(explorer){
+  const affordable = state.rewards.filter(r => r.points > explorer.points).sort((a,b)=>a.points-b.points);
+  return affordable[0] || null;
+}
+
+/* ---------- Render ---------- */
+function render(){
+  renderExplorerSwitcher();
+  renderTrail();
+  if(currentView === 'today'){
+    renderTasks();
+    renderRewards();
+  } else {
+    renderWeekView();
+  }
+}
+
+document.querySelectorAll('.view-tab').forEach(tab => {
+  tab.onclick = () => {
+    currentView = tab.dataset.view;
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('todayView').style.display = currentView === 'today' ? '' : 'none';
+    document.getElementById('weekView').style.display = currentView === 'week' ? '' : 'none';
+    render();
+  };
+});
+
+function renderWeekView(){
+  const ex = getActiveExplorer();
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const days = [];
+  for(let i = 6; i >= 0; i--){
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    days.push({
+      key,
+      label: dayNames[d.getDay()],
+      dateNum: d.getDate(),
+      isToday: i === 0,
+      earned: (ex.history[key] && ex.history[key].earned) || 0,
+      taskIds: (ex.history[key] && ex.history[key].taskIds) || []
+    });
+  }
+  const weekTotal = days.reduce((sum, d) => sum + d.earned, 0);
+  document.getElementById('weekTotal').textContent = `${weekTotal} pt${weekTotal === 1 ? '' : 's'} earned`;
+
+  const maxVal = Math.max(1, ...days.map(d => d.earned));
+  const chart = document.getElementById('weekChart');
+  chart.innerHTML = '';
+  days.forEach(d => {
+    const col = document.createElement('div');
+    col.className = 'week-bar-col' + (d.isToday ? ' today' : '');
+    const heightPct = Math.round((d.earned / maxVal) * 100);
+    col.innerHTML = `
+      <div class="week-bar-track"><div class="week-bar" style="height:${d.earned > 0 ? Math.max(heightPct,8) : 0}%"></div></div>
+      <div class="week-bar-label">${d.label}</div>
+      <div class="week-bar-pts">${d.earned}</div>`;
+    chart.appendChild(col);
+  });
+
+  renderQuestTrends(days);
+}
+
+function renderQuestTrends(days){
+  const table = document.getElementById('trendTable');
+  table.innerHTML = '';
+
+  if(state.tasks.length === 0){
+    table.innerHTML = '<div class="trend-empty">No quests set up yet</div>';
+    return;
+  }
+
+  // Header row: blank corner, 7 day labels, total label
+  const corner = document.createElement('div');
+  table.appendChild(corner);
+  days.forEach(d => {
+    const cell = document.createElement('div');
+    cell.className = 'trend-head-cell' + (d.isToday ? ' today' : '');
+    cell.textContent = d.label.slice(0,2);
+    table.appendChild(cell);
+  });
+  const totalHead = document.createElement('div');
+  totalHead.className = 'trend-head-total';
+  totalHead.textContent = 'Wk';
+  table.appendChild(totalHead);
+
+  // One row per quest
+  state.tasks.forEach(t => {
+    const nameCell = document.createElement('div');
+    nameCell.className = 'trend-quest-name';
+    nameCell.innerHTML = `<span class="ti">${t.icon}</span><span>${escapeHtml(t.name)}</span>`;
+    table.appendChild(nameCell);
+
+    let doneCount = 0;
+    days.forEach(d => {
+      const done = d.taskIds.includes(t.id);
+      if(done) doneCount++;
+      const dot = document.createElement('div');
+      dot.className = 'trend-dot' + (done ? ' done' : '');
+      dot.textContent = done ? '✓' : '';
+      table.appendChild(dot);
+    });
+
+    const totalCell = document.createElement('div');
+    totalCell.className = 'trend-total';
+    totalCell.textContent = `${doneCount}/7`;
+    table.appendChild(totalCell);
+  });
+}
+
+function renderExplorerSwitcher(){
+  const wrap = document.getElementById('explorerSwitcher');
+  wrap.innerHTML = '';
+  state.explorers.forEach(ex => {
+    const btn = document.createElement('div');
+    btn.className = 'explorer-btn' + (ex.id === state.activeExplorer ? ' active' : '');
+    const isActive = ex.id === state.activeExplorer;
+    btn.innerHTML = `<span class="avatar">${avatarSVG(ex.avatar, 46)}</span>` +
+      `<span class="name">${escapeHtml(ex.name)}</span>` +
+      `<span class="pts">${ex.points} pts</span>` +
+      (isActive ? '<span class="dressup-hint">✏️ tap to dress up</span>' : '');
+    btn.onclick = () => {
+      if(isActive){
+        // Tapping your own character opens the dress-up locker
+        popAvatar(btn.querySelector('.avatar'));
+        openLocker();
+        return;
+      }
+      state.activeExplorer = ex.id;
+      save(state);
+      render();
+      const newActive = wrap.querySelector('.explorer-btn.active .avatar');
+      if(newActive) popAvatar(newActive);
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function renderTrail(){
+  const ex = getActiveExplorer();
+  document.getElementById('explorerName').textContent = ex.name;
+  const goal = nextGoal(ex);
+  const fillEl = document.getElementById('trailFill');
+  const hiker = document.getElementById('hiker');
+  const sub = document.getElementById('trailSub');
+  const goalLabel = document.getElementById('goalLabel');
+
+  if(goal){
+    const pct = Math.max(0, Math.min(100, (ex.points / goal.points) * 100));
+    fillEl.style.width = pct + '%';
+    hiker.style.left = pct + '%';
+    hiker.innerHTML = avatarSVG(ex.avatar, 40);
+    sub.textContent = `${ex.points} / ${goal.points} pts toward ${goal.name} ${goal.icon}`;
+    goalLabel.textContent = `next: ${goal.name}`;
+  } else if(state.rewards.length){
+    fillEl.style.width = '100%';
+    hiker.style.left = '100%';
+    hiker.innerHTML = avatarSVG(ex.avatar, 40);
+    sub.textContent = `${ex.points} pts — every reward unlocked! 🎉`;
+    goalLabel.textContent = 'all camps reached';
+  } else {
+    fillEl.style.width = '0%';
+    hiker.style.left = '0%';
+    hiker.innerHTML = avatarSVG(ex.avatar, 40);
+    sub.textContent = `${ex.points} points`;
+    goalLabel.textContent = 'no rewards yet';
+  }
+}
+
+function renderTasks(){
+  const ex = getActiveExplorer();
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+  if(state.tasks.length === 0){
+    list.innerHTML = '<div class="empty-note">No quests yet — ask a grown-up to add some ⚙️</div>';
+  }
+  state.tasks.forEach(task => {
+    const done = ex.tasksDoneToday.includes(task.id);
+    const row = document.createElement('div');
+    row.className = 'task' + (done ? ' done' : '');
+    row.innerHTML = `
+      <div class="icon">${task.icon}</div>
+      <div class="info">
+        <div class="name">${escapeHtml(task.name)}</div>
+        <div class="pts">+${task.points} pts</div>
+      </div>
+      <div class="check">${done ? '✓' : ''}</div>`;
+    row.onclick = () => toggleTask(task);
+    list.appendChild(row);
+  });
+  const doneCount = ex.tasksDoneToday.length;
+  document.getElementById('questCount').textContent = `${doneCount}/${state.tasks.length}`;
+}
+
+function renderRewards(){
+  const ex = getActiveExplorer();
+  const list = document.getElementById('rewardList');
+  list.innerHTML = '';
+  if(state.rewards.length === 0){
+    list.innerHTML = '<div class="empty-note">No rewards set up yet</div>';
+    return;
+  }
+  state.rewards.slice().sort((a,b)=>a.points-b.points).forEach(r => {
+    const unlocked = ex.points >= r.points;
+    const card = document.createElement('div');
+    card.className = 'reward ' + (unlocked ? 'claimable' : 'locked');
+    card.innerHTML = `
+      <div class="icon">${r.icon}</div>
+      <div class="name">${escapeHtml(r.name)}</div>
+      <div class="cost">${r.points} pts</div>`;
+    if(unlocked){
+      card.onclick = () => claimReward(r);
+    }
+    list.appendChild(card);
+  });
+}
+
+/* Returns the name of an item unlocked by crossing from `before` to `after` lifetime points */
+function newlyUnlocked(before, after){
+  const named = [
+    ...KINDS.map(k => ({unlock:k.unlock, label:`the ${k.name}`})),
+    ...HAIR_STYLES.map(h => ({unlock:h.unlock, label:`${h.name} hair`})),
+    ...ACCESSORIES.map(a => ({unlock:a.unlock, label:a.name})),
+    ...HAIR_COLOURS.map(h => ({unlock:h.unlock, label:'a new hair colour'})),
+    ...OUTFIT_COLOURS.map(o => ({unlock:o.unlock, label:'a new kit colour'}))
+  ];
+  const hit = named.find(i => i.unlock > 0 && i.unlock > before && i.unlock <= after);
+  return hit ? hit.label : null;
+}
+
+/* ---------- Actions ---------- */
+function toggleTask(task){
+  const ex = getActiveExplorer();
+  const idx = ex.tasksDoneToday.indexOf(task.id);
+  const today = todayISO();
+  if(!ex.history[today]) ex.history[today] = {earned:0, taskIds:[]};
+  if(idx === -1){
+    ex.tasksDoneToday.push(task.id);
+    ex.points += task.points;
+    ex.lifetime += task.points;
+    ex.history[today].earned += task.points;
+    ex.history[today].taskIds.push(task.id);
+    save(state);
+    render();
+    launchConfetti();
+    popAvatar(document.getElementById('hiker'));
+    const unlocked = newlyUnlocked(ex.lifetime - task.points, ex.lifetime);
+    if(unlocked){
+      showToast('🎁', `New locker item: ${unlocked}!`);
+      setTimeout(() => launchConfetti(true), 300);
+    } else {
+      showToast(task.icon, `+${task.points} point${task.points === 1 ? '' : 's'}!`);
+    }
+  } else {
+    ex.tasksDoneToday.splice(idx,1);
+    ex.points = Math.max(0, ex.points - task.points);
+    ex.history[today].earned = Math.max(0, ex.history[today].earned - task.points);
+    const tIdx = ex.history[today].taskIds.indexOf(task.id);
+    if(tIdx !== -1) ex.history[today].taskIds.splice(tIdx,1);
+    save(state);
+    render();
+  }
+}
+
+function claimReward(reward){
+  const ex = getActiveExplorer();
+  if(ex.points < reward.points) return;
+  askConfirm(`Give ${ex.name} "${reward.name}" for ${reward.points} points?`, reward.icon, () => {
+    ex.points -= reward.points;
+    save(state);
+    render();
+    launchConfetti(true);
+    popAvatar(document.getElementById('hiker'));
+    showToast(reward.icon, `${reward.name} unlocked!`);
+  });
+}
+
+/* ---------- Custom confirm modals (native confirm() is blocked in sandboxed preview) ---------- */
+function askConfirm(title, icon, onYes){
+  const overlay = document.getElementById('confirmOverlay');
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmIcon').textContent = icon || '';
+  overlay.classList.add('show');
+  const yesBtn = document.getElementById('confirmYes');
+  const noBtn = document.getElementById('confirmNo');
+  const cleanup = () => {
+    overlay.classList.remove('show');
+    yesBtn.onclick = null;
+    noBtn.onclick = null;
+  };
+  yesBtn.onclick = () => { cleanup(); onYes(); };
+  noBtn.onclick = cleanup;
+}
+
+function askRemove(title, onYes){
+  const overlay = document.getElementById('removeOverlay');
+  document.getElementById('removeTitle').textContent = title;
+  overlay.classList.add('show');
+  const yesBtn = document.getElementById('removeYes');
+  const noBtn = document.getElementById('removeNo');
+  const cleanup = () => {
+    overlay.classList.remove('show');
+    yesBtn.onclick = null;
+    noBtn.onclick = null;
+  };
+  yesBtn.onclick = () => { cleanup(); onYes(); };
+  noBtn.onclick = cleanup;
+}
+
+/* ---------- Confetti + toast ---------- */
+function launchConfetti(big){
+  const colors = ['#3FB8E8','#FFC93C','#57B96B','#FF6F5E','#B685FF'];
+  const count = big ? 40 : 22;
+  for(let i=0;i<count;i++){
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random()*100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.animationDuration = (1.6 + Math.random()*1.2) + 's';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 3000);
+  }
+}
+
+let toastTimer;
+function showToast(emoji, msg){
+  const toast = document.getElementById('toast');
+  document.getElementById('toastEmoji').textContent = emoji;
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 1400);
+}
+
+/* ---------- Camp Locker (kid-facing dress-up) ---------- */
+const lockerOverlay = document.getElementById('lockerOverlay');
+let lockerCat = 'face';
+
+function openLocker(){
+  lockerCat = 'kind';
+  document.querySelectorAll('.locker-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.locker-tab[data-cat="kind"]').classList.add('active');
+  lockerOverlay.classList.add('show');
+  renderLocker();
+}
+
+document.getElementById('closeLocker').onclick = () => lockerOverlay.classList.remove('show');
+document.getElementById('lockerDoneBtn').onclick = () => lockerOverlay.classList.remove('show');
+lockerOverlay.onclick = (e) => { if(e.target === lockerOverlay) lockerOverlay.classList.remove('show'); };
+
+document.querySelectorAll('.locker-tab').forEach(tab => {
+  tab.onclick = () => {
+    lockerCat = tab.dataset.cat;
+    document.querySelectorAll('.locker-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    renderLockerOptions();
+  };
+});
+
+function renderLocker(){
+  const ex = getActiveExplorer();
+  document.getElementById('lockerTitle').textContent = `${ex.name}'s Camp Locker`;
+  renderLockerPreview();
+  renderLockerUnlockNote();
+  renderLockerOptions();
+}
+
+function renderLockerPreview(){
+  const ex = getActiveExplorer();
+  const prev = document.getElementById('lockerPreview');
+  prev.innerHTML = avatarSVG(ex.avatar, 132);
+}
+
+/* Tells kids what's coming next, which is the whole motivation hook */
+function renderLockerUnlockNote(){
+  const ex = getActiveExplorer();
+  const all = [
+    ...KINDS.map(k => ({...k, label:`the ${k.name}`})),
+    ...HAIR_STYLES.map(h => ({...h, label:`${h.name} hair`})),
+    ...ACCESSORIES.map(a => ({...a, label:a.name})),
+    ...HAIR_COLOURS.map(h => ({...h, label:'a new hair colour'})),
+    ...OUTFIT_COLOURS.map(o => ({...o, label:'a new kit colour'}))
+  ];
+  const nextItem = all.filter(i => (i.unlock || 0) > ex.lifetime)
+                      .sort((a,b) => a.unlock - b.unlock)[0];
+  const note = document.getElementById('lockerUnlock');
+  if(nextItem){
+    const togo = nextItem.unlock - ex.lifetime;
+    note.textContent = `⭐ ${togo} more point${togo === 1 ? '' : 's'} to unlock ${nextItem.label}!`;
+  } else {
+    note.textContent = '🏆 Everything unlocked — you are a proper explorer!';
+  }
+}
+
+function applyAvatarChange(changes){
+  const ex = getActiveExplorer();
+  ex.avatar = {...normalizeAvatar(ex.avatar), ...changes};
+  save(state);
+  renderLockerPreview();
+  popAvatar(document.getElementById('lockerPreview'));
+  renderExplorerSwitcher();
+  renderTrail();
+}
+
+function makeOption({selected, locked, unlockAt, inner, className, onPick}){
+  const b = document.createElement('button');
+  b.className = `opt ${className}` + (selected ? ' sel' : '') + (locked ? ' locked' : '');
+  b.innerHTML = `<span class="inner">${inner}</span>` +
+    (locked ? `<span class="lock">🔒<small>${unlockAt}</small></span>` : '');
+  b.onclick = () => {
+    if(locked){
+      // Still give feedback rather than a dead tap — shows them the goal
+      const ex = getActiveExplorer();
+      showToast('🔒', `${unlockAt - ex.lifetime} more points to unlock!`);
+      return;
+    }
+    onPick();
+    renderLockerOptions();
+  };
+  return b;
+}
+
+function renderLockerOptions(){
+  const ex = getActiveExplorer();
+  const cfg = normalizeAvatar(ex.avatar);
+  const wrap = document.getElementById('lockerOptions');
+  wrap.innerHTML = '';
+
+  if(lockerCat === 'kind'){
+    KINDS.forEach(k => {
+      const locked = !isUnlocked(k, ex.lifetime);
+      wrap.appendChild(makeOption({
+        selected: (cfg.kind || 'human') === k.id,
+        locked, unlockAt: k.unlock,
+        inner: avatarSVG({...cfg, kind:k.id, hairStyle: k.id === 'human' ? cfg.hairStyle : 'none'}, 54),
+        className: 'mini-opt',
+        onPick: () => {
+          // Creatures look right bald; humans shouldn't be stuck bald when switching back
+          const changes = {kind: k.id};
+          if(k.id !== 'human') changes.hairStyle = 'none';
+          else if(cfg.hairStyle === 'none') changes.hairStyle = 'short';
+          applyAvatarChange(changes);
+        }
+      }));
+    });
+
+  } else if(lockerCat === 'face'){
+    SKIN_TONES.forEach(tone => {
+      wrap.appendChild(makeOption({
+        selected: cfg.skin === tone,
+        locked: false,
+        inner: `<span style="display:block;width:100%;height:100%;border-radius:50%;background:${tone};"></span>`,
+        className: 'swatch',
+        onPick: () => applyAvatarChange({skin: tone})
+      }));
+    });
+    const freckleBtn = document.createElement('button');
+    freckleBtn.className = 'btn btn-secondary freckle-toggle';
+    freckleBtn.textContent = cfg.freckles ? '✨ Freckles: on' : '✨ Freckles: off';
+    freckleBtn.onclick = () => { applyAvatarChange({freckles: !cfg.freckles}); renderLockerOptions(); };
+    wrap.appendChild(freckleBtn);
+
+  } else if(lockerCat === 'hairStyle'){
+    HAIR_STYLES.forEach(style => {
+      const locked = !isUnlocked(style, ex.lifetime);
+      wrap.appendChild(makeOption({
+        selected: cfg.hairStyle === style.id,
+        locked, unlockAt: style.unlock,
+        inner: avatarSVG({...cfg, hairStyle: style.id, accessory:'none'}, 54),
+        className: 'mini-opt',
+        onPick: () => applyAvatarChange({hairStyle: style.id})
+      }));
+    });
+
+  } else if(lockerCat === 'hairColour'){
+    HAIR_COLOURS.forEach(hc => {
+      const locked = !isUnlocked(hc, ex.lifetime);
+      wrap.appendChild(makeOption({
+        selected: cfg.hair === hc.c,
+        locked, unlockAt: hc.unlock,
+        inner: `<span style="display:block;width:100%;height:100%;border-radius:50%;background:${hc.c};"></span>`,
+        className: 'swatch',
+        onPick: () => applyAvatarChange({hair: hc.c})
+      }));
+    });
+
+  } else if(lockerCat === 'accessory'){
+    ACCESSORIES.forEach(acc => {
+      const locked = !isUnlocked(acc, ex.lifetime);
+      wrap.appendChild(makeOption({
+        selected: cfg.accessory === acc.id,
+        locked, unlockAt: acc.unlock,
+        inner: avatarSVG({...cfg, accessory: acc.id}, 54),
+        className: 'mini-opt',
+        onPick: () => applyAvatarChange({accessory: acc.id})
+      }));
+    });
+
+  } else if(lockerCat === 'outfit'){
+    OUTFIT_COLOURS.forEach(oc => {
+      const locked = !isUnlocked(oc, ex.lifetime);
+      wrap.appendChild(makeOption({
+        selected: cfg.accent === oc.c,
+        locked, unlockAt: oc.unlock,
+        inner: `<span style="display:block;width:100%;height:100%;border-radius:50%;background:${oc.c};"></span>`,
+        className: 'swatch',
+        onPick: () => applyAvatarChange({accent: oc.c})
+      }));
+    });
+  }
+}
+
+/* Randomise from unlocked items only — a one-tap game in itself */
+document.getElementById('surpriseBtn').onclick = () => {
+  const ex = getActiveExplorer();
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const openKinds  = KINDS.filter(k => isUnlocked(k, ex.lifetime));
+  const openStyles = HAIR_STYLES.filter(s => isUnlocked(s, ex.lifetime));
+  const openHair   = HAIR_COLOURS.filter(h => isUnlocked(h, ex.lifetime));
+  const openAcc    = ACCESSORIES.filter(a => isUnlocked(a, ex.lifetime));
+  const openFit    = OUTFIT_COLOURS.filter(o => isUnlocked(o, ex.lifetime));
+  const kind = pick(openKinds).id;
+  applyAvatarChange({
+    kind,
+    skin: pick(SKIN_TONES),
+    hairStyle: kind === 'human' ? pick(openStyles.filter(s => s.id !== 'none')).id : 'none',
+    hair: pick(openHair).c,
+    accessory: pick(openAcc).id,
+    accent: pick(openFit).c,
+    freckles: Math.random() > 0.5
+  });
+  launchConfetti();
+  renderLockerOptions();
+};
+
+/* ---------- Settings overlay ---------- */
+const settingsOverlay = document.getElementById('settingsOverlay');
+document.getElementById('gearBtn').onclick = () => {
+  settingsOverlay.classList.add('show');
+  editingTaskIds.clear();
+  editingRewardIds.clear();
+  renderManageLists();
+  buildEmojiPickers();
+  renderSyncTab();
+};
+document.getElementById('closeSettings').onclick = () => settingsOverlay.classList.remove('show');
+settingsOverlay.onclick = (e) => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('show'); };
+
+document.getElementById('syncBadge').onclick = () => {
+  settingsOverlay.classList.add('show');
+  renderSyncTab();
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.tab[data-tab="syncTab"]').classList.add('active');
+  document.getElementById('syncTab').classList.add('active');
+};
+
+function renderSyncTab(){
+  document.getElementById('syncOwner').value = syncConfig ? syncConfig.owner : '';
+  document.getElementById('syncRepo').value = syncConfig ? syncConfig.repo : '';
+  document.getElementById('syncBranch').value = syncConfig ? syncConfig.branch : '';
+  document.getElementById('syncPath').value = syncConfig ? syncConfig.path : '';
+  document.getElementById('syncToken').value = '';
+  document.getElementById('syncToken').placeholder = syncConfig ? 'Already saved — leave blank to keep it' : 'Personal access token';
+  const statusLine = document.getElementById('syncStatusLine');
+  statusLine.textContent = syncConfig
+    ? `Connected to ${syncConfig.owner}/${syncConfig.repo} (${syncConfig.path})`
+    : 'Not connected yet — data is only saved on this device.';
+}
+
+document.getElementById('syncConnectBtn').onclick = async () => {
+  const owner = document.getElementById('syncOwner').value.trim();
+  const repo = document.getElementById('syncRepo').value.trim();
+  const branch = document.getElementById('syncBranch').value.trim() || 'main';
+  const path = document.getElementById('syncPath').value.trim() || 'trailquest-data.json';
+  const tokenInput = document.getElementById('syncToken').value.trim();
+  const token = tokenInput || (syncConfig ? syncConfig.token : '');
+  if(!owner || !repo || !token){
+    document.getElementById('syncStatusLine').textContent = 'Username, repo, and a token are all required.';
+    return;
+  }
+  syncConfig = {owner, repo, branch, path, token};
+  localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(syncConfig));
+  currentSha = null;
+  document.getElementById('syncStatusLine').textContent = 'Connecting…';
+  const result = await fetchFromGitHub(syncConfig);
+  if(result && result.exists){
+    state = applyDailyReset(result.data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render();
+    document.getElementById('syncStatusLine').textContent = `Connected — pulled existing shared data from ${owner}/${repo}.`;
+  } else if(result && !result.exists){
+    await pushToGitHub();
+    document.getElementById('syncStatusLine').textContent = `Connected — created the shared data file in ${owner}/${repo} from this device's data.`;
+  } else {
+    document.getElementById('syncStatusLine').textContent = 'Could not reach GitHub — check the details and token permissions.';
+  }
+};
+
+document.getElementById('syncPullBtn').onclick = async () => {
+  if(!syncConfig){ document.getElementById('syncStatusLine').textContent = 'Connect first.'; return; }
+  document.getElementById('syncStatusLine').textContent = 'Pulling…';
+  await pullLatest();
+  document.getElementById('syncStatusLine').textContent = 'Pulled the latest shared data.';
+};
+
+document.getElementById('syncPushBtn').onclick = async () => {
+  if(!syncConfig){ document.getElementById('syncStatusLine').textContent = 'Connect first.'; return; }
+  document.getElementById('syncStatusLine').textContent = 'Pushing…';
+  await pushToGitHub();
+  document.getElementById('syncStatusLine').textContent = 'Pushed this device\'s data to GitHub.';
+};
+
+document.getElementById('syncDisconnectBtn').onclick = () => {
+  askRemove('Disconnect from GitHub sync? Data stays on this device only from now on.', () => {
+    syncConfig = null;
+    currentSha = null;
+    localStorage.removeItem(SYNC_CONFIG_KEY);
+    updateSyncBadge();
+    renderSyncTab();
+  });
+};
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  };
+});
+
+function buildEmojiPickers(){
+  buildAvatarPicker('explorerAvatarPick', pickedAvatarId, (id)=>pickedAvatarId=id);
+  buildPicker('taskEmojiPick', TASK_EMOJIS, pickedTaskEmoji, (e)=>pickedTaskEmoji=e);
+  buildPicker('rewardEmojiPick', REWARD_EMOJIS, pickedRewardEmoji, (e)=>pickedRewardEmoji=e);
+}
+function popAvatar(el){
+  if(!el) return;
+  el.classList.remove('avatar-pop');
+  void el.offsetWidth; // force reflow so the animation can restart
+  el.classList.add('avatar-pop');
+  setTimeout(() => el.classList.remove('avatar-pop'), 600);
+}
+
+function buildAvatarPicker(elId, selectedId, onPick){
+  const wrap = document.getElementById(elId);
+  wrap.innerHTML = '';
+  AVATAR_IDS.forEach(id => {
+    const b = document.createElement('button');
+    b.className = 'avatar-pick' + (id === selectedId ? ' sel' : '');
+    b.innerHTML = avatarSVG(id, 48);
+    b.onclick = () => {
+      wrap.querySelectorAll('.avatar-pick').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');
+      popAvatar(b);
+      onPick(id);
+    };
+    wrap.appendChild(b);
+  });
+}
+function buildPicker(elId, emojis, selected, onPick){
+  const wrap = document.getElementById(elId);
+  wrap.innerHTML = '';
+  emojis.forEach(em => {
+    const b = document.createElement('button');
+    b.textContent = em;
+    if(em === selected) b.classList.add('sel');
+    b.onclick = () => {
+      wrap.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');
+      onPick(em);
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function renderManageLists(){
+  const exList = document.getElementById('explorerManageList');
+  exList.innerHTML = '';
+  state.explorers.forEach(ex => {
+    const row = document.createElement('div');
+    row.className = 'manage-row';
+    row.innerHTML = `<span class="icon">${avatarSVG(ex.avatar, 30)}</span><span class="meta">${escapeHtml(ex.name)} — ${ex.points} pts</span>
+      ${state.explorers.length > 1 ? '<button class="del">Remove</button>' : ''}`;
+    const delBtn = row.querySelector('.del');
+    if(delBtn) delBtn.onclick = () => {
+      askRemove(`Remove ${ex.name}? Their points will be lost.`, () => {
+        state.explorers = state.explorers.filter(e => e.id !== ex.id);
+        if(state.activeExplorer === ex.id) state.activeExplorer = state.explorers[0].id;
+        save(state); render(); renderManageLists();
+      });
+    };
+    exList.appendChild(row);
+  });
+
+  const taskList = document.getElementById('taskManageList');
+  taskList.innerHTML = '';
+  state.tasks.forEach(t => {
+    const row = document.createElement('div');
+    row.className = 'manage-row';
+    if(editingTaskIds.has(t.id)){
+      row.innerHTML = `<input class="field" value="${escapeHtml(t.name)}" id="editName_${t.id}">
+        <input class="field small" type="number" min="1" value="${t.points}" id="editPts_${t.id}">
+        <button class="del save">Save</button>
+        <button class="del cancel">Cancel</button>`;
+      row.querySelector('.save').onclick = () => {
+        const nameVal = document.getElementById(`editName_${t.id}`).value.trim();
+        const ptsVal = Math.max(1, parseInt(document.getElementById(`editPts_${t.id}`).value) || 1);
+        if(nameVal) t.name = nameVal;
+        t.points = ptsVal;
+        editingTaskIds.delete(t.id);
+        save(state); render(); renderManageLists();
+      };
+      row.querySelector('.cancel').onclick = () => { editingTaskIds.delete(t.id); renderManageLists(); };
+    } else {
+      row.innerHTML = `<span class="icon">${t.icon}</span><span class="meta">${escapeHtml(t.name)} — ${t.points} pt${t.points===1?'':'s'}</span>
+        <button class="del edit">Edit</button>
+        <button class="del">Remove</button>`;
+      row.querySelector('.edit').onclick = () => { editingTaskIds.add(t.id); renderManageLists(); };
+      row.querySelector('.del:not(.edit)').onclick = () => {
+        askRemove(`Remove the quest "${t.name}"?`, () => {
+          state.tasks = state.tasks.filter(x => x.id !== t.id);
+          state.explorers.forEach(ex => { ex.tasksDoneToday = ex.tasksDoneToday.filter(id => id !== t.id); });
+          save(state); render(); renderManageLists();
+        });
+      };
+    }
+    taskList.appendChild(row);
+  });
+
+  const rewardList = document.getElementById('rewardManageList');
+  rewardList.innerHTML = '';
+  state.rewards.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'manage-row';
+    if(editingRewardIds.has(r.id)){
+      row.innerHTML = `<input class="field" value="${escapeHtml(r.name)}" id="editRName_${r.id}">
+        <input class="field small" type="number" min="1" value="${r.points}" id="editRPts_${r.id}">
+        <button class="del save">Save</button>
+        <button class="del cancel">Cancel</button>`;
+      row.querySelector('.save').onclick = () => {
+        const nameVal = document.getElementById(`editRName_${r.id}`).value.trim();
+        const ptsVal = Math.max(1, parseInt(document.getElementById(`editRPts_${r.id}`).value) || 1);
+        if(nameVal) r.name = nameVal;
+        r.points = ptsVal;
+        editingRewardIds.delete(r.id);
+        save(state); render(); renderManageLists();
+      };
+      row.querySelector('.cancel').onclick = () => { editingRewardIds.delete(r.id); renderManageLists(); };
+    } else {
+      row.innerHTML = `<span class="icon">${r.icon}</span><span class="meta">${escapeHtml(r.name)} — ${r.points} pts</span>
+        <button class="del edit">Edit</button>
+        <button class="del">Remove</button>`;
+      row.querySelector('.edit').onclick = () => { editingRewardIds.add(r.id); renderManageLists(); };
+      row.querySelector('.del:not(.edit)').onclick = () => {
+        askRemove(`Remove the reward "${r.name}"?`, () => {
+          state.rewards = state.rewards.filter(x => x.id !== r.id);
+          save(state); render(); renderManageLists();
+        });
+      };
+    }
+    rewardList.appendChild(row);
+  });
+}
+
+document.getElementById('addExplorerBtn').onclick = () => {
+  const nameInput = document.getElementById('newExplorerName');
+  const name = nameInput.value.trim();
+  if(!name){ nameInput.focus(); return; }
+  state.explorers.push({id:'e'+Date.now(), name, avatar:normalizeAvatar(pickedAvatarId), points:0, lifetime:0, tasksDoneToday:[], history:{}});
+  nameInput.value = '';
+  save(state); render(); renderManageLists();
+};
+
+document.getElementById('addTaskBtn').onclick = () => {
+  const nameInput = document.getElementById('newTaskName');
+  const ptsInput = document.getElementById('newTaskPts');
+  const name = nameInput.value.trim();
+  const pts = Math.max(1, parseInt(ptsInput.value) || 1);
+  if(!name){ nameInput.focus(); return; }
+  state.tasks.push({id:'t'+Date.now(), name, icon:pickedTaskEmoji, points:pts});
+  nameInput.value = ''; ptsInput.value = 1;
+  save(state); render(); renderManageLists();
+};
+
+document.getElementById('addRewardBtn').onclick = () => {
+  const nameInput = document.getElementById('newRewardName');
+  const ptsInput = document.getElementById('newRewardPts');
+  const name = nameInput.value.trim();
+  const pts = Math.max(1, parseInt(ptsInput.value) || 1);
+  if(!name){ nameInput.focus(); return; }
+  state.rewards.push({id:'r'+Date.now(), name, icon:pickedRewardEmoji, points:pts});
+  nameInput.value = ''; ptsInput.value = 30;
+  save(state); render(); renderManageLists();
+};
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ---------- Init ---------- */
+render();
+initSync();
+</script>
+</body>
+</html>
