@@ -68,6 +68,42 @@
 
   /* Explorer switcher */
   .explorers{display:flex;gap:10px;margin:14px 0 6px;}
+
+  /* Lobby (profile picker front screen) */
+  .lobby-title{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:22px;color:#fff;
+    text-shadow:0 2px 0 rgba(0,0,0,0.12);text-align:center;margin:16px 0 12px;}
+  .lobby-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;}
+  .lobby-card{position:relative;background:#fff;border:3px solid transparent;border-radius:24px;
+    padding:16px 10px 14px;text-align:center;cursor:pointer;box-shadow:var(--shadow);
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1), border-color .18s ease;}
+  .lobby-card:active{transform:scale(0.95);}
+  .lobby-card .lc-avatar svg{width:78px;height:auto;display:block;margin:0 auto;
+    filter:drop-shadow(0 4px 4px rgba(35,55,82,0.22));
+    transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+  .lobby-card:hover .lc-avatar svg{transform:scale(1.05);}
+  .lobby-card .lc-name{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;margin-top:6px;}
+  .lobby-card .lc-pts{font-weight:800;font-size:14px;color:var(--sky-deep);margin-top:1px;}
+  .lobby-card .lc-lock{position:absolute;top:10px;right:12px;font-size:16px;}
+  .lobby-card.add-card{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(255,255,255,0.55);border:3px dashed rgba(255,255,255,0.9);color:#fff;min-height:150px;}
+  .lobby-card.add-card .plus{font-size:40px;font-weight:800;line-height:1;font-family:'Baloo 2',sans-serif;}
+  .lobby-card.add-card .add-label{font-weight:800;font-size:14px;margin-top:4px;}
+
+  /* Back button + profile header */
+  .back-btn{background:rgba(255,255,255,0.85);border:none;border-radius:14px;padding:9px 16px;
+    font-weight:800;font-size:14px;color:var(--ink);cursor:pointer;font-family:inherit;
+    box-shadow:var(--shadow);margin:12px 0 4px;}
+  .back-btn:active{transform:scale(0.97);}
+  .profile-header{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:22px;
+    padding:10px 14px;box-shadow:var(--shadow);margin:10px 0;cursor:pointer;}
+  .profile-header:active .profile-avatar svg{transform:scale(0.92);}
+  .profile-avatar svg{width:56px;height:auto;display:block;
+    filter:drop-shadow(0 3px 3px rgba(35,55,82,0.22));
+    transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+  .profile-avatar.avatar-pop svg{animation:avatarPop .55s ease-out;}
+  .profile-head-name{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:20px;}
+  .profile-head-hint{font-size:11px;font-weight:800;color:#a0adc0;margin-top:1px;}
+
   .explorer-btn{flex:1;background:rgba(255,255,255,0.85);border:3px solid transparent;border-radius:20px;
     padding:10px 8px;text-align:center;cursor:pointer;box-shadow:var(--shadow);}
   .explorer-btn.active{border-color:var(--coral);background:#fff;}
@@ -87,6 +123,15 @@
     100%{transform:scale(1) translateY(0);}
   }
   .avatar-pop svg{animation:avatarPop .55s ease-out;}
+
+  /* Blinking eyes and a pulsing robot antenna light — small touches of life */
+  .blink-lid{animation:blinkAnim 5.5s ease-in-out infinite; animation-delay:var(--blink-delay,0s);}
+  @keyframes blinkAnim{
+    0%,94%,100%{transform:scaleY(0);}
+    96%,98%{transform:scaleY(1);}
+  }
+  .led-pulse{animation:ledPulse 1.6s ease-in-out infinite;}
+  @keyframes ledPulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
 
   /* Gentle idle bob so characters feel alive */
   @keyframes idleBob{
@@ -157,6 +202,92 @@
   .trend-dot.done{background:var(--grass);border-color:var(--grass);}
   .trend-total{font-size:12px;font-weight:800;color:var(--sky-deep);text-align:center;}
   .trend-empty{grid-column:1 / -1;text-align:center;color:#8798af;font-weight:700;padding:14px 0;font-size:13px;}
+
+  /* Journey / roll-ups */
+  .journey-hero{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:22px;
+    padding:12px 16px;box-shadow:var(--shadow);margin:14px 0;}
+  .journey-hero-avatar svg{width:52px;height:auto;display:block;filter:drop-shadow(0 3px 3px rgba(35,55,82,0.2));}
+  .journey-hero-name{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:20px;}
+  .rollup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+  .rollup-card{background:var(--card);border-radius:20px;padding:14px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;}
+  .rollup-card .rc-label{font-size:12px;font-weight:800;color:#8798af;text-transform:uppercase;letter-spacing:0.4px;}
+  .rollup-card .rc-net{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:34px;line-height:1.1;margin-top:2px;}
+  .rollup-card .rc-sub{font-size:11.5px;font-weight:700;color:#7a8aa3;margin-top:2px;}
+  .rollup-card .rc-emoji{position:absolute;right:10px;top:10px;font-size:22px;opacity:0.5;}
+  .rollup-card.day{background:linear-gradient(180deg,#FFF7E4,#fff);}
+  .rollup-card.week{background:linear-gradient(180deg,#E7F6EC,#fff);}
+  .rollup-card.month{background:linear-gradient(180deg,#E6F3FB,#fff);}
+  .rollup-card.year{background:linear-gradient(180deg,#F0E9FB,#fff);}
+  .rc-net.pos{color:var(--grass);}
+  .rc-net.neg{color:var(--coral);}
+  .rc-net.zero{color:#8798af;}
+
+  /* Ledger */
+  .ledger{display:flex;flex-direction:column;gap:7px;}
+  .ledger-day{background:var(--card);border-radius:16px;padding:8px 12px;box-shadow:var(--shadow);}
+  .ledger-date{font-weight:800;font-size:12.5px;color:#5a6b85;margin-bottom:5px;}
+  .ledger-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:2px 0;}
+  .ledger-row .lr-icon{font-size:16px;width:22px;text-align:center;}
+  .ledger-row .lr-name{flex:1;font-weight:700;}
+  .ledger-row .lr-pts{font-weight:800;}
+  .ledger-row .lr-pts.plus{color:var(--grass);}
+  .ledger-row .lr-pts.minus{color:var(--coral);}
+  .ledger-empty{text-align:center;color:#8798af;font-weight:700;padding:16px 0;font-size:13px;}
+
+  /* Grown-up deduct button */
+  .grownup-deduct{display:block;width:100%;margin:12px 0 2px;border:2px dashed #E0B4AE;
+    background:#FFF5F3;color:#B3392B;border-radius:14px;padding:10px;font-weight:800;font-size:13px;
+    font-family:inherit;cursor:pointer;}
+  .grownup-deduct:active{transform:scale(0.98);}
+
+  /* Deduction picker */
+  .deduct-help{font-size:13px;color:#5a6b85;line-height:1.5;margin:0 0 12px;}
+  .deduct-list{display:flex;flex-direction:column;gap:9px;}
+  .deduct-item{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #F0D8D3;
+    border-radius:16px;padding:12px 14px;cursor:pointer;}
+  .deduct-item:active{transform:scale(0.98);background:#FFF5F3;}
+  .deduct-item .di-icon{font-size:24px;width:34px;text-align:center;}
+  .deduct-item .di-name{flex:1;font-weight:800;font-size:15px;}
+  .deduct-item .di-pts{font-weight:800;font-size:15px;color:var(--coral);}
+  .deduct-empty{text-align:center;color:#8798af;font-weight:700;padding:16px 0;font-size:13px;}
+
+  /* PIN keypad */
+  .pin-sheet{text-align:center;max-width:360px;}
+  .pin-avatar svg{width:56px;height:auto;display:block;margin:0 auto 4px;
+    filter:drop-shadow(0 3px 3px rgba(35,55,82,0.2));}
+  .pin-title{margin:6px 0 2px;}
+  .pin-sub{font-size:13px;color:#7a8aa3;font-weight:700;margin:0 0 14px;min-height:18px;}
+  .pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:18px;}
+  .pin-dot{width:16px;height:16px;border-radius:50%;background:#DCE4EE;transition:transform .15s ease, background .15s ease;}
+  .pin-dot.filled{background:var(--sky-deep);transform:scale(1.15);}
+  .pin-dots.wrong{animation:pinShake .4s ease;}
+  .pin-dots.wrong .pin-dot{background:var(--coral);}
+  @keyframes pinShake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-9px);}40%,80%{transform:translateX(9px);}}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:280px;margin:0 auto;}
+  .pin-key{border:none;background:#fff;border-radius:16px;padding:16px 0;font-size:24px;font-weight:800;
+    font-family:'Baloo 2',sans-serif;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 rgba(35,55,82,0.12);
+    transition:transform .1s ease;}
+  .pin-key:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(35,55,82,0.12);}
+  .pin-key.wide{grid-column:span 1;font-size:20px;color:#7a8aa3;}
+  .pin-key.blank{background:transparent;box-shadow:none;cursor:default;}
+
+  /* Lock badge on switcher */
+  .explorer-btn .lock-badge{position:absolute;top:6px;right:8px;font-size:13px;}
+  .explorer-btn{position:relative;}
+
+  /* Home stats strip */
+  .home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 4px;}
+  .home-stat{background:var(--card);border-radius:16px;padding:10px 4px;box-shadow:var(--shadow);text-align:center;}
+  .home-stat.now{background:linear-gradient(180deg,#FFF3D6,#fff);}
+  .home-stat .hs-val{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:22px;line-height:1.05;}
+  .home-stat .hs-label{font-size:9.5px;font-weight:800;color:#8798af;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;}
+  .home-stat .hs-val.pos{color:var(--grass);}
+  .home-stat .hs-val.neg{color:var(--coral);}
+  .home-stat.now .hs-val{color:var(--sky-deep);}
+
+  /* PIN manage buttons */
+  #pinManageButtons .btn{margin-top:8px;}
 
   /* Task list */
   .tasks{display:flex;flex-direction:column;gap:10px;}
@@ -306,45 +437,76 @@
 
   <button class="sync-badge" id="syncBadge">⚠️ Not connected — tap to set up sharing</button>
 
-  <div class="explorers" id="explorerSwitcher"></div>
-
-  <div class="trail-card">
-    <div class="trail-head">
-      <h2 id="explorerName">Explorer</h2>
-      <span class="goal-label" id="goalLabel">no reward picked</span>
-    </div>
-    <div class="trail-track">
-      <div class="trail-line"><div class="trail-fill" id="trailFill" style="width:0%"></div></div>
-      <div class="hiker" id="hiker" style="left:0%">🧑‍🦰</div>
-      <div class="trail-flag-end">🏕️</div>
-    </div>
-    <div class="trail-sub" id="trailSub">0 points</div>
+  <div id="lobbyScreen">
+    <p class="lobby-title">Who's exploring today?</p>
+    <div class="lobby-grid" id="lobbyGrid"></div>
   </div>
 
-  <div class="view-tabs" id="viewTabs">
-    <button class="view-tab active" data-view="today">Today</button>
-    <button class="view-tab" data-view="week">This Week</button>
-  </div>
+  <div id="profileScreen" style="display:none;">
+    <button class="back-btn" id="backToLobby">← All explorers</button>
 
-  <div id="todayView">
-    <div class="section-title"><h2>Today's Quests</h2><span class="badge" id="questCount">0/0</span></div>
-    <div class="tasks" id="taskList"></div>
-
-    <div class="section-title"><h2>Reward Camp</h2></div>
-    <div class="rewards" id="rewardList"></div>
-  </div>
-
-  <div id="weekView" style="display:none;">
-    <div class="week-card">
-      <div class="week-head">
-        <h2>This Week</h2>
-        <span class="week-total" id="weekTotal">0 pts</span>
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar"></div>
+      <div class="profile-head-text">
+        <div class="profile-head-name" id="profileHeadName">Explorer</div>
+        <div class="profile-head-hint">✏️ tap me to dress up</div>
       </div>
-      <div class="week-chart" id="weekChart"></div>
     </div>
-    <div class="section-title"><h2>Quest Trends</h2></div>
-    <div class="trend-card" id="trendCard">
-      <div class="trend-table" id="trendTable"></div>
+
+    <div class="trail-card">
+      <div class="trail-head">
+        <h2 id="explorerName">Explorer</h2>
+        <span class="goal-label" id="goalLabel">no reward picked</span>
+      </div>
+      <div class="trail-track">
+        <div class="trail-line"><div class="trail-fill" id="trailFill" style="width:0%"></div></div>
+        <div class="hiker" id="hiker" style="left:0%">🧑‍🦰</div>
+        <div class="trail-flag-end">🏕️</div>
+      </div>
+      <div class="trail-sub" id="trailSub">0 points</div>
+    </div>
+
+    <div class="view-tabs" id="viewTabs">
+      <button class="view-tab active" data-view="today">Today</button>
+      <button class="view-tab" data-view="week">Week</button>
+      <button class="view-tab" data-view="journey">Journey</button>
+    </div>
+
+    <div id="todayView">
+      <div class="home-stats" id="homeStats"></div>
+      <button class="grownup-deduct" id="myPinBtn" style="border-color:#B7CDE8;background:#F1F7FD;color:#2C5C8F;">🔒 My secret PIN</button>
+
+      <div class="section-title"><h2>Today's Quests</h2><span class="badge" id="questCount">0/0</span></div>
+      <div class="tasks" id="taskList"></div>
+
+      <button class="grownup-deduct" id="openDeductBtn">🧑‍🏫 Grown-up: take a point away</button>
+
+      <div class="section-title"><h2>Reward Camp</h2></div>
+      <div class="rewards" id="rewardList"></div>
+    </div>
+
+    <div id="journeyView" style="display:none;">
+      <div class="journey-hero">
+        <div class="journey-hero-avatar" id="journeyAvatar"></div>
+        <div class="journey-hero-name" id="journeyName">Explorer</div>
+      </div>
+      <div class="rollup-grid" id="rollupGrid"></div>
+      <div class="section-title"><h2>Recent Point Changes</h2></div>
+      <div class="ledger" id="ledger"></div>
+    </div>
+
+    <div id="weekView" style="display:none;">
+      <div class="week-card">
+        <div class="week-head">
+          <h2>This Week</h2>
+          <span class="week-total" id="weekTotal">0 pts</span>
+        </div>
+        <div class="week-chart" id="weekChart"></div>
+      </div>
+      <div class="section-title"><h2>Quest Trends</h2></div>
+      <div class="trend-card" id="trendCard">
+        <div class="trend-table" id="trendTable"></div>
+      </div>
     </div>
   </div>
 
@@ -360,6 +522,7 @@
       <div class="tab active" data-tab="explorersTab">Explorers</div>
       <div class="tab" data-tab="tasksTab">Quests</div>
       <div class="tab" data-tab="rewardsTab">Rewards</div>
+      <div class="tab" data-tab="behaviourTab">Behaviour</div>
       <div class="tab" data-tab="syncTab">Sync</div>
     </div>
 
@@ -390,6 +553,17 @@
       </div>
       <div class="emoji-pick" id="rewardEmojiPick"></div>
       <button class="btn btn-primary btn-full" id="addRewardBtn">Add Reward</button>
+    </div>
+
+    <div class="tabpane" id="behaviourTab">
+      <p class="sync-help">Reasons a grown-up can take points away. These appear when you tap "take a point away" on the Today screen. Points removed here can push a total below zero.</p>
+      <div id="penaltyManageList"></div>
+      <div class="row-inline">
+        <input class="field" id="newPenaltyName" placeholder="Reason (e.g. Not listening)">
+        <input class="field small" id="newPenaltyPts" type="number" min="1" value="1">
+      </div>
+      <div class="emoji-pick" id="penaltyEmojiPick"></div>
+      <button class="btn btn-primary btn-full" id="addPenaltyBtn">Add Reason</button>
     </div>
 
     <div class="tabpane" id="syncTab">
@@ -459,11 +633,42 @@
   </div>
 </div>
 
+<div class="overlay" id="deductOverlay">
+  <div class="sheet">
+    <button class="sheet-close" id="closeDeduct">✕</button>
+    <h3 id="deductTitle">Take a point away</h3>
+    <p class="deduct-help">Tap a reason to remove points from <strong id="deductWho">this explorer</strong>. This is for grown-ups.</p>
+    <div class="deduct-list" id="deductList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="pinOverlay">
+  <div class="sheet pin-sheet">
+    <button class="sheet-close" id="closePin">✕</button>
+    <div class="pin-avatar" id="pinAvatar"></div>
+    <h3 class="pin-title" id="pinTitle">Enter your PIN</h3>
+    <p class="pin-sub" id="pinSub"></p>
+    <div class="pin-dots" id="pinDots"></div>
+    <div class="pin-pad" id="pinPad"></div>
+  </div>
+</div>
+
+<div class="overlay" id="pinManageOverlay">
+  <div class="sheet" style="text-align:center;">
+    <button class="sheet-close" id="closePinManage">✕</button>
+    <div class="pin-avatar" id="pinManageAvatar"></div>
+    <h3 id="pinManageTitle">My secret PIN</h3>
+    <p class="pin-sub" id="pinManageSub">A PIN stops other kids changing your points.</p>
+    <div id="pinManageButtons"></div>
+  </div>
+</div>
+
 <script>
 /* ---------- Data ---------- */
 const STORAGE_KEY = 'trailquest_v1';
 const TASK_EMOJIS = ['🦷','🛏️','🧸','🎒','👕','🧼','📚','🍽️','🐾','🧹','🥾','☂️','🚿','⏰','📝','🧦'];
 const REWARD_EMOJIS = ['📺','🍦','🎬','🏞️','🎮','🧁','🎨','🚲','🛍️','⭐','🍕','🌙'];
+const PENALTY_EMOJIS = ['🗣️','🙉','💢','🌪️','😠','🚫','⏰','📵','🥊','🤥','🧦','🍽️'];
 
 /* Illustrated avatar registry: each entry drives a small layered SVG character
    (skin tone, hair color/style, accessory, accent color used for outfit + accessory) */
@@ -494,13 +699,23 @@ const KINDS = [
   {id:'bunny',   name:'Bunny',    unlock:0},
   {id:'monster', name:'Monster',  unlock:0},
   {id:'frog',    name:'Frog',     unlock:0},
+  {id:'ghost',   name:'Ghost',    unlock:0},
+  {id:'panda',   name:'Panda',    unlock:10},
   {id:'bear',    name:'Bear',     unlock:12},
+  {id:'robot',   name:'Robot',    unlock:20},
   {id:'fox',     name:'Fox',      unlock:22},
   {id:'dragon',  name:'Dragon',   unlock:35},
+  {id:'owl',     name:'Owl',      unlock:42},
   {id:'unicorn', name:'Unicorn',  unlock:50},
+  {id:'dino',    name:'Dino',     unlock:62},
   {id:'alien',   name:'Alien',    unlock:70},
-  {id:'yeti',    name:'Yeti',     unlock:95}
+  {id:'yeti',    name:'Yeti',     unlock:95},
+  {id:'mermaid', name:'Mermaid',  unlock:115}
 ];
+
+/* Kinds where the generic hair system still applies (drawn hair on top of
+   the head). Every other kind supplies its own fixed head covering. */
+const ALLOW_HAIR_KINDS = new Set(['human', 'mermaid']);
 
 /* Body colours cover skin tones and creature colours alike — never locked,
    so nobody is ever gated out of looking like themselves. */
@@ -522,27 +737,33 @@ const HAIR_STYLES = [
   {id:'short',    name:'Short',    unlock:0},
   {id:'curly',    name:'Curly',    unlock:0},
   {id:'pigtails', name:'Pigtails', unlock:0},
+  {id:'afro',     name:'Afro',     unlock:0},
   {id:'bun',      name:'Bun',      unlock:0},
   {id:'braid',    name:'Braid',    unlock:0},
   {id:'ponytail', name:'Ponytail', unlock:25},
+  {id:'mohawk',   name:'Mohawk',   unlock:32},
   {id:'long',     name:'Long',     unlock:45},
   {id:'spiky',    name:'Spiky',    unlock:60}
 ];
 
 const ACCESSORIES = [
-  {id:'none',      name:'None',       unlock:0},
-  {id:'bandana',   name:'Bandana',    unlock:0},
-  {id:'headband',  name:'Headband',   unlock:0},
-  {id:'glasses',   name:'Glasses',    unlock:0},
-  {id:'cap',       name:'Cap',        unlock:0},
-  {id:'flower',    name:'Flower',     unlock:0},
-  {id:'partyhat',  name:'Party hat',  unlock:0},
-  {id:'mask',      name:'Hero mask',  unlock:0},
-  {id:'eyepatch',  name:'Eye patch',  unlock:10},
-  {id:'facepaint', name:'Face paint', unlock:20},
-  {id:'goggles',   name:'Goggles',    unlock:30},
-  {id:'sunhat',    name:'Sun hat',    unlock:55},
-  {id:'crown',     name:'Crown',      unlock:80}
+  {id:'none',       name:'None',       unlock:0},
+  {id:'bandana',    name:'Bandana',    unlock:0},
+  {id:'headband',   name:'Headband',   unlock:0},
+  {id:'glasses',    name:'Glasses',    unlock:0},
+  {id:'cap',        name:'Cap',        unlock:0},
+  {id:'flower',     name:'Flower',     unlock:0},
+  {id:'partyhat',   name:'Party hat',  unlock:0},
+  {id:'mask',       name:'Hero mask',  unlock:0},
+  {id:'bowtie',     name:'Bow tie',    unlock:0},
+  {id:'headphones', name:'Headphones', unlock:8},
+  {id:'eyepatch',   name:'Eye patch',  unlock:10},
+  {id:'facepaint',  name:'Face paint', unlock:20},
+  {id:'pirate',     name:'Pirate hat', unlock:28},
+  {id:'goggles',    name:'Goggles',    unlock:30},
+  {id:'wings',      name:'Fairy wings',unlock:48},
+  {id:'sunhat',     name:'Sun hat',    unlock:55},
+  {id:'crown',      name:'Crown',      unlock:80}
 ];
 
 const OUTFIT_COLOURS = [
@@ -579,7 +800,7 @@ function kindParts(kind, u, c){
   const innerEar = shade(c.skin, -0.28);
   const muzzleCol = shade(c.skin, 0.32);
   const nose = shade(c.skin, -0.55);
-  const P = {behind:'', face:'', front:'', eyes:null, brows:true, humanEars:true, humanNose:true};
+  const P = {behind:'', face:'', front:'', eyes:null, eyelid:null, mouth:null, brows:true, humanEars:true, humanNose:true, allowHair:false};
 
   const roundMuzzle = (ry, noseR) => `
     <ellipse cx="50" cy="63" rx="16" ry="${ry}" fill="${muzzleCol}"/>
@@ -593,6 +814,10 @@ function kindParts(kind, u, c){
     </g>`;
 
   switch(kind){
+    case 'human':
+      P.allowHair = true;
+      break;
+
     case 'cat':
       P.humanEars = false; P.humanNose = false; P.brows = false;
       P.behind = `
@@ -665,6 +890,9 @@ function kindParts(kind, u, c){
         <circle cx="68.5" cy="27" r="5" fill="#2B3A55"/>
         <circle cx="30.5" cy="24.5" r="2" fill="#ffffff"/>
         <circle cx="66.5" cy="24.5" r="2" fill="#ffffff"/>`;
+      P.eyelid = `
+        <circle cx="32" cy="26" r="9.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>
+        <circle cx="68" cy="26" r="9.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>`;
       P.face = `
         <circle cx="41" cy="52" r="1.8" fill="${nose}" opacity="0.6"/>
         <circle cx="59" cy="52" r="1.8" fill="${nose}" opacity="0.6"/>`;
@@ -683,6 +911,8 @@ function kindParts(kind, u, c){
         <circle cx="51" cy="51" r="4.5" fill="#1B2233"/>
         <circle cx="47.5" cy="47" r="3.2" fill="#ffffff"/>
         <circle cx="54" cy="55" r="1.5" fill="#ffffff" opacity="0.7"/>`;
+      P.eyelid = `
+        <circle cx="50" cy="50" r="15.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>`;
       P.front = `
         <path d="M43,67 L46,73 L49,67 Z" fill="#ffffff"/>
         <path d="M53,67 L56,73 L59,67 Z" fill="#ffffff"/>`;
@@ -734,6 +964,9 @@ function kindParts(kind, u, c){
         <ellipse cx="62" cy="52" rx="9" ry="12" fill="#1B2233" transform="rotate(14 62 52)"/>
         <ellipse cx="35" cy="46" rx="3" ry="4" fill="#ffffff" opacity="0.85" transform="rotate(-14 35 46)"/>
         <ellipse cx="59" cy="46" rx="3" ry="4" fill="#ffffff" opacity="0.85" transform="rotate(14 59 46)"/>`;
+      P.eyelid = `
+        <ellipse cx="38" cy="52" rx="9.5" ry="12.5" fill="${fur}" transform="rotate(-14 38 52)" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>
+        <ellipse cx="62" cy="52" rx="9.5" ry="12.5" fill="${fur}" transform="rotate(14 62 52)" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>`;
       P.front = '';
       break;
 
@@ -753,6 +986,106 @@ function kindParts(kind, u, c){
       P.front = `
         <path d="M42,66 L45,73 L48,66 Z" fill="#ffffff"/>
         <path d="M52,66 L55,73 L58,66 Z" fill="#ffffff"/>`;
+      break;
+
+    case 'ghost':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <path d="M20,52 Q14,60 20,68 Q24,62 26,56 Z" fill="${fur}" opacity="0.7"/>
+        <path d="M80,52 Q86,60 80,68 Q76,62 74,56 Z" fill="${fur}" opacity="0.7"/>`;
+      P.eyes = `
+        <ellipse cx="40" cy="52" rx="5.5" ry="7" fill="#2B3A55"/>
+        <ellipse cx="60" cy="52" rx="5.5" ry="7" fill="#2B3A55"/>
+        <circle cx="38" cy="49" r="1.6" fill="#ffffff" opacity="0.85"/>
+        <circle cx="58" cy="49" r="1.6" fill="#ffffff" opacity="0.85"/>`;
+      P.eyelid = `
+        <ellipse cx="40" cy="52" rx="6" ry="7.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>
+        <ellipse cx="60" cy="52" rx="6" ry="7.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>`;
+      P.mouth = `<ellipse cx="50" cy="66" rx="6.5" ry="8.5" fill="#2B3A55" opacity="0.85"/>
+        <ellipse cx="50" cy="70" rx="3.4" ry="3" fill="#ffffff" opacity="0.2"/>`;
+      break;
+
+    case 'robot':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <line x1="50" y1="14" x2="50" y2="-4" stroke="${shade(c.skin,-0.3)}" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="50" cy="-6" r="5.5" fill="${c.accent}" class="led-pulse"/>
+        <path d="M22,30 Q50,18 78,30 L78,20 Q50,10 22,20 Z" fill="${shade(c.skin,-0.15)}"/>`;
+      P.eyes = `
+        <rect x="33" y="45" width="14" height="11" rx="3.5" fill="#0B1A2B"/>
+        <rect x="53" y="45" width="14" height="11" rx="3.5" fill="#0B1A2B"/>
+        <rect x="35.5" y="47.5" width="9" height="6" rx="2" fill="#6FE1FF"/>
+        <rect x="55.5" y="47.5" width="9" height="6" rx="2" fill="#6FE1FF"/>`;
+      P.eyelid = `
+        <rect x="33" y="45" width="14" height="11" rx="3.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>
+        <rect x="53" y="45" width="14" height="11" rx="3.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>`;
+      P.mouth = `
+        <rect x="43.5" y="64" width="2.6" height="9" rx="1.3" fill="#2B3A55"/>
+        <rect x="48.7" y="64" width="2.6" height="9" rx="1.3" fill="#2B3A55"/>
+        <rect x="53.9" y="64" width="2.6" height="9" rx="1.3" fill="#2B3A55"/>`;
+      P.front = `
+        <circle cx="27" cy="58" r="2.2" fill="${shade(c.skin,-0.35)}"/>
+        <circle cx="73" cy="58" r="2.2" fill="${shade(c.skin,-0.35)}"/>`;
+      break;
+
+    case 'panda':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <circle cx="25" cy="23" r="13" fill="#2B2B2B"/>
+        <circle cx="75" cy="23" r="13" fill="#2B2B2B"/>`;
+      P.face = `
+        <ellipse cx="40" cy="49" rx="10" ry="12" fill="#2B2B2B" opacity="0.92"/>
+        <ellipse cx="60" cy="49" rx="10" ry="12" fill="#2B2B2B" opacity="0.92"/>
+        ${roundMuzzle(10.5, 4.2)}`;
+      break;
+
+    case 'owl':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <path d="M36,20 L30,2 L44,16 Z" fill="${fur}"/>
+        <path d="M64,20 L70,2 L56,16 Z" fill="${fur}"/>
+        <circle cx="50" cy="36" r="30" fill="${fur}" opacity="0.9"/>`;
+      P.eyes = `
+        <circle cx="37" cy="50" r="12" fill="#FFF6E0"/>
+        <circle cx="63" cy="50" r="12" fill="#FFF6E0"/>
+        <circle cx="37" cy="50" r="8" fill="#C98A32"/>
+        <circle cx="63" cy="50" r="8" fill="#C98A32"/>
+        <circle cx="37" cy="50" r="4" fill="#1B1208"/>
+        <circle cx="63" cy="50" r="4" fill="#1B1208"/>
+        <circle cx="34" cy="46.5" r="1.8" fill="#ffffff"/>
+        <circle cx="60" cy="46.5" r="1.8" fill="#ffffff"/>`;
+      P.eyelid = `
+        <circle cx="37" cy="50" r="12.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>
+        <circle cx="63" cy="50" r="12.5" fill="${fur}" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>`;
+      P.face = `<path d="M50,58 L45,66 L55,66 Z" fill="#E8933C"/>`;
+      P.mouth = '';
+      break;
+
+    case 'dino':
+      P.humanEars = false; P.humanNose = false; P.brows = false;
+      P.behind = `
+        <g fill="${shade(c.skin,-0.18)}">
+          <path d="M40,14 L44,2 L48,14 Z"/>
+          <path d="M48,10 L52,-2 L56,10 Z"/>
+          <path d="M56,14 L60,2 L64,14 Z"/>
+        </g>`;
+      P.face = `
+        ${roundMuzzle(13, 4.6)}
+        <path d="M47,40 L50,31 L53,40 Z" fill="${shade(c.skin,-0.12)}"/>`;
+      break;
+
+    case 'mermaid':
+      P.allowHair = true;
+      P.behind = `
+        <path d="M76,20 Q83,12 90,20 Q86,25 82,23 Q78,25 76,20 Z" fill="#FFD9EC"/>
+        <circle cx="83" cy="18" r="1.6" fill="#ffffff" opacity="0.8"/>`;
+      P.face = `
+        <g fill="${c.accent}" opacity="0.32">
+          <circle cx="29" cy="65" r="2.1"/><circle cx="33.5" cy="69.5" r="1.6"/>
+          <circle cx="71" cy="65" r="2.1"/><circle cx="66.5" cy="69.5" r="1.6"/>
+        </g>
+        <path d="M14,48 Q9,55 15,61 Q19,55 19,50 Z" fill="${c.accent}" opacity="0.4"/>
+        <path d="M86,48 Q91,55 85,61 Q81,55 81,50 Z" fill="${c.accent}" opacity="0.4"/>`;
       break;
   }
   return P;
@@ -791,6 +1124,7 @@ function avatarSVG(value, size){
   const cfg = normalizeAvatar(value);
   size = size || 48;
   const u = 'av' + (avatarUid++);
+  const blinkDelay = (Math.random() * 5).toFixed(2);
 
   const skinLight = shade(cfg.skin, 0.30);
   const skinDark  = shade(cfg.skin, -0.30);
@@ -850,6 +1184,14 @@ function avatarSVG(value, size){
         <circle cx="50" cy="34" r="25"/>
       </g>
       <circle cx="40" cy="16" r="6.5" fill="${hairLight}" opacity="0.55" filter="url(#soft_${u})"/>`;
+  } else if(cfg.hairStyle === 'afro'){
+    hairBack = `
+      <circle cx="50" cy="34" r="34" fill="url(#hair_${u})"/>
+      <circle cx="50" cy="34" r="34" fill="none" stroke="${hairDark}" stroke-width="1.4" opacity="0.3"/>
+      <ellipse cx="36" cy="16" rx="10" ry="7" fill="${hairLight}" opacity="0.45"
+        transform="rotate(-16 36 16)" filter="url(#soft_${u})"/>`;
+  } else if(cfg.hairStyle === 'mohawk'){
+    hairBack = ''; // shaved sides — the strip itself is added in hairExtra
   } else if(cfg.hairStyle === 'spiky'){
     hairBack = `
       <ellipse cx="50" cy="38" rx="30" ry="28" fill="url(#hair_${u})"/>
@@ -901,6 +1243,10 @@ function avatarSVG(value, size){
       <path d="M83,44 Q87,70 81,90 Q72,92 69,84 L69,50 Z" fill="url(#hair_${u})"/>
       <path d="M22,52 Q19,70 23,84" stroke="${hairLight}" stroke-width="2.4"
         fill="none" opacity="0.5" stroke-linecap="round"/>`;
+  } else if(cfg.hairStyle === 'mohawk'){
+    hairExtra = `
+      <path d="M40,32 Q42,4 50,0 Q58,4 60,32 Q50,24 40,32 Z" fill="url(#hair_${u})"/>
+      <path d="M44,20 Q50,8 56,20" stroke="${hairLight}" stroke-width="2" fill="none" opacity="0.55"/>`;
   }
 
   /* --- Accessories, now with gradient + highlight --- */
@@ -1008,6 +1354,35 @@ function avatarSVG(value, size){
         fill="url(#acc_${u})" opacity="0.92"/>
       <path d="M42,36 Q50,31 58,36" stroke="url(#acc_${u})" stroke-width="3" fill="none"
         stroke-linecap="round" opacity="0.75"/>`;
+  } else if(cfg.accessory === 'bowtie'){
+    accessory = `
+      <path d="M50,88 L34,80 L34,96 Z" fill="url(#acc_${u})"/>
+      <path d="M50,88 L66,80 L66,96 Z" fill="url(#acc_${u})"/>
+      <circle cx="50" cy="88" r="4" fill="${accDark}"/>
+      <path d="M40,82 L44,86" stroke="${accLight}" stroke-width="1.6" opacity="0.6"/>`;
+  } else if(cfg.accessory === 'headphones'){
+    accessory = `
+      <path d="M20,50 Q22,16 50,14 Q78,16 80,50" stroke="url(#acc_${u})" stroke-width="6" fill="none"/>
+      <path d="M26,42 Q30,20 50,18" stroke="${accLight}" stroke-width="2" fill="none" opacity="0.6"/>
+      <rect x="13" y="44" width="12" height="20" rx="6" fill="url(#acc_${u})"/>
+      <rect x="75" y="44" width="12" height="20" rx="6" fill="url(#acc_${u})"/>
+      <rect x="16" y="48" width="6" height="12" rx="3" fill="#2B3A55" opacity="0.5"/>
+      <rect x="78" y="48" width="6" height="12" rx="3" fill="#2B3A55" opacity="0.5"/>`;
+  } else if(cfg.accessory === 'pirate'){
+    accessory = `
+      <path d="M14,40 Q50,14 86,40 Q78,50 50,44 Q22,50 14,40 Z" fill="url(#acc_${u})"/>
+      <path d="M18,38 Q50,18 82,38" stroke="${accLight}" stroke-width="2" fill="none" opacity="0.5"/>
+      <circle cx="50" cy="27" r="4.4" fill="#E8E4D8"/>
+      <path d="M46.5,25 L53.5,29 M53.5,25 L46.5,29" stroke="#2B2B2B" stroke-width="1.4"/>
+      <path d="M42,23 L46,19 L46,27 Z" fill="#E8E4D8" opacity="0.9"/>`;
+  } else if(cfg.accessory === 'wings'){
+    accessory = `
+      <g opacity="0.85">
+        <path d="M20,30 Q0,20 4,44 Q10,60 26,50 Q30,38 20,30 Z" fill="url(#acc_${u})"/>
+        <path d="M80,30 Q100,20 96,44 Q90,60 74,50 Q70,38 80,30 Z" fill="url(#acc_${u})"/>
+        <path d="M18,32 Q8,32 8,42" stroke="${accLight}" stroke-width="1.6" fill="none" opacity="0.6"/>
+        <path d="M82,32 Q92,32 92,42" stroke="${accLight}" stroke-width="1.6" fill="none" opacity="0.6"/>
+      </g>`;
   }
 
   const freckles = cfg.freckles ? `
@@ -1030,6 +1405,10 @@ function avatarSVG(value, size){
       <circle cx="42.6" cy="53" r="0.7" fill="#ffffff" opacity="0.7"/>
       <circle cx="60.6" cy="53" r="0.7" fill="#ffffff" opacity="0.7"/>`;
 
+  const defaultEyelid = `
+      <rect x="35.5" y="46" width="11" height="10" rx="5" fill="url(#skin_${u})" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>
+      <rect x="53.5" y="46" width="11" height="10" rx="5" fill="url(#skin_${u})" class="blink-lid" style="transform-box:fill-box;transform-origin:center;"/>`;
+
   const humanEars = kp.humanEars ? `
     <circle cx="22" cy="55" r="6.5" fill="url(#skin_${u})"/>
     <circle cx="78" cy="55" r="6.5" fill="url(#skin_${u})"/>
@@ -1044,11 +1423,12 @@ function avatarSVG(value, size){
     <path d="M50,55 Q52,58 49.5,59" stroke="${skinDark}" stroke-width="1.8" fill="none"
       stroke-linecap="round" opacity="0.75"/>` : '';
 
-  // Creatures with their own muzzle get a smaller smile so it sits on the muzzle
-  const mouth = (kp.face || kp.eyes) ? `
+  // A kind can fully override the mouth (robot grille, owl beak-only, ghost "boo").
+  // Otherwise: creatures with their own muzzle/eyes get a smaller smile so it sits right.
+  const mouth = (kp.mouth !== null) ? kp.mouth : ((kp.face || kp.eyes) ? `
     <path d="M42,66 Q50,72 58,66" stroke="#2B3A55" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0.9"/>` : `
     <path d="M40,63 Q50,71 60,63" stroke="#2B3A55" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M43.5,66.5 Q50,70.5 56.5,66.5 Q50,68.5 43.5,66.5 Z" fill="#E8607A" opacity="0.85"/>`;
+    <path d="M43.5,66.5 Q50,70.5 56.5,66.5 Q50,68.5 43.5,66.5 Z" fill="#E8607A" opacity="0.85"/>`);
 
   return `<svg width="${size}" height="${Math.round(size*1.06)}" viewBox="0 0 100 106" xmlns="http://www.w3.org/2000/svg">
     ${defs}
@@ -1090,6 +1470,7 @@ function avatarSVG(value, size){
 
     <!-- glossy eyes with catchlights -->
     <g>${kp.eyes || defaultEyes}</g>
+    <g style="--blink-delay:${blinkDelay}s">${kp.eyelid || defaultEyelid}</g>
 
     ${brows}
     ${humanNose}
@@ -1129,6 +1510,12 @@ function defaultData(){
       {id:'r5', name:'Pick a game', icon:'🎮', points:25},
       {id:'r6', name:'Bake treats', icon:'🧁', points:40}
     ],
+    penalties: [
+      {id:'p1', name:'Asked more than once', icon:'🗣️', points:1},
+      {id:'p2', name:'Not listening', icon:'🙉', points:1},
+      {id:'p3', name:'Being unkind', icon:'💢', points:2},
+      {id:'p4', name:'Making a mess on purpose', icon:'🌪️', points:2}
+    ],
     lastResetDate: todayISO()
   };
 }
@@ -1138,6 +1525,44 @@ function todayISO(){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+function isoOf(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* Sums net points (earned minus lost) for an explorer across a date range.
+   Roll-ups are always derived live from history, never stored separately. */
+function sumRange(ex, fromISO, toISO){
+  let earned = 0, lost = 0;
+  Object.keys(ex.history).forEach(key => {
+    if(key >= fromISO && key <= toISO){
+      earned += (ex.history[key].earned || 0);
+      lost += (ex.history[key].lost || 0);
+    }
+  });
+  return {earned, lost, net: earned - lost};
+}
+
+/* Returns {day, week, month, year} roll-ups ending today.
+   Week = Monday-start of the current week; month/year = calendar to date. */
+function rollups(ex){
+  const now = new Date();
+  const today = isoOf(now);
+
+  const weekStart = new Date(now);
+  const dow = (weekStart.getDay() + 6) % 7; // 0 = Monday
+  weekStart.setDate(weekStart.getDate() - dow);
+
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const yearStart = new Date(now.getFullYear(), 0, 1);
+
+  return {
+    day:   sumRange(ex, today, today),
+    week:  sumRange(ex, isoOf(weekStart), today),
+    month: sumRange(ex, isoOf(monthStart), today),
+    year:  sumRange(ex, isoOf(yearStart), today)
+  };
+}
+
 function isoDateFromOffset(daysAgo){
   const d = new Date();
   d.setDate(d.getDate() - daysAgo);
@@ -1145,19 +1570,31 @@ function isoDateFromOffset(daysAgo){
 }
 
 function pruneHistory(ex){
-  const cutoff = isoDateFromOffset(35);
+  // Keep just over a year so yearly roll-ups always have a full window
+  const cutoff = isoDateFromOffset(400);
   Object.keys(ex.history).forEach(dateKey => {
     if(dateKey < cutoff) delete ex.history[dateKey];
   });
 }
 
 function applyDailyReset(data){
+  if(!data.penalties) data.penalties = [
+    {id:'p1', name:'Asked more than once', icon:'🗣️', points:1},
+    {id:'p2', name:'Not listening', icon:'🙉', points:1},
+    {id:'p3', name:'Being unkind', icon:'💢', points:2},
+    {id:'p4', name:'Making a mess on purpose', icon:'🌪️', points:2}
+  ];
   data.explorers.forEach(ex => {
     if(!ex.tasksDoneToday) ex.tasksDoneToday = [];
     if(!ex.history) ex.history = {};
     if(typeof ex.lifetime !== 'number') ex.lifetime = 0;
     // Older saves stored a preset id string; upgrade to an editable config
     ex.avatar = normalizeAvatar(ex.avatar);
+    // Ensure every history day has a deductions log
+    Object.values(ex.history).forEach(day => {
+      if(!day.deductions) day.deductions = [];
+      if(typeof day.lost !== 'number') day.lost = 0;
+    });
   });
   if(data.lastResetDate !== todayISO()){
     data.explorers.forEach(ex => { ex.tasksDoneToday = []; pruneHistory(ex); });
@@ -1339,9 +1776,35 @@ let state = load();
 let pickedAvatarId = AVATAR_IDS[0];
 let pickedTaskEmoji = TASK_EMOJIS[0];
 let pickedRewardEmoji = REWARD_EMOJIS[0];
+let pickedPenaltyEmoji = PENALTY_EMOJIS[0];
+let editingPenaltyIds = new Set();
 let editingTaskIds = new Set();
 let editingRewardIds = new Set();
 let currentView = 'today';
+let screen = 'lobby'; // 'lobby' | 'profile'
+
+/* ---------- PIN lock (sibling deterrence, not real security) ----------
+   sessionUnlocked tracks who has entered their PIN since the app loaded.
+   It's cleared whenever the active explorer changes, so each child must
+   re-enter their PIN when they come back to their own profile. */
+let sessionUnlocked = new Set();
+
+function explorerLocked(ex){
+  return !!(ex && ex.pin) && !sessionUnlocked.has(ex.id);
+}
+
+/* Runs onOk immediately if the explorer is open, otherwise asks for the PIN first.
+   Guards point-changing actions (quests, rewards, dress-up) — not viewing or grown-up deductions. */
+function requireUnlock(ex, onOk){
+  if(!explorerLocked(ex)){ onOk(); return; }
+  openPinEntry({
+    mode: 'verify',
+    explorer: ex,
+    title: `${ex.name}'s PIN`,
+    sub: 'Enter your secret PIN to change points',
+    onSuccess: () => { sessionUnlocked.add(ex.id); onOk(); }
+  });
+}
 
 /* ---------- Helpers ---------- */
 function getActiveExplorer(){
@@ -1354,14 +1817,110 @@ function nextGoal(explorer){
 
 /* ---------- Render ---------- */
 function render(){
-  renderExplorerSwitcher();
+  if(screen === 'lobby'){
+    document.getElementById('lobbyScreen').style.display = '';
+    document.getElementById('profileScreen').style.display = 'none';
+    renderLobby();
+    return;
+  }
+  document.getElementById('lobbyScreen').style.display = 'none';
+  document.getElementById('profileScreen').style.display = '';
+  renderProfileHeader();
   renderTrail();
   if(currentView === 'today'){
+    renderHomeStats();
     renderTasks();
     renderRewards();
-  } else {
+  } else if(currentView === 'week'){
     renderWeekView();
+  } else if(currentView === 'journey'){
+    renderJourneyView();
   }
+}
+
+/* ---------- Lobby (profile picker) ---------- */
+function renderLobby(){
+  const grid = document.getElementById('lobbyGrid');
+  grid.innerHTML = '';
+  state.explorers.forEach(ex => {
+    const card = document.createElement('div');
+    card.className = 'lobby-card';
+    card.innerHTML =
+      (ex.pin ? '<span class="lc-lock">🔒</span>' : '') +
+      `<div class="lc-avatar">${avatarSVG(ex.avatar, 78)}</div>` +
+      `<div class="lc-name">${escapeHtml(ex.name)}</div>` +
+      `<div class="lc-pts">${ex.points} pts</div>`;
+    card.onclick = () => enterProfile(ex.id);
+    grid.appendChild(card);
+  });
+  // Quick add card routes to the grown-up Explorers settings
+  const add = document.createElement('div');
+  add.className = 'lobby-card add-card';
+  add.innerHTML = '<div class="plus">+</div><div class="add-label">Add explorer</div>';
+  add.onclick = () => {
+    settingsOverlay.classList.add('show');
+    editingTaskIds.clear(); editingRewardIds.clear(); editingPenaltyIds.clear();
+    renderManageLists(); buildEmojiPickers(); renderSyncTab();
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+    document.querySelector('.tab[data-tab="explorersTab"]').classList.add('active');
+    document.getElementById('explorersTab').classList.add('active');
+  };
+  grid.appendChild(add);
+}
+
+function enterProfile(exId){
+  // Fresh entry re-locks, so a protected child re-enters their PIN for actions
+  sessionUnlocked.clear();
+  state.activeExplorer = exId;
+  save(state);
+  screen = 'profile';
+  currentView = 'today';
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  const todayTab = document.querySelector('.view-tab[data-view="today"]');
+  if(todayTab) todayTab.classList.add('active');
+  document.getElementById('todayView').style.display = '';
+  document.getElementById('weekView').style.display = 'none';
+  document.getElementById('journeyView').style.display = 'none';
+  render();
+}
+
+function goToLobby(){
+  sessionUnlocked.clear();
+  screen = 'lobby';
+  render();
+}
+
+function renderProfileHeader(){
+  const ex = getActiveExplorer();
+  const av = document.getElementById('profileAvatar');
+  av.innerHTML = avatarSVG(ex.avatar, 56);
+  document.getElementById('profileHeadName').textContent = ex.name;
+}
+
+/* Compact home strip: current balance plus week / month / year net roll-ups */
+function renderHomeStats(){
+  const ex = getActiveExplorer();
+  const r = rollups(ex);
+  const wrap = document.getElementById('homeStats');
+  if(!wrap) return;
+  const cell = (label, val, cls, isNow) => {
+    const sign = (!isNow && val > 0) ? '+' : '';
+    const tone = isNow ? '' : (val > 0 ? 'pos' : (val < 0 ? 'neg' : ''));
+    return `<div class="home-stat ${isNow ? 'now' : ''}">
+      <div class="hs-val ${tone}">${sign}${val}</div>
+      <div class="hs-label">${label}</div>
+    </div>`;
+  };
+  wrap.innerHTML =
+    cell('Now', ex.points, '', true) +
+    cell('Week', r.week.net, '', false) +
+    cell('Month', r.month.net, '', false) +
+    cell('Year', r.year.net, '', false);
+
+  // Keep the My-PIN button label in sync with lock state
+  const pinBtn = document.getElementById('myPinBtn');
+  if(pinBtn) pinBtn.textContent = ex.pin ? '🔒 My secret PIN (on)' : '🔒 My secret PIN';
 }
 
 document.querySelectorAll('.view-tab').forEach(tab => {
@@ -1371,9 +1930,89 @@ document.querySelectorAll('.view-tab').forEach(tab => {
     tab.classList.add('active');
     document.getElementById('todayView').style.display = currentView === 'today' ? '' : 'none';
     document.getElementById('weekView').style.display = currentView === 'week' ? '' : 'none';
+    document.getElementById('journeyView').style.display = currentView === 'journey' ? '' : 'none';
     render();
   };
 });
+
+function renderJourneyView(){
+  const ex = getActiveExplorer();
+  document.getElementById('journeyAvatar').innerHTML = avatarSVG(ex.avatar, 52);
+  document.getElementById('journeyName').textContent = `${ex.name}'s Journey`;
+
+  const r = rollups(ex);
+  const grid = document.getElementById('rollupGrid');
+  const cards = [
+    {key:'day',   label:'Today',       emoji:'☀️', data:r.day},
+    {key:'week',  label:'This Week',   emoji:'📅', data:r.week},
+    {key:'month', label:'This Month',  emoji:'🗓️', data:r.month},
+    {key:'year',  label:'This Year',   emoji:'🏔️', data:r.year}
+  ];
+  grid.innerHTML = '';
+  cards.forEach(c => {
+    const net = c.data.net;
+    const cls = net > 0 ? 'pos' : (net < 0 ? 'neg' : 'zero');
+    const sign = net > 0 ? '+' : '';
+    const el = document.createElement('div');
+    el.className = `rollup-card ${c.key}`;
+    el.innerHTML = `
+      <span class="rc-emoji">${c.emoji}</span>
+      <div class="rc-label">${c.label}</div>
+      <div class="rc-net ${cls}">${sign}${net}</div>
+      <div class="rc-sub">⬆ ${c.data.earned} earned · ⬇ ${c.data.lost} lost</div>`;
+    grid.appendChild(el);
+  });
+
+  renderLedger(ex);
+}
+
+/* Recent chronological log of every point change, earned and lost */
+function renderLedger(ex){
+  const ledger = document.getElementById('ledger');
+  ledger.innerHTML = '';
+  const dates = Object.keys(ex.history).sort().reverse().slice(0, 14);
+  const hasAny = dates.some(d => {
+    const day = ex.history[d];
+    return (day.taskIds && day.taskIds.length) || (day.deductions && day.deductions.length);
+  });
+  if(!hasAny){
+    ledger.innerHTML = '<div class="ledger-empty">No points yet — go tick some quests! 🌲</div>';
+    return;
+  }
+  dates.forEach(dateKey => {
+    const day = ex.history[dateKey];
+    const rows = [];
+    (day.taskIds || []).forEach(id => {
+      const t = state.tasks.find(x => x.id === id);
+      rows.push({icon: t ? t.icon : '✅', name: t ? t.name : 'Quest done', pts: t ? t.points : 1, plus:true});
+    });
+    (day.deductions || []).forEach(d => {
+      rows.push({icon: d.icon || '➖', name: d.name, pts: d.points, plus:false, at:d.at});
+    });
+    if(rows.length === 0) return;
+
+    const dayEl = document.createElement('div');
+    dayEl.className = 'ledger-day';
+    const label = ledgerDateLabel(dateKey);
+    dayEl.innerHTML = `<div class="ledger-date">${label}</div>` + rows.map(r => `
+      <div class="ledger-row">
+        <span class="lr-icon">${r.icon}</span>
+        <span class="lr-name">${escapeHtml(r.name)}</span>
+        <span class="lr-pts ${r.plus ? 'plus' : 'minus'}">${r.plus ? '+' : '−'}${r.pts}</span>
+      </div>`).join('');
+    ledger.appendChild(dayEl);
+  });
+}
+
+function ledgerDateLabel(dateKey){
+  const today = todayISO();
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  if(dateKey === today) return 'Today';
+  if(dateKey === isoOf(y)) return 'Yesterday';
+  const [yr, mo, da] = dateKey.split('-').map(Number);
+  const d = new Date(yr, mo - 1, da);
+  return d.toLocaleDateString(undefined, {weekday:'short', day:'numeric', month:'short'});
+}
 
 function renderWeekView(){
   const ex = getActiveExplorer();
@@ -1459,33 +2098,12 @@ function renderQuestTrends(days){
   });
 }
 
-function renderExplorerSwitcher(){
-  const wrap = document.getElementById('explorerSwitcher');
-  wrap.innerHTML = '';
-  state.explorers.forEach(ex => {
-    const btn = document.createElement('div');
-    btn.className = 'explorer-btn' + (ex.id === state.activeExplorer ? ' active' : '');
-    const isActive = ex.id === state.activeExplorer;
-    btn.innerHTML = `<span class="avatar">${avatarSVG(ex.avatar, 46)}</span>` +
-      `<span class="name">${escapeHtml(ex.name)}</span>` +
-      `<span class="pts">${ex.points} pts</span>` +
-      (isActive ? '<span class="dressup-hint">✏️ tap to dress up</span>' : '');
-    btn.onclick = () => {
-      if(isActive){
-        // Tapping your own character opens the dress-up locker
-        popAvatar(btn.querySelector('.avatar'));
-        openLocker();
-        return;
-      }
-      state.activeExplorer = ex.id;
-      save(state);
-      render();
-      const newActive = wrap.querySelector('.explorer-btn.active .avatar');
-      if(newActive) popAvatar(newActive);
-    };
-    wrap.appendChild(btn);
-  });
-}
+/* Back to lobby, and tap the profile header to open dress-up */
+document.getElementById('backToLobby').onclick = () => goToLobby();
+document.querySelector('.profile-header').onclick = () => {
+  popAvatar(document.getElementById('profileAvatar'));
+  openLocker();
+};
 
 function renderTrail(){
   const ex = getActiveExplorer();
@@ -1582,6 +2200,11 @@ function newlyUnlocked(before, after){
 /* ---------- Actions ---------- */
 function toggleTask(task){
   const ex = getActiveExplorer();
+  requireUnlock(ex, () => toggleTaskCore(task));
+}
+
+function toggleTaskCore(task){
+  const ex = getActiveExplorer();
   const idx = ex.tasksDoneToday.indexOf(task.id);
   const today = todayISO();
   if(!ex.history[today]) ex.history[today] = {earned:0, taskIds:[]};
@@ -1613,16 +2236,233 @@ function toggleTask(task){
   }
 }
 
+/* ---------- PIN keypad ---------- */
+const pinOverlay = document.getElementById('pinOverlay');
+let pinCtx = null; // { mode, explorer, onSuccess, entered, firstEntry }
+
+document.getElementById('closePin').onclick = () => closePin();
+pinOverlay.onclick = (e) => { if(e.target === pinOverlay) closePin(); };
+
+function closePin(){
+  pinOverlay.classList.remove('show');
+  pinCtx = null;
+}
+
+/* mode: 'verify' checks against explorer.pin; 'set' captures a new PIN twice */
+function openPinEntry({mode, explorer, title, sub, onSuccess}){
+  pinCtx = {mode, explorer, onSuccess, entered:'', firstEntry:null};
+  document.getElementById('pinAvatar').innerHTML = explorer ? avatarSVG(explorer.avatar, 56) : '';
+  document.getElementById('pinTitle').textContent = title || 'Enter PIN';
+  document.getElementById('pinSub').textContent = sub || '';
+  buildPinPad();
+  renderPinDots();
+  pinOverlay.classList.add('show');
+}
+
+function renderPinDots(wrong){
+  const dots = document.getElementById('pinDots');
+  const n = pinCtx ? pinCtx.entered.length : 0;
+  dots.className = 'pin-dots' + (wrong ? ' wrong' : '');
+  dots.innerHTML = '';
+  for(let i = 0; i < 4; i++){
+    const d = document.createElement('div');
+    d.className = 'pin-dot' + (i < n ? ' filled' : '');
+    dots.appendChild(d);
+  }
+}
+
+function buildPinPad(){
+  const pad = document.getElementById('pinPad');
+  pad.innerHTML = '';
+  const keys = ['1','2','3','4','5','6','7','8','9','⌫','0','✓'];
+  keys.forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'pin-key' + (k === '⌫' || k === '✓' ? ' wide' : '');
+    b.textContent = k;
+    b.onclick = () => pinKey(k);
+    pad.appendChild(b);
+  });
+}
+
+function pinKey(k){
+  if(!pinCtx) return;
+  if(k === '⌫'){ pinCtx.entered = pinCtx.entered.slice(0, -1); renderPinDots(); return; }
+  if(k === '✓'){ if(pinCtx.entered.length === 4) submitPin(); return; }
+  if(pinCtx.entered.length >= 4) return;
+  pinCtx.entered += k;
+  renderPinDots();
+  if(pinCtx.entered.length === 4) setTimeout(submitPin, 120);
+}
+
+function submitPin(){
+  if(!pinCtx) return;
+  const val = pinCtx.entered;
+
+  if(pinCtx.mode === 'verify'){
+    if(val === pinCtx.explorer.pin){
+      const cb = pinCtx.onSuccess;
+      closePin();
+      cb && cb();
+    } else {
+      renderPinDots(true);
+      pinCtx.entered = '';
+      setTimeout(() => renderPinDots(), 450);
+    }
+    return;
+  }
+
+  if(pinCtx.mode === 'set'){
+    if(pinCtx.firstEntry === null){
+      pinCtx.firstEntry = val;
+      pinCtx.entered = '';
+      document.getElementById('pinTitle').textContent = 'Type it again';
+      document.getElementById('pinSub').textContent = 'So we know you remember it';
+      renderPinDots();
+    } else if(pinCtx.firstEntry === val){
+      const cb = pinCtx.onSuccess;
+      const pin = val;
+      closePin();
+      cb && cb(pin);
+    } else {
+      // Mismatch — start over
+      pinCtx.firstEntry = null;
+      pinCtx.entered = '';
+      document.getElementById('pinTitle').textContent = 'Try again';
+      document.getElementById('pinSub').textContent = 'Those did not match — pick a new PIN';
+      renderPinDots(true);
+      setTimeout(() => renderPinDots(), 450);
+    }
+  }
+}
+
+/* ---------- PIN management (kid-facing) ---------- */
+const pinManageOverlay = document.getElementById('pinManageOverlay');
+document.getElementById('closePinManage').onclick = () => pinManageOverlay.classList.remove('show');
+pinManageOverlay.onclick = (e) => { if(e.target === pinManageOverlay) pinManageOverlay.classList.remove('show'); };
+document.getElementById('myPinBtn').onclick = () => openPinManage();
+
+function openPinManage(){
+  const ex = getActiveExplorer();
+  document.getElementById('pinManageAvatar').innerHTML = avatarSVG(ex.avatar, 56);
+  document.getElementById('pinManageTitle').textContent = `${ex.name}'s secret PIN`;
+  const box = document.getElementById('pinManageButtons');
+  box.innerHTML = '';
+
+  if(ex.pin){
+    document.getElementById('pinManageSub').textContent = 'Your points are protected. 🔒';
+    const change = document.createElement('button');
+    change.className = 'btn btn-primary btn-full';
+    change.textContent = 'Change my PIN';
+    change.onclick = () => {
+      pinManageOverlay.classList.remove('show');
+      // Must prove they know the current PIN first
+      openPinEntry({mode:'verify', explorer:ex, title:'Enter your PIN', sub:'First, your current PIN',
+        onSuccess:() => startSetPin(ex)});
+    };
+    const remove = document.createElement('button');
+    remove.className = 'btn btn-secondary btn-full';
+    remove.textContent = 'Turn PIN off';
+    remove.onclick = () => {
+      pinManageOverlay.classList.remove('show');
+      openPinEntry({mode:'verify', explorer:ex, title:'Enter your PIN', sub:'Confirm to turn it off',
+        onSuccess:() => { delete ex.pin; sessionUnlocked.add(ex.id); save(state); render(); showToast('🔓', 'PIN turned off'); }});
+    };
+    box.appendChild(change);
+    box.appendChild(remove);
+  } else {
+    document.getElementById('pinManageSub').textContent = 'Set a PIN so other kids cannot change your points.';
+    const setBtn = document.createElement('button');
+    setBtn.className = 'btn btn-primary btn-full';
+    setBtn.textContent = 'Set my PIN';
+    setBtn.onclick = () => { pinManageOverlay.classList.remove('show'); startSetPin(ex); };
+    box.appendChild(setBtn);
+  }
+  pinManageOverlay.classList.add('show');
+}
+
+function startSetPin(ex){
+  openPinEntry({
+    mode:'set', explorer:ex,
+    title:'Pick a secret PIN', sub:'Type 4 numbers',
+    onSuccess:(pin) => {
+      ex.pin = pin;
+      sessionUnlocked.add(ex.id); // don't immediately lock yourself out
+      save(state);
+      render();
+      showToast('🔒', 'PIN set! Your points are protected.');
+    }
+  });
+}
+
+/* ---------- Deduction picker ---------- */
+const deductOverlay = document.getElementById('deductOverlay');
+document.getElementById('openDeductBtn').onclick = () => openDeduct();
+document.getElementById('closeDeduct').onclick = () => deductOverlay.classList.remove('show');
+deductOverlay.onclick = (e) => { if(e.target === deductOverlay) deductOverlay.classList.remove('show'); };
+
+function openDeduct(){
+  const ex = getActiveExplorer();
+  document.getElementById('deductWho').textContent = ex.name;
+  renderDeductList();
+  deductOverlay.classList.add('show');
+}
+
+function renderDeductList(){
+  const list = document.getElementById('deductList');
+  list.innerHTML = '';
+  if(!state.penalties || state.penalties.length === 0){
+    list.innerHTML = '<div class="deduct-empty">No reasons set up yet — add some in ⚙️ Settings → Behaviour.</div>';
+    return;
+  }
+  state.penalties.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'deduct-item';
+    row.innerHTML = `
+      <span class="di-icon">${p.icon || '➖'}</span>
+      <span class="di-name">${escapeHtml(p.name)}</span>
+      <span class="di-pts">−${p.points}</span>`;
+    row.onclick = () => {
+      applyPenalty(p);
+      deductOverlay.classList.remove('show');
+    };
+    list.appendChild(row);
+  });
+}
+
+function applyPenalty(penalty){
+  const ex = getActiveExplorer();
+  const today = todayISO();
+  if(!ex.history[today]) ex.history[today] = {earned:0, taskIds:[], lost:0, deductions:[]};
+  if(!ex.history[today].deductions) ex.history[today].deductions = [];
+  if(typeof ex.history[today].lost !== 'number') ex.history[today].lost = 0;
+
+  // Balance can go negative on purpose, so a bad streak really stings
+  ex.points -= penalty.points;
+  ex.history[today].lost += penalty.points;
+  ex.history[today].deductions.push({
+    name: penalty.name,
+    icon: penalty.icon,
+    points: penalty.points,
+    at: Date.now()
+  });
+  // Lifetime tracks earned-only (it gates avatar unlocks), so it is NOT reduced here
+  save(state);
+  render();
+  showToast(penalty.icon || '➖', `-${penalty.points} point${penalty.points === 1 ? '' : 's'}: ${penalty.name}`);
+}
+
 function claimReward(reward){
   const ex = getActiveExplorer();
   if(ex.points < reward.points) return;
-  askConfirm(`Give ${ex.name} "${reward.name}" for ${reward.points} points?`, reward.icon, () => {
-    ex.points -= reward.points;
-    save(state);
-    render();
-    launchConfetti(true);
-    popAvatar(document.getElementById('hiker'));
-    showToast(reward.icon, `${reward.name} unlocked!`);
+  requireUnlock(ex, () => {
+    askConfirm(`Give ${ex.name} "${reward.name}" for ${reward.points} points?`, reward.icon, () => {
+      ex.points -= reward.points;
+      save(state);
+      render();
+      launchConfetti(true);
+      popAvatar(document.getElementById('hiker'));
+      showToast(reward.icon, `${reward.name} unlocked!`);
+    });
   });
 }
 
@@ -1689,11 +2529,14 @@ const lockerOverlay = document.getElementById('lockerOverlay');
 let lockerCat = 'face';
 
 function openLocker(){
-  lockerCat = 'kind';
-  document.querySelectorAll('.locker-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector('.locker-tab[data-cat="kind"]').classList.add('active');
-  lockerOverlay.classList.add('show');
-  renderLocker();
+  const ex = getActiveExplorer();
+  requireUnlock(ex, () => {
+    lockerCat = 'kind';
+    document.querySelectorAll('.locker-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.locker-tab[data-cat="kind"]').classList.add('active');
+    lockerOverlay.classList.add('show');
+    renderLocker();
+  });
 }
 
 document.getElementById('closeLocker').onclick = () => lockerOverlay.classList.remove('show');
@@ -1750,7 +2593,7 @@ function applyAvatarChange(changes){
   save(state);
   renderLockerPreview();
   popAvatar(document.getElementById('lockerPreview'));
-  renderExplorerSwitcher();
+  renderProfileHeader();
   renderTrail();
 }
 
@@ -1781,15 +2624,16 @@ function renderLockerOptions(){
   if(lockerCat === 'kind'){
     KINDS.forEach(k => {
       const locked = !isUnlocked(k, ex.lifetime);
+      const kindAllowsHair = ALLOW_HAIR_KINDS.has(k.id);
       wrap.appendChild(makeOption({
         selected: (cfg.kind || 'human') === k.id,
         locked, unlockAt: k.unlock,
-        inner: avatarSVG({...cfg, kind:k.id, hairStyle: k.id === 'human' ? cfg.hairStyle : 'none'}, 54),
+        inner: avatarSVG({...cfg, kind:k.id, hairStyle: kindAllowsHair ? cfg.hairStyle : 'none'}, 54),
         className: 'mini-opt',
         onPick: () => {
-          // Creatures look right bald; humans shouldn't be stuck bald when switching back
+          // Creatures look right bald; hair-capable kinds shouldn't be stuck bald when switching back
           const changes = {kind: k.id};
-          if(k.id !== 'human') changes.hairStyle = 'none';
+          if(!kindAllowsHair) changes.hairStyle = 'none';
           else if(cfg.hairStyle === 'none') changes.hairStyle = 'short';
           applyAvatarChange(changes);
         }
@@ -1875,7 +2719,7 @@ document.getElementById('surpriseBtn').onclick = () => {
   applyAvatarChange({
     kind,
     skin: pick(SKIN_TONES),
-    hairStyle: kind === 'human' ? pick(openStyles.filter(s => s.id !== 'none')).id : 'none',
+    hairStyle: ALLOW_HAIR_KINDS.has(kind) ? pick(openStyles.filter(s => s.id !== 'none')).id : 'none',
     hair: pick(openHair).c,
     accessory: pick(openAcc).id,
     accent: pick(openFit).c,
@@ -1891,6 +2735,7 @@ document.getElementById('gearBtn').onclick = () => {
   settingsOverlay.classList.add('show');
   editingTaskIds.clear();
   editingRewardIds.clear();
+  editingPenaltyIds.clear();
   renderManageLists();
   buildEmojiPickers();
   renderSyncTab();
@@ -1986,6 +2831,7 @@ function buildEmojiPickers(){
   buildAvatarPicker('explorerAvatarPick', pickedAvatarId, (id)=>pickedAvatarId=id);
   buildPicker('taskEmojiPick', TASK_EMOJIS, pickedTaskEmoji, (e)=>pickedTaskEmoji=e);
   buildPicker('rewardEmojiPick', REWARD_EMOJIS, pickedRewardEmoji, (e)=>pickedRewardEmoji=e);
+  buildPicker('penaltyEmojiPick', PENALTY_EMOJIS, pickedPenaltyEmoji, (e)=>pickedPenaltyEmoji=e);
 }
 function popAvatar(el){
   if(!el) return;
@@ -2033,13 +2879,27 @@ function renderManageLists(){
   state.explorers.forEach(ex => {
     const row = document.createElement('div');
     row.className = 'manage-row';
-    row.innerHTML = `<span class="icon">${avatarSVG(ex.avatar, 30)}</span><span class="meta">${escapeHtml(ex.name)} — ${ex.points} pts</span>
+    const pinTag = ex.pin ? ' 🔒' : '';
+    row.innerHTML = `<span class="icon">${avatarSVG(ex.avatar, 30)}</span><span class="meta">${escapeHtml(ex.name)} — ${ex.points} pts${pinTag}</span>
+      ${ex.pin ? '<button class="del edit resetpin">Reset PIN</button>' : ''}
       ${state.explorers.length > 1 ? '<button class="del">Remove</button>' : ''}`;
-    const delBtn = row.querySelector('.del');
+    const resetBtn = row.querySelector('.resetpin');
+    if(resetBtn) resetBtn.onclick = () => {
+      askRemove(`Reset ${ex.name}'s PIN? They'll be able to set a new one.`, () => {
+        delete ex.pin;
+        sessionUnlocked.add(ex.id);
+        save(state); render(); renderManageLists();
+      });
+    };
+    const delBtn = row.querySelector('.del:not(.resetpin)');
     if(delBtn) delBtn.onclick = () => {
       askRemove(`Remove ${ex.name}? Their points will be lost.`, () => {
+        const wasActive = state.activeExplorer === ex.id;
         state.explorers = state.explorers.filter(e => e.id !== ex.id);
-        if(state.activeExplorer === ex.id) state.activeExplorer = state.explorers[0].id;
+        if(wasActive){
+          state.activeExplorer = state.explorers[0].id;
+          screen = 'lobby'; // don't sit on a deleted profile
+        }
         save(state); render(); renderManageLists();
       });
     };
@@ -2114,6 +2974,42 @@ function renderManageLists(){
     }
     rewardList.appendChild(row);
   });
+
+  const penaltyList = document.getElementById('penaltyManageList');
+  if(penaltyList){
+    penaltyList.innerHTML = '';
+    (state.penalties || []).forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'manage-row';
+      if(editingPenaltyIds.has(p.id)){
+        row.innerHTML = `<input class="field" value="${escapeHtml(p.name)}" id="editPName_${p.id}">
+          <input class="field small" type="number" min="1" value="${p.points}" id="editPPts_${p.id}">
+          <button class="del save">Save</button>
+          <button class="del cancel">Cancel</button>`;
+        row.querySelector('.save').onclick = () => {
+          const nameVal = document.getElementById(`editPName_${p.id}`).value.trim();
+          const ptsVal = Math.max(1, parseInt(document.getElementById(`editPPts_${p.id}`).value) || 1);
+          if(nameVal) p.name = nameVal;
+          p.points = ptsVal;
+          editingPenaltyIds.delete(p.id);
+          save(state); renderManageLists();
+        };
+        row.querySelector('.cancel').onclick = () => { editingPenaltyIds.delete(p.id); renderManageLists(); };
+      } else {
+        row.innerHTML = `<span class="icon">${p.icon || '➖'}</span><span class="meta">${escapeHtml(p.name)} — −${p.points} pt${p.points===1?'':'s'}</span>
+          <button class="del edit">Edit</button>
+          <button class="del">Remove</button>`;
+        row.querySelector('.edit').onclick = () => { editingPenaltyIds.add(p.id); renderManageLists(); };
+        row.querySelector('.del:not(.edit)').onclick = () => {
+          askRemove(`Remove the reason "${p.name}"?`, () => {
+            state.penalties = state.penalties.filter(x => x.id !== p.id);
+            save(state); renderManageLists();
+          });
+        };
+      }
+      penaltyList.appendChild(row);
+    });
+  }
 }
 
 document.getElementById('addExplorerBtn').onclick = () => {
@@ -2145,6 +3041,18 @@ document.getElementById('addRewardBtn').onclick = () => {
   state.rewards.push({id:'r'+Date.now(), name, icon:pickedRewardEmoji, points:pts});
   nameInput.value = ''; ptsInput.value = 30;
   save(state); render(); renderManageLists();
+};
+
+document.getElementById('addPenaltyBtn').onclick = () => {
+  const nameInput = document.getElementById('newPenaltyName');
+  const ptsInput = document.getElementById('newPenaltyPts');
+  const name = nameInput.value.trim();
+  const pts = Math.max(1, parseInt(ptsInput.value) || 1);
+  if(!name){ nameInput.focus(); return; }
+  if(!state.penalties) state.penalties = [];
+  state.penalties.push({id:'p'+Date.now(), name, icon:pickedPenaltyEmoji, points:pts});
+  nameInput.value = ''; ptsInput.value = 1;
+  save(state); renderManageLists();
 };
 
 function escapeHtml(str){
