@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Trail Quest</title>
+<title>Nickson's Rewards</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@600;700;800;900&family=Inter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -364,6 +364,15 @@
   .tabpane{display:none;}
   .tabpane.active{display:block;}
   .emoji-pick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+  .assign-label{font-size:12px;font-weight:800;color:#7a8aa3;margin:10px 0 6px;}
+  .assign-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .assign-chip{display:flex;align-items:center;gap:5px;background:#fff;border:2px solid #DCE4EE;
+    border-radius:20px;padding:5px 12px 5px 6px;cursor:pointer;font-family:inherit;font-size:12.5px;
+    font-weight:800;color:#5a6b85;}
+  .assign-chip svg{width:20px;height:auto;display:block;}
+  .assign-chip.all-chip{padding:6px 12px;}
+  .assign-chip.sel{border-color:var(--forest);background:#F2F7F4;color:var(--ink);}
+  .assign-note{font-size:11px;font-weight:700;color:#a0adc0;margin:2px 0 0;}
   .emoji-pick button{font-size:20px;background:#fff;border:2px solid #DCE4EE;border-radius:8px;
     width:40px;height:40px;cursor:pointer;}
   .emoji-pick button.sel{border-color:var(--coral);background:#FFE7E3;}
@@ -457,7 +466,7 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="brand"><span class="flag" id="brandIcon">🚩</span><span class="title" id="brandTitle">Trail Quest</span></div>
+    <div class="brand"><span class="flag" id="brandIcon">🚩</span><span class="title" id="brandTitle">Nickson's Rewards</span></div>
     <button class="gear" id="gearBtn" title="Grown-up settings">⚙️</button>
   </div>
 
@@ -572,6 +581,8 @@
         <input class="field small" id="newTaskPts" type="number" min="1" value="1">
       </div>
       <div class="emoji-pick" id="taskEmojiPick"></div>
+      <p class="assign-label">Who is this quest for?</p>
+      <div class="assign-chips" id="newTaskAssignChips"></div>
       <button class="btn btn-primary btn-full" id="addTaskBtn">Add Quest</button>
     </div>
 
@@ -582,6 +593,8 @@
         <input class="field small" id="newRewardPts" type="number" min="1" value="30">
       </div>
       <div class="emoji-pick" id="rewardEmojiPick"></div>
+      <p class="assign-label">Who can earn this reward?</p>
+      <div class="assign-chips" id="newRewardAssignChips"></div>
       <button class="btn btn-primary btn-full" id="addRewardBtn">Add Reward</button>
     </div>
 
@@ -597,6 +610,13 @@
     </div>
 
     <div class="tabpane" id="themeTab">
+      <p class="assign-label">App Name</p>
+      <div class="row-inline">
+        <input class="field" id="appNameInput" placeholder="Nickson's Rewards">
+        <button class="btn btn-secondary" id="appNameSaveBtn">Save</button>
+      </div>
+      <p class="sync-note">This is what shows on the lobby and browser tab — make it your own family's name.</p>
+
       <p class="sync-help">Each explorer can have their own look. Kids can also change this themselves from their own profile with the 🎨 My Theme button. Pick who you're setting below:</p>
       <div class="theme-explorer-picker" id="themeExplorerPicker"></div>
       <div class="theme-grid" id="themeGrid"></div>
@@ -1648,22 +1668,22 @@ function defaultData(){
       {id:'e2', name:'Explorer 2', avatar:'a2', theme:'trail', points:0, lifetime:0, tasksDoneToday:[], history:{}}
     ],
     tasks: [
-      {id:'t1', name:'Brush teeth', icon:'🦷', points:1},
-      {id:'t2', name:'Make bed', icon:'🛏️', points:1},
-      {id:'t3', name:'Tidy toys', icon:'🧸', points:1},
-      {id:'t4', name:'Get dressed', icon:'👕', points:1},
-      {id:'t5', name:'Wash hands', icon:'🧼', points:1},
-      {id:'t6', name:'Pack school bag', icon:'🎒', points:1},
-      {id:'t7', name:'Read a book', icon:'📚', points:1},
-      {id:'t8', name:'Help set table', icon:'🍽️', points:1}
+      {id:'t1', name:'Brush teeth', icon:'🦷', points:1, assignedTo:[]},
+      {id:'t2', name:'Make bed', icon:'🛏️', points:1, assignedTo:[]},
+      {id:'t3', name:'Tidy toys', icon:'🧸', points:1, assignedTo:[]},
+      {id:'t4', name:'Get dressed', icon:'👕', points:1, assignedTo:[]},
+      {id:'t5', name:'Wash hands', icon:'🧼', points:1, assignedTo:[]},
+      {id:'t6', name:'Pack school bag', icon:'🎒', points:1, assignedTo:[]},
+      {id:'t7', name:'Read a book', icon:'📚', points:1, assignedTo:[]},
+      {id:'t8', name:'Help set table', icon:'🍽️', points:1, assignedTo:[]}
     ],
     rewards: [
-      {id:'r1', name:'Screen time', icon:'📺', points:20},
-      {id:'r2', name:'Ice cream', icon:'🍦', points:15},
-      {id:'r3', name:'Movie night', icon:'🎬', points:35},
-      {id:'r4', name:'Park trip', icon:'🏞️', points:30},
-      {id:'r5', name:'Pick a game', icon:'🎮', points:25},
-      {id:'r6', name:'Bake treats', icon:'🧁', points:40}
+      {id:'r1', name:'Screen time', icon:'📺', points:20, assignedTo:[]},
+      {id:'r2', name:'Ice cream', icon:'🍦', points:15, assignedTo:[]},
+      {id:'r3', name:'Movie night', icon:'🎬', points:35, assignedTo:[]},
+      {id:'r4', name:'Park trip', icon:'🏞️', points:30, assignedTo:[]},
+      {id:'r5', name:'Pick a game', icon:'🎮', points:25, assignedTo:[]},
+      {id:'r6', name:'Bake treats', icon:'🧁', points:40, assignedTo:[]}
     ],
     penalties: [
       {id:'p1', name:'Asked more than once', icon:'🗣️', points:1},
@@ -1741,6 +1761,9 @@ function applyDailyReset(data){
     {id:'p4', name:'Making a mess on purpose', icon:'🌪️', points:2}
   ];
   if(!data.theme || !THEMES[data.theme]) data.theme = 'trail'; // now just the default handed to new explorers
+  // Older saves had no per-task/reward assignment — default everything existing to "all"
+  data.tasks.forEach(t => { if(!Array.isArray(t.assignedTo)) t.assignedTo = []; });
+  data.rewards.forEach(r => { if(!Array.isArray(r.assignedTo)) r.assignedTo = []; });
   data.explorers.forEach(ex => {
     if(!ex.tasksDoneToday) ex.tasksDoneToday = [];
     if(!ex.history) ex.history = {};
@@ -1782,6 +1805,12 @@ function save(data){
   catch(e){ console.error('Save failed', e); }
   scheduleSync();
 }
+
+/* The neutral shell name shown on the lobby / browser tab before a theme takes
+   over inside a child's own profile. Bakes in a sensible starting value for
+   this deployment, but any parent can change it from Settings — see appName
+   in the data model and the Theme tab's "App Name" field. */
+const DEFAULT_APP_NAME = "Nickson's Rewards";
 
 /* ---------- GitHub-backed shared storage ----------
    The JSON data file lives inside a GitHub repo (ideally the same repo the app
@@ -1983,6 +2012,8 @@ async function initSync(){
 let state = load();
 let pickedAvatarId = AVATAR_IDS[0];
 let pickedTaskEmoji = TASK_EMOJIS[0];
+let pickedTaskAssignees = []; // empty = all children
+let pickedRewardAssignees = [];
 let pickedRewardEmoji = REWARD_EMOJIS[0];
 let pickedPenaltyEmoji = PENALTY_EMOJIS[0];
 let editingPenaltyIds = new Set();
@@ -2032,10 +2063,15 @@ function applyTheme(){
   root.setProperty('--berry', t.palette.berry);
   root.setProperty('--paper', t.palette.paper);
 
-  document.title = t.vocab.appName;
+  // The lobby shows the family's own chosen name; a themed profile shows that theme's identity instead
+  const appNameToShow = (typeof screen !== 'undefined' && screen === 'profile')
+    ? t.vocab.appName
+    : (state.appName || DEFAULT_APP_NAME);
+
+  document.title = appNameToShow;
   const setText = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
   setText('brandIcon', t.icon);
-  setText('brandTitle', t.vocab.appName);
+  setText('brandTitle', appNameToShow);
   setText('lobbyTitle', t.vocab.lobbyQuestion);
   setText('backToLobby', t.vocab.backLabel);
   setText('profileHint', t.vocab.dressUpHint);
@@ -2052,8 +2088,18 @@ function applyTheme(){
 function getActiveExplorer(){
   return state.explorers.find(e => e.id === state.activeExplorer) || state.explorers[0];
 }
+/* Empty/missing assignedTo means "all children" — the default for new quests and rewards. */
+function appliesTo(item, exId){
+  return !item.assignedTo || item.assignedTo.length === 0 || item.assignedTo.includes(exId);
+}
+function tasksForExplorer(exId){
+  return state.tasks.filter(t => appliesTo(t, exId));
+}
+function rewardsForExplorer(exId){
+  return state.rewards.filter(r => appliesTo(r, exId));
+}
 function nextGoal(explorer){
-  const affordable = state.rewards.filter(r => r.points > explorer.points).sort((a,b)=>a.points-b.points);
+  const affordable = rewardsForExplorer(explorer.id).filter(r => r.points > explorer.points).sort((a,b)=>a.points-b.points);
   return affordable[0] || null;
 }
 
@@ -2289,8 +2335,9 @@ function renderWeekView(){
 function renderQuestTrends(days){
   const table = document.getElementById('trendTable');
   table.innerHTML = '';
+  const myTasks = tasksForExplorer(getActiveExplorer().id);
 
-  if(state.tasks.length === 0){
+  if(myTasks.length === 0){
     table.innerHTML = '<div class="trend-empty">No quests set up yet</div>';
     return;
   }
@@ -2310,7 +2357,7 @@ function renderQuestTrends(days){
   table.appendChild(totalHead);
 
   // One row per quest
-  state.tasks.forEach(t => {
+  myTasks.forEach(t => {
     const nameCell = document.createElement('div');
     nameCell.className = 'trend-quest-name';
     nameCell.innerHTML = `<span class="ti">${t.icon}</span><span>${escapeHtml(t.name)}</span>`;
@@ -2357,7 +2404,7 @@ function renderTrail(){
     hiker.innerHTML = avatarSVG(ex.avatar, 40);
     sub.textContent = `${ex.points} / ${goal.points} pts toward ${goal.name} ${goal.icon}`;
     goalLabel.textContent = `${t.vocab.goalPrefix} ${goal.name}`;
-  } else if(state.rewards.length){
+  } else if(rewardsForExplorer(ex.id).length){
     fillEl.style.width = '100%';
     hiker.style.left = '100%';
     hiker.innerHTML = avatarSVG(ex.avatar, 40);
@@ -2374,12 +2421,13 @@ function renderTrail(){
 
 function renderTasks(){
   const ex = getActiveExplorer();
+  const myTasks = tasksForExplorer(ex.id);
   const list = document.getElementById('taskList');
   list.innerHTML = '';
-  if(state.tasks.length === 0){
+  if(myTasks.length === 0){
     list.innerHTML = '<div class="empty-note">No quests yet — ask a grown-up to add some ⚙️</div>';
   }
-  state.tasks.forEach(task => {
+  myTasks.forEach(task => {
     const done = ex.tasksDoneToday.includes(task.id);
     const row = document.createElement('div');
     row.className = 'task' + (done ? ' done' : '');
@@ -2393,19 +2441,20 @@ function renderTasks(){
     row.onclick = () => toggleTask(task);
     list.appendChild(row);
   });
-  const doneCount = ex.tasksDoneToday.length;
-  document.getElementById('questCount').textContent = `${doneCount}/${state.tasks.length}`;
+  const doneCount = ex.tasksDoneToday.filter(id => myTasks.some(t => t.id === id)).length;
+  document.getElementById('questCount').textContent = `${doneCount}/${myTasks.length}`;
 }
 
 function renderRewards(){
   const ex = getActiveExplorer();
+  const myRewards = rewardsForExplorer(ex.id);
   const list = document.getElementById('rewardList');
   list.innerHTML = '';
-  if(state.rewards.length === 0){
+  if(myRewards.length === 0){
     list.innerHTML = '<div class="empty-note">No rewards set up yet</div>';
     return;
   }
-  state.rewards.slice().sort((a,b)=>a.points-b.points).forEach(r => {
+  myRewards.slice().sort((a,b)=>a.points-b.points).forEach(r => {
     const unlocked = ex.points >= r.points;
     const card = document.createElement('div');
     card.className = 'reward ' + (unlocked ? 'claimable' : 'locked');
@@ -3051,6 +3100,9 @@ function renderThemeSwatches(gridEl, ex, onPicked){
 let themeTabTargetId = null;
 
 function renderThemeTab(){
+  const appNameField = document.getElementById('appNameInput');
+  if(appNameField) appNameField.value = state.appName || DEFAULT_APP_NAME;
+
   const pickerWrap = document.getElementById('themeExplorerPicker');
   const grid = document.getElementById('themeGrid');
   if(!grid || !pickerWrap) return;
@@ -3095,6 +3147,15 @@ document.getElementById('myThemeBtn').onclick = () => {
     });
     myThemeOverlay.classList.add('show');
   });
+};
+
+document.getElementById('appNameSaveBtn').onclick = () => {
+  const val = document.getElementById('appNameInput').value.trim();
+  state.appName = val || undefined; // blank just falls back to the baked-in default
+  save(state);
+  applyTheme();
+  render();
+  showToast('✏️', 'App name updated');
 };
 
 document.getElementById('syncAdvancedToggle').onclick = () => {
@@ -3172,7 +3233,48 @@ function buildEmojiPickers(){
   buildPicker('taskEmojiPick', TASK_EMOJIS, pickedTaskEmoji, (e)=>pickedTaskEmoji=e);
   buildPicker('rewardEmojiPick', REWARD_EMOJIS, pickedRewardEmoji, (e)=>pickedRewardEmoji=e);
   buildPicker('penaltyEmojiPick', PENALTY_EMOJIS, pickedPenaltyEmoji, (e)=>pickedPenaltyEmoji=e);
+  buildAssignChips('newTaskAssignChips', pickedTaskAssignees, (ids)=>pickedTaskAssignees=ids);
+  buildAssignChips('newRewardAssignChips', pickedRewardAssignees, (ids)=>pickedRewardAssignees=ids);
 }
+
+/* "Who is this for?" chip picker — shared by the add-quest form and each
+   quest's inline edit row. assignedTo = [] means all children. */
+function buildAssignChips(containerOrId, assignedTo, onChange){
+  const wrap = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
+  if(!wrap) return;
+  let current = Array.isArray(assignedTo) ? [...assignedTo] : [];
+
+  function renderChips(){
+    wrap.innerHTML = '';
+    const allChip = document.createElement('button');
+    allChip.type = 'button';
+    allChip.className = 'assign-chip all-chip' + (current.length === 0 ? ' sel' : '');
+    allChip.textContent = '🌍 All';
+    allChip.onclick = () => { current = []; onChange(current); renderChips(); };
+    wrap.appendChild(allChip);
+
+    state.explorers.forEach(ex => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'assign-chip' + (current.includes(ex.id) ? ' sel' : '');
+      chip.innerHTML = `${avatarSVG(ex.avatar, 20)}<span>${escapeHtml(ex.name)}</span>`;
+      chip.onclick = () => {
+        if(current.includes(ex.id)){
+          current = current.filter(id => id !== ex.id);
+        } else {
+          current = [...current, ex.id];
+        }
+        // An explicit selection covering literally everyone is just "All" — keep it simple
+        if(current.length === state.explorers.length) current = [];
+        onChange(current);
+        renderChips();
+      };
+      wrap.appendChild(chip);
+    });
+  }
+  renderChips();
+}
+
 function popAvatar(el){
   if(!el) return;
   el.classList.remove('avatar-pop');
@@ -3236,6 +3338,10 @@ function renderManageLists(){
       askRemove(`Remove ${ex.name}? Their points will be lost.`, () => {
         const wasActive = state.activeExplorer === ex.id;
         state.explorers = state.explorers.filter(e => e.id !== ex.id);
+        // If they were the only one a task was assigned to, that task falls back to "all"
+        // rather than becoming invisible to everyone.
+        state.tasks.forEach(t => { if(t.assignedTo) t.assignedTo = t.assignedTo.filter(id => id !== ex.id); });
+        state.rewards.forEach(r => { if(r.assignedTo) r.assignedTo = r.assignedTo.filter(id => id !== ex.id); });
         if(wasActive){
           state.activeExplorer = state.explorers[0].id;
           screen = 'lobby'; // don't sit on a deleted profile
@@ -3254,19 +3360,28 @@ function renderManageLists(){
     if(editingTaskIds.has(t.id)){
       row.innerHTML = `<input class="field" value="${escapeHtml(t.name)}" id="editName_${t.id}">
         <input class="field small" type="number" min="1" value="${t.points}" id="editPts_${t.id}">
+        <p class="assign-label" style="width:100%;">Who is this quest for?</p>
+        <div class="assign-chips" id="editAssign_${t.id}" style="width:100%;"></div>
         <button class="del save">Save</button>
         <button class="del cancel">Cancel</button>`;
+      let editAssignValue = Array.isArray(t.assignedTo) ? [...t.assignedTo] : [];
+      buildAssignChips(row.querySelector(`#editAssign_${t.id}`), editAssignValue, (ids) => { editAssignValue = ids; });
       row.querySelector('.save').onclick = () => {
         const nameVal = document.getElementById(`editName_${t.id}`).value.trim();
         const ptsVal = Math.max(1, parseInt(document.getElementById(`editPts_${t.id}`).value) || 1);
         if(nameVal) t.name = nameVal;
         t.points = ptsVal;
+        t.assignedTo = editAssignValue;
         editingTaskIds.delete(t.id);
         save(state); render(); renderManageLists();
       };
       row.querySelector('.cancel').onclick = () => { editingTaskIds.delete(t.id); renderManageLists(); };
     } else {
-      row.innerHTML = `<span class="icon">${t.icon}</span><span class="meta">${escapeHtml(t.name)} — ${t.points} pt${t.points===1?'':'s'}</span>
+      const who = (!t.assignedTo || t.assignedTo.length === 0)
+        ? '🌍 All'
+        : t.assignedTo.map(id => state.explorers.find(e => e.id === id)?.name).filter(Boolean).join(', ') || '🌍 All';
+      row.innerHTML = `<span class="icon">${t.icon}</span><span class="meta">${escapeHtml(t.name)} — ${t.points} pt${t.points===1?'':'s'}
+        <br><span class="assign-note">${escapeHtml(who)}</span></span>
         <button class="del edit">Edit</button>
         <button class="del">Remove</button>`;
       row.querySelector('.edit').onclick = () => { editingTaskIds.add(t.id); renderManageLists(); };
@@ -3289,19 +3404,28 @@ function renderManageLists(){
     if(editingRewardIds.has(r.id)){
       row.innerHTML = `<input class="field" value="${escapeHtml(r.name)}" id="editRName_${r.id}">
         <input class="field small" type="number" min="1" value="${r.points}" id="editRPts_${r.id}">
+        <p class="assign-label" style="width:100%;">Who can earn this reward?</p>
+        <div class="assign-chips" id="editRAssign_${r.id}" style="width:100%;"></div>
         <button class="del save">Save</button>
         <button class="del cancel">Cancel</button>`;
+      let editAssignValue = Array.isArray(r.assignedTo) ? [...r.assignedTo] : [];
+      buildAssignChips(row.querySelector(`#editRAssign_${r.id}`), editAssignValue, (ids) => { editAssignValue = ids; });
       row.querySelector('.save').onclick = () => {
         const nameVal = document.getElementById(`editRName_${r.id}`).value.trim();
         const ptsVal = Math.max(1, parseInt(document.getElementById(`editRPts_${r.id}`).value) || 1);
         if(nameVal) r.name = nameVal;
         r.points = ptsVal;
+        r.assignedTo = editAssignValue;
         editingRewardIds.delete(r.id);
         save(state); render(); renderManageLists();
       };
       row.querySelector('.cancel').onclick = () => { editingRewardIds.delete(r.id); renderManageLists(); };
     } else {
-      row.innerHTML = `<span class="icon">${r.icon}</span><span class="meta">${escapeHtml(r.name)} — ${r.points} pts</span>
+      const who = (!r.assignedTo || r.assignedTo.length === 0)
+        ? '🌍 All'
+        : r.assignedTo.map(id => state.explorers.find(e => e.id === id)?.name).filter(Boolean).join(', ') || '🌍 All';
+      row.innerHTML = `<span class="icon">${r.icon}</span><span class="meta">${escapeHtml(r.name)} — ${r.points} pts
+        <br><span class="assign-note">${escapeHtml(who)}</span></span>
         <button class="del edit">Edit</button>
         <button class="del">Remove</button>`;
       row.querySelector('.edit').onclick = () => { editingRewardIds.add(r.id); renderManageLists(); };
@@ -3367,8 +3491,10 @@ document.getElementById('addTaskBtn').onclick = () => {
   const name = nameInput.value.trim();
   const pts = Math.max(1, parseInt(ptsInput.value) || 1);
   if(!name){ nameInput.focus(); return; }
-  state.tasks.push({id:'t'+Date.now(), name, icon:pickedTaskEmoji, points:pts});
+  state.tasks.push({id:'t'+Date.now(), name, icon:pickedTaskEmoji, points:pts, assignedTo:[...pickedTaskAssignees]});
   nameInput.value = ''; ptsInput.value = 1;
+  pickedTaskAssignees = [];
+  buildAssignChips('newTaskAssignChips', pickedTaskAssignees, (ids)=>pickedTaskAssignees=ids);
   save(state); render(); renderManageLists();
 };
 
@@ -3378,8 +3504,10 @@ document.getElementById('addRewardBtn').onclick = () => {
   const name = nameInput.value.trim();
   const pts = Math.max(1, parseInt(ptsInput.value) || 1);
   if(!name){ nameInput.focus(); return; }
-  state.rewards.push({id:'r'+Date.now(), name, icon:pickedRewardEmoji, points:pts});
+  state.rewards.push({id:'r'+Date.now(), name, icon:pickedRewardEmoji, points:pts, assignedTo:[...pickedRewardAssignees]});
   nameInput.value = ''; ptsInput.value = 30;
+  pickedRewardAssignees = [];
+  buildAssignChips('newRewardAssignChips', pickedRewardAssignees, (ids)=>pickedRewardAssignees=ids);
   save(state); render(); renderManageLists();
 };
 
