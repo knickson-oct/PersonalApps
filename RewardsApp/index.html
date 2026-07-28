@@ -1972,8 +1972,7 @@ async function pushToGitHub(){
       let res = await fetch(githubApiUrl(syncConfig), {
         method: 'PUT',
         headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
-        body: JSON.stringify(body),
-        keepalive: true
+        body: JSON.stringify(body)
       });
       if(res.status === 409 || res.status === 422){
         // Belt-and-braces: something changed between our pre-fetch and this write. Retry once.
@@ -1985,8 +1984,7 @@ async function pushToGitHub(){
           res = await fetch(githubApiUrl(syncConfig), {
             method: 'PUT',
             headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
-            body: JSON.stringify(body),
-            keepalive: true
+            body: JSON.stringify(body)
           });
         }
       }
@@ -3183,8 +3181,9 @@ settingsOverlay.onclick = (e) => { if(e.target === settingsOverlay) settingsOver
 
 document.getElementById('syncBadge').onclick = () => {
   if(syncConfig && syncState === 'error'){
-    // Quick self-heal on tap, since a stale local sha was the most common cause
-    pullLatest();
+    // Retry pushing THIS device's current state — a pull here could silently
+    // discard a pending local change that never made it up in the first place.
+    pushToGitHub();
     return;
   }
   requireParentAuth(() => {
