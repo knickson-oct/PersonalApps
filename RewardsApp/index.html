@@ -1909,8 +1909,8 @@ function updateSyncBadge(){
   badge.innerHTML = `<span class="sb-dot"></span><span>${text}</span>`;
 }
 
-async function fetchFromGitHub(cfg){
-  setSyncState('syncing');
+async function fetchFromGitHub(cfg, silent){
+  if(!silent) setSyncState('syncing');
   try{
     const res = await fetch(`${githubApiUrl(cfg)}?ref=${encodeURIComponent(cfg.branch)}&_=${Date.now()}`, {
       headers: githubHeaders(cfg)
@@ -1928,7 +1928,10 @@ async function fetchFromGitHub(cfg){
     return {exists:true, data:remoteData};
   }catch(e){
     console.error('Sync fetch error', e);
-    setSyncState('error');
+    // A silent (background/periodic) check that fails just goes quiet rather than
+    // flashing a red error for a passing connectivity blip nobody caused by acting.
+    // The badge keeps showing whatever it last legitimately said.
+    if(!silent) setSyncState('error');
     return null;
   }
 }
@@ -1936,56 +1939,68 @@ async function fetchFromGitHub(cfg){
 async function pushToGitHub(){
   if(!syncConfig) return;
   setSyncState('syncing');
-  try{
-    // Always fetch the freshest sha right before writing. Relying on a sha
-    // cached from an earlier fetch (or none at all, right after the app
-    // reopens) was the cause of spurious "sync error" states — GitHub
-    // rejects a write with a stale or missing sha for an existing file.
-    try{
-      const shaRes = await fetch(`${githubApiUrl(syncConfig)}?ref=${encodeURIComponent(syncConfig.branch)}&_=${Date.now()}`, {
-        headers: githubHeaders(syncConfig)
-      });
-      if(shaRes.ok){
-        const shaJson = await shaRes.json();
-        currentSha = shaJson.sha;
-      } else if(shaRes.status === 404){
-        currentSha = null;
-      }
-      // Any other pre-fetch hiccup: fall through and try with whatever sha we already have.
-    }catch(e){ /* ignore — proceed with existing currentSha as a best effort */ }
 
-    const body = {
-      message: `Trail Quest update ${new Date().toISOString()}`,
-      content: utf8ToBase64(JSON.stringify(state, null, 2)),
-      branch: syncConfig.branch
-    };
-    if(currentSha) body.sha = currentSha;
-    let res = await fetch(githubApiUrl(syncConfig), {
-      method: 'PUT',
-      headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
-      body: JSON.stringify(body)
-    });
-    if(res.status === 409 || res.status === 422){
-      // Belt-and-braces: something changed between our pre-fetch and this write. Retry once.
-      const fresh = await fetch(`${githubApiUrl(syncConfig)}?ref=${encodeURIComponent(syncConfig.branch)}`, {headers: githubHeaders(syncConfig)});
-      if(fresh.ok){
-        const freshJson = await fresh.json();
-        currentSha = freshJson.sha;
-        body.sha = currentSha;
-        res = await fetch(githubApiUrl(syncConfig), {
-          method: 'PUT',
-          headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
-          body: JSON.stringify(body)
+  // A phone's connection blips constantly (cellular handoff, wifi sleep, a
+  // locked screen). Retry quietly a couple of times before ever surfacing
+  // an error, rather than flashing red for every passing hiccup.
+  const attempts = 3;
+  for(let attempt = 1; attempt <= attempts; attempt++){
+    try{
+      // Always fetch the freshest sha right before writing. Relying on a sha
+      // cached from an earlier fetch (or none at all, right after the app
+      // reopens) was the cause of spurious "sync error" states — GitHub
+      // rejects a write with a stale or missing sha for an existing file.
+      try{
+        const shaRes = await fetch(`${githubApiUrl(syncConfig)}?ref=${encodeURIComponent(syncConfig.branch)}&_=${Date.now()}`, {
+          headers: githubHeaders(syncConfig)
         });
+        if(shaRes.ok){
+          const shaJson = await shaRes.json();
+          currentSha = shaJson.sha;
+        } else if(shaRes.status === 404){
+          currentSha = null;
+        }
+        // Any other pre-fetch hiccup: fall through and try with whatever sha we already have.
+      }catch(e){ /* ignore — proceed with existing currentSha as a best effort */ }
+
+      const body = {
+        message: `Trail Quest update ${new Date().toISOString()}`,
+        content: utf8ToBase64(JSON.stringify(state, null, 2)),
+        branch: syncConfig.branch
+      };
+      if(currentSha) body.sha = currentSha;
+      let res = await fetch(githubApiUrl(syncConfig), {
+        method: 'PUT',
+        headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      if(res.status === 409 || res.status === 422){
+        // Belt-and-braces: something changed between our pre-fetch and this write. Retry once.
+        const fresh = await fetch(`${githubApiUrl(syncConfig)}?ref=${encodeURIComponent(syncConfig.branch)}`, {headers: githubHeaders(syncConfig)});
+        if(fresh.ok){
+          const freshJson = await fresh.json();
+          currentSha = freshJson.sha;
+          body.sha = currentSha;
+          res = await fetch(githubApiUrl(syncConfig), {
+            method: 'PUT',
+            headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+          });
+        }
+      }
+      if(!res.ok) throw new Error(`GitHub write failed (${res.status})`);
+      const resJson = await res.json();
+      currentSha = resJson.content.sha;
+      setSyncState('synced');
+      return;
+    }catch(e){
+      console.error(`Sync push error (attempt ${attempt}/${attempts})`, e);
+      if(attempt < attempts){
+        await new Promise(r => setTimeout(r, 700 * attempt));
+      } else {
+        setSyncState('error');
       }
     }
-    if(!res.ok) throw new Error(`GitHub write failed (${res.status})`);
-    const resJson = await res.json();
-    currentSha = resJson.content.sha;
-    setSyncState('synced');
-  }catch(e){
-    console.error('Sync push error', e);
-    setSyncState('error');
   }
 }
 
@@ -1995,9 +2010,9 @@ function scheduleSync(){
   syncTimer = setTimeout(() => { pushToGitHub(); }, 1200);
 }
 
-async function pullLatest(showBadge){
+async function pullLatest(silent){
   if(!syncConfig) return;
-  const result = await fetchFromGitHub(syncConfig);
+  const result = await fetchFromGitHub(syncConfig, silent);
   if(result && result.exists){
     state = applyDailyReset(result.data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -2029,8 +2044,10 @@ async function initSync(){
   updateSyncBadge();
   // Light periodic pull so other devices' changes show up without a manual refresh.
   // Skipped whenever a local push is queued/in-flight, to avoid clobbering unsaved edits.
+  // Runs silently — a passing connectivity blip here shouldn't flash a red error
+  // for something the person didn't even do anything to trigger.
   setInterval(() => {
-    if(syncConfig && !syncTimer && syncState !== 'syncing') pullLatest();
+    if(syncConfig && !syncTimer && syncState !== 'syncing') pullLatest(true);
   }, 60000);
 }
 
@@ -3167,20 +3184,13 @@ function renderSyncTab(){
     ? `Connected to ${syncConfig.owner}/${syncConfig.repo} (${syncConfig.path})`
     : 'Details are pre-filled — just add your token above and tap Connect.';
 
-  // If this device is using non-default repo details, surface them rather than hiding a customisation
-  const usingCustom = syncConfig && (
-    syncConfig.owner !== DEFAULT_SYNC.owner || syncConfig.repo !== DEFAULT_SYNC.repo ||
-    syncConfig.branch !== DEFAULT_SYNC.branch || syncConfig.path !== DEFAULT_SYNC.path
-  );
+  // Always start collapsed — it was previously auto-expanding for anyone whose
+  // entered owner casing (e.g. "KNickson-oct") didn't exactly match the
+  // auto-detected lowercase default ("knickson-oct"), even with nothing to fix.
   const panel = document.getElementById('syncAdvancedPanel');
   const toggle = document.getElementById('syncAdvancedToggle');
-  if(usingCustom){
-    panel.style.display = '';
-    toggle.textContent = '⚙️ Advanced: repo details ▴';
-  } else {
-    panel.style.display = 'none';
-    toggle.textContent = '⚙️ Advanced: repo details ▾';
-  }
+  panel.style.display = 'none';
+  toggle.textContent = '⚙️ Advanced: repo details ▾';
 }
 
 /* Renders the theme swatch grid into any container, scoped to a specific explorer.
