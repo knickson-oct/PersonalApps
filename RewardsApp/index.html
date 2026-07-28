@@ -234,6 +234,7 @@
   .ledger-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:2px 0;}
   .ledger-row .lr-icon{font-size:16px;width:22px;text-align:center;}
   .ledger-row .lr-name{flex:1;font-weight:700;}
+  .ledger-row .lr-by{font-size:10.5px;font-weight:700;color:#a0adc0;}
   .ledger-row .lr-pts{font-weight:800;}
   .ledger-row .lr-pts.plus{color:var(--grass);}
   .ledger-row .lr-pts.minus{color:var(--coral);}
@@ -558,6 +559,7 @@
     <h3>Grown-up Settings</h3>
     <div class="tabs">
       <div class="tab active" data-tab="explorersTab" id="tabExplorersLabel">Explorers</div>
+      <div class="tab" data-tab="parentsTab">Parents</div>
       <div class="tab" data-tab="tasksTab" id="tabQuestsLabel">Quests</div>
       <div class="tab" data-tab="rewardsTab" id="tabRewardsLabel">Rewards</div>
       <div class="tab" data-tab="behaviourTab">Behaviour</div>
@@ -572,6 +574,17 @@
       </div>
       <div class="avatar-grid" id="explorerAvatarPick"></div>
       <button class="btn btn-primary btn-full" id="addExplorerBtn">Add Explorer</button>
+    </div>
+
+    <div class="tabpane" id="parentsTab">
+      <p class="sync-help">Parents need a PIN to open Settings, approve rewards, and take points away. Every approval is logged with your name so it's clear who did what.</p>
+      <div id="parentManageList"></div>
+      <div class="row-inline">
+        <input class="field" id="newParentName" placeholder="Parent name (e.g. Mum, Dad)">
+      </div>
+      <div class="avatar-grid" id="parentAvatarPick"></div>
+      <button class="btn btn-primary btn-full" id="addParentBtn">Add Parent</button>
+      <p class="sync-note">A new parent starts with no PIN (open access) until they tap "Set PIN" on their own row below — get everyone's PIN set before relying on this.</p>
     </div>
 
     <div class="tabpane" id="tasksTab">
@@ -700,6 +713,15 @@
     <h3 id="deductTitle">Take a point away</h3>
     <p class="deduct-help">Tap a reason to remove points from <strong id="deductWho">this explorer</strong>. This is for grown-ups.</p>
     <div class="deduct-list" id="deductList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="parentPickerOverlay">
+  <div class="sheet">
+    <button class="sheet-close" id="closeParentPicker">✕</button>
+    <h3>Who's approving this?</h3>
+    <p class="deduct-help">Pick a parent, then enter their PIN.</p>
+    <div class="deduct-list" id="parentPickerList"></div>
   </div>
 </div>
 
@@ -1692,6 +1714,7 @@ function defaultData(){
       {id:'p4', name:'Making a mess on purpose', icon:'🌪️', points:2}
     ],
     theme: 'trail',
+    parents: [],
     lastResetDate: todayISO()
   };
 }
@@ -1761,6 +1784,7 @@ function applyDailyReset(data){
     {id:'p4', name:'Making a mess on purpose', icon:'🌪️', points:2}
   ];
   if(!data.theme || !THEMES[data.theme]) data.theme = 'trail'; // now just the default handed to new explorers
+  if(!Array.isArray(data.parents)) data.parents = [];
   // Older saves had no per-task/reward assignment — default everything existing to "all"
   data.tasks.forEach(t => { if(!Array.isArray(t.assignedTo)) t.assignedTo = []; });
   data.rewards.forEach(r => { if(!Array.isArray(r.assignedTo)) r.assignedTo = []; });
@@ -1774,9 +1798,10 @@ function applyDailyReset(data){
     // explorer their own, seeded from whatever the family had picked so
     // existing setups don't visually change until someone picks something new.
     if(!ex.theme || !THEMES[ex.theme]) ex.theme = data.theme;
-    // Ensure every history day has a deductions log
+    // Ensure every history day has a deductions log and a claims log
     Object.values(ex.history).forEach(day => {
       if(!day.deductions) day.deductions = [];
+      if(!day.claims) day.claims = [];
       if(typeof day.lost !== 'number') day.lost = 0;
     });
   });
@@ -2011,6 +2036,7 @@ async function initSync(){
 
 let state = load();
 let pickedAvatarId = AVATAR_IDS[0];
+let pickedParentAvatarId = AVATAR_IDS[0];
 let pickedTaskEmoji = TASK_EMOJIS[0];
 let pickedTaskAssignees = []; // empty = all children
 let pickedRewardAssignees = [];
@@ -2084,6 +2110,68 @@ function applyTheme(){
   setText('trailFlagEnd', t.endFlag);
 }
 
+/* ---------- Parent PIN lock ----------
+   Separate from kid PINs: gates Settings access, granting rewards, and
+   deducting points, so those actions are always attributable to a specific
+   parent. Clears whenever the profile changes, same rhythm as kid PINs. */
+let parentSessionUnlocked = null; // holds the authenticated parent's id, or null
+
+function getParent(id){
+  return state.parents.find(p => p.id === id) || null;
+}
+
+/* Runs onApprove(parentName) once a parent is authenticated.
+   If no parents are configured yet, runs immediately with parentName=null —
+   this is the bootstrap state before a family has set anyone up. */
+function requireParentAuth(onApprove){
+  if(!state.parents || state.parents.length === 0){ onApprove(null); return; }
+
+  const already = getParent(parentSessionUnlocked);
+  if(already){ onApprove(already.name); return; }
+
+  if(state.parents.length === 1){
+    authenticateParent(state.parents[0], onApprove);
+    return;
+  }
+  openParentPicker(onApprove);
+}
+
+function authenticateParent(parent, onApprove){
+  if(!parent.pin){
+    // A parent profile with no PIN set yet is trusted as-is (same bootstrap logic as kids)
+    parentSessionUnlocked = parent.id;
+    onApprove(parent.name);
+    return;
+  }
+  openPinEntry({
+    mode: 'verify',
+    explorer: parent, // openPinEntry only reads .name/.avatar/.pin, so a parent object fits fine
+    title: `${parent.name}'s PIN`,
+    sub: 'Enter your PIN to approve this',
+    onSuccess: () => { parentSessionUnlocked = parent.id; onApprove(parent.name); }
+  });
+}
+
+const parentPickerOverlay = document.getElementById('parentPickerOverlay');
+document.getElementById('closeParentPicker').onclick = () => parentPickerOverlay.classList.remove('show');
+parentPickerOverlay.onclick = (e) => { if(e.target === parentPickerOverlay) parentPickerOverlay.classList.remove('show'); };
+
+function openParentPicker(onApprove){
+  const list = document.getElementById('parentPickerList');
+  list.innerHTML = '';
+  state.parents.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'deduct-item';
+    row.innerHTML = `<span class="di-icon">${avatarSVG(p.avatar, 26)}</span><span class="di-name">${escapeHtml(p.name)}</span>`;
+    row.onclick = () => {
+      parentPickerOverlay.classList.remove('show');
+      authenticateParent(p, onApprove);
+    };
+    list.appendChild(row);
+  });
+  parentPickerOverlay.classList.add('show');
+}
+
 /* ---------- Helpers ---------- */
 function getActiveExplorer(){
   return state.explorers.find(e => e.id === state.activeExplorer) || state.explorers[0];
@@ -2146,8 +2234,10 @@ function renderLobby(){
 }
 
 function enterProfile(exId){
-  // Fresh entry re-locks, so a protected child re-enters their PIN for actions
+  // Fresh entry re-locks, so a protected child re-enters their PIN for actions,
+  // and any parent must re-approve for this new child too
   sessionUnlocked.clear();
+  parentSessionUnlocked = null;
   state.activeExplorer = exId;
   save(state);
   screen = 'profile';
@@ -2164,6 +2254,7 @@ function enterProfile(exId){
 
 function goToLobby(){
   sessionUnlocked.clear();
+  parentSessionUnlocked = null;
   screen = 'lobby';
   applyTheme();
   render();
@@ -2254,7 +2345,7 @@ function renderLedger(ex){
   const dates = Object.keys(ex.history).sort().reverse().slice(0, 14);
   const hasAny = dates.some(d => {
     const day = ex.history[d];
-    return (day.taskIds && day.taskIds.length) || (day.deductions && day.deductions.length);
+    return (day.taskIds && day.taskIds.length) || (day.deductions && day.deductions.length) || (day.claims && day.claims.length);
   });
   if(!hasAny){
     ledger.innerHTML = '<div class="ledger-empty">No points yet — go tick some quests! 🌲</div>';
@@ -2268,9 +2359,13 @@ function renderLedger(ex){
       rows.push({icon: t ? t.icon : '✅', name: t ? t.name : 'Quest done', pts: t ? t.points : 1, plus:true});
     });
     (day.deductions || []).forEach(d => {
-      rows.push({icon: d.icon || '➖', name: d.name, pts: d.points, plus:false, at:d.at});
+      rows.push({icon: d.icon || '➖', name: d.name, pts: d.points, plus:false, at:d.at, by:d.by, tag:'Taken away'});
+    });
+    (day.claims || []).forEach(c => {
+      rows.push({icon: c.icon || '🎁', name: c.name, pts: c.points, plus:false, at:c.at, by:c.by, tag:'Reward given'});
     });
     if(rows.length === 0) return;
+    rows.sort((a,b) => (b.at||0) - (a.at||0));
 
     const dayEl = document.createElement('div');
     dayEl.className = 'ledger-day';
@@ -2278,7 +2373,7 @@ function renderLedger(ex){
     dayEl.innerHTML = `<div class="ledger-date">${label}</div>` + rows.map(r => `
       <div class="ledger-row">
         <span class="lr-icon">${r.icon}</span>
-        <span class="lr-name">${escapeHtml(r.name)}</span>
+        <span class="lr-name">${escapeHtml(r.name)}${r.by !== undefined ? `<br><span class="lr-by">${r.tag} by ${escapeHtml(r.by || 'a grown-up')}</span>` : ''}</span>
         <span class="lr-pts ${r.plus ? 'plus' : 'minus'}">${r.plus ? '+' : '−'}${r.pts}</span>
       </div>`).join('');
     ledger.appendChild(dayEl);
@@ -2681,18 +2776,20 @@ function startSetPin(ex){
 
 /* ---------- Deduction picker ---------- */
 const deductOverlay = document.getElementById('deductOverlay');
-document.getElementById('openDeductBtn').onclick = () => openDeduct();
+document.getElementById('openDeductBtn').onclick = () => {
+  requireParentAuth((approverName) => openDeduct(approverName));
+};
 document.getElementById('closeDeduct').onclick = () => deductOverlay.classList.remove('show');
 deductOverlay.onclick = (e) => { if(e.target === deductOverlay) deductOverlay.classList.remove('show'); };
 
-function openDeduct(){
+function openDeduct(approverName){
   const ex = getActiveExplorer();
   document.getElementById('deductWho').textContent = ex.name;
-  renderDeductList();
+  renderDeductList(approverName);
   deductOverlay.classList.add('show');
 }
 
-function renderDeductList(){
+function renderDeductList(approverName){
   const list = document.getElementById('deductList');
   list.innerHTML = '';
   if(!state.penalties || state.penalties.length === 0){
@@ -2707,17 +2804,17 @@ function renderDeductList(){
       <span class="di-name">${escapeHtml(p.name)}</span>
       <span class="di-pts">−${p.points}</span>`;
     row.onclick = () => {
-      applyPenalty(p);
+      applyPenalty(p, approverName);
       deductOverlay.classList.remove('show');
     };
     list.appendChild(row);
   });
 }
 
-function applyPenalty(penalty){
+function applyPenalty(penalty, approverName){
   const ex = getActiveExplorer();
   const today = todayISO();
-  if(!ex.history[today]) ex.history[today] = {earned:0, taskIds:[], lost:0, deductions:[]};
+  if(!ex.history[today]) ex.history[today] = {earned:0, taskIds:[], lost:0, deductions:[], claims:[]};
   if(!ex.history[today].deductions) ex.history[today].deductions = [];
   if(typeof ex.history[today].lost !== 'number') ex.history[today].lost = 0;
 
@@ -2728,7 +2825,8 @@ function applyPenalty(penalty){
     name: penalty.name,
     icon: penalty.icon,
     points: penalty.points,
-    at: Date.now()
+    at: Date.now(),
+    by: approverName
   });
   // Lifetime tracks earned-only (it gates avatar unlocks), so it is NOT reduced here
   save(state);
@@ -2739,9 +2837,19 @@ function applyPenalty(penalty){
 function claimReward(reward){
   const ex = getActiveExplorer();
   if(ex.points < reward.points) return;
-  requireUnlock(ex, () => {
+  requireParentAuth((approverName) => {
     askConfirm(`Give ${ex.name} "${reward.name}" for ${reward.points} points?`, reward.icon, () => {
+      const today = todayISO();
+      if(!ex.history[today]) ex.history[today] = {earned:0, taskIds:[], lost:0, deductions:[], claims:[]};
+      if(!ex.history[today].claims) ex.history[today].claims = [];
       ex.points -= reward.points;
+      ex.history[today].claims.push({
+        name: reward.name,
+        icon: reward.icon,
+        points: reward.points,
+        at: Date.now(),
+        by: approverName
+      });
       save(state);
       render();
       launchConfetti(true);
@@ -3017,14 +3125,16 @@ document.getElementById('surpriseBtn').onclick = () => {
 /* ---------- Settings overlay ---------- */
 const settingsOverlay = document.getElementById('settingsOverlay');
 document.getElementById('gearBtn').onclick = () => {
-  settingsOverlay.classList.add('show');
-  editingTaskIds.clear();
-  editingRewardIds.clear();
-  editingPenaltyIds.clear();
-  renderManageLists();
-  buildEmojiPickers();
-  renderSyncTab();
-  renderThemeTab();
+  requireParentAuth(() => {
+    settingsOverlay.classList.add('show');
+    editingTaskIds.clear();
+    editingRewardIds.clear();
+    editingPenaltyIds.clear();
+    renderManageLists();
+    buildEmojiPickers();
+    renderSyncTab();
+    renderThemeTab();
+  });
 };
 document.getElementById('closeSettings').onclick = () => settingsOverlay.classList.remove('show');
 settingsOverlay.onclick = (e) => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('show'); };
@@ -3035,12 +3145,14 @@ document.getElementById('syncBadge').onclick = () => {
     pullLatest();
     return;
   }
-  settingsOverlay.classList.add('show');
-  renderSyncTab();
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
-  document.querySelector('.tab[data-tab="syncTab"]').classList.add('active');
-  document.getElementById('syncTab').classList.add('active');
+  requireParentAuth(() => {
+    settingsOverlay.classList.add('show');
+    renderSyncTab();
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
+    document.querySelector('.tab[data-tab="syncTab"]').classList.add('active');
+    document.getElementById('syncTab').classList.add('active');
+  });
 };
 
 function renderSyncTab(){
@@ -3230,11 +3342,13 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 function buildEmojiPickers(){
   buildAvatarPicker('explorerAvatarPick', pickedAvatarId, (id)=>pickedAvatarId=id);
+  buildAvatarPicker('parentAvatarPick', pickedParentAvatarId, (id)=>pickedParentAvatarId=id);
   buildPicker('taskEmojiPick', TASK_EMOJIS, pickedTaskEmoji, (e)=>pickedTaskEmoji=e);
   buildPicker('rewardEmojiPick', REWARD_EMOJIS, pickedRewardEmoji, (e)=>pickedRewardEmoji=e);
   buildPicker('penaltyEmojiPick', PENALTY_EMOJIS, pickedPenaltyEmoji, (e)=>pickedPenaltyEmoji=e);
   buildAssignChips('newTaskAssignChips', pickedTaskAssignees, (ids)=>pickedTaskAssignees=ids);
   buildAssignChips('newRewardAssignChips', pickedRewardAssignees, (ids)=>pickedRewardAssignees=ids);
+  renderParentManageList();
 }
 
 /* "Who is this for?" chip picker — shared by the add-quest form and each
@@ -3484,6 +3598,77 @@ document.getElementById('addExplorerBtn').onclick = () => {
   nameInput.value = '';
   save(state); render(); renderManageLists();
 };
+
+document.getElementById('addParentBtn').onclick = () => {
+  const nameInput = document.getElementById('newParentName');
+  const name = nameInput.value.trim();
+  if(!name){ nameInput.focus(); return; }
+  state.parents.push({id:'pa'+Date.now(), name, avatar:normalizeAvatar(pickedParentAvatarId), pin:null});
+  nameInput.value = '';
+  save(state); renderParentManageList();
+};
+
+function renderParentManageList(){
+  const list = document.getElementById('parentManageList');
+  if(!list) return;
+  list.innerHTML = '';
+  if(!state.parents || state.parents.length === 0){
+    list.innerHTML = '<div class="deduct-empty">No parents added yet — Settings is open to everyone until you add one.</div>';
+    return;
+  }
+  state.parents.forEach(parent => {
+    const row = document.createElement('div');
+    row.className = 'manage-row';
+    row.innerHTML = `<span class="icon">${avatarSVG(parent.avatar, 30)}</span>
+      <span class="meta">${escapeHtml(parent.name)}${parent.pin ? ' 🔒' : ''}
+        <br><span class="assign-note">${parent.pin ? 'PIN set' : 'No PIN yet — open access'}</span></span>
+      <button class="del edit pin-btn">${parent.pin ? 'Change PIN' : 'Set PIN'}</button>
+      ${parent.pin ? '<button class="del reset-parent-pin">Remove PIN</button>' : ''}
+      <button class="del">Remove</button>`;
+
+    row.querySelector('.pin-btn').onclick = () => {
+      const doSet = () => {
+        openPinEntry({
+          mode:'set', explorer: parent,
+          title:`Pick a PIN for ${parent.name}`, sub:'Type 4 numbers',
+          onSuccess:(pin) => {
+            parent.pin = pin;
+            parentSessionUnlocked = parent.id; // don't lock out whoever just set it
+            save(state);
+            renderParentManageList();
+            showToast('🔒', `${parent.name}'s PIN set`);
+          }
+        });
+      };
+      if(parent.pin){
+        // Must prove the current PIN before changing it
+        openPinEntry({mode:'verify', explorer:parent, title:`Enter ${parent.name}'s current PIN`, sub:'Confirm before changing it', onSuccess:doSet});
+      } else {
+        doSet();
+      }
+    };
+
+    const resetBtn = row.querySelector('.reset-parent-pin');
+    if(resetBtn) resetBtn.onclick = () => {
+      askRemove(`Remove ${parent.name}'s PIN? Settings will be open access until a new one is set.`, () => {
+        parent.pin = null;
+        save(state);
+        renderParentManageList();
+      });
+    };
+
+    row.querySelector('.del:not(.edit):not(.reset-parent-pin)').onclick = () => {
+      askRemove(`Remove ${parent.name} from parents?`, () => {
+        state.parents = state.parents.filter(p => p.id !== parent.id);
+        if(parentSessionUnlocked === parent.id) parentSessionUnlocked = null;
+        save(state);
+        renderParentManageList();
+      });
+    };
+
+    list.appendChild(row);
+  });
+}
 
 document.getElementById('addTaskBtn').onclick = () => {
   const nameInput = document.getElementById('newTaskName');
