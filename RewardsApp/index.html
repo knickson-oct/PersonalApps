@@ -1972,7 +1972,8 @@ async function pushToGitHub(){
       let res = await fetch(githubApiUrl(syncConfig), {
         method: 'PUT',
         headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        keepalive: true
       });
       if(res.status === 409 || res.status === 422){
         // Belt-and-braces: something changed between our pre-fetch and this write. Retry once.
@@ -1984,7 +1985,8 @@ async function pushToGitHub(){
           res = await fetch(githubApiUrl(syncConfig), {
             method: 'PUT',
             headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            keepalive: true
           });
         }
       }
@@ -2007,8 +2009,31 @@ async function pushToGitHub(){
 function scheduleSync(){
   if(!syncConfig) return;
   clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => { pushToGitHub(); }, 1200);
+  syncTimer = setTimeout(() => { syncTimer = null; pushToGitHub(); }, 1200);
 }
+
+/* Mobile browsers pause setTimeout in a backgrounded tab, so a change made
+   right before someone locks their phone or switches apps can sit queued
+   forever — this looked like "it only syncs when I tap it". Flush any
+   pending write the instant the app is about to go into the background
+   (rather than waiting out the rest of the debounce on a frozen timer),
+   and catch up the instant it comes back to the foreground too. */
+function flushPendingSync(){
+  if(syncTimer){
+    clearTimeout(syncTimer);
+    syncTimer = null;
+    pushToGitHub();
+  }
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden'){
+    flushPendingSync();
+  } else if(document.visibilityState === 'visible'){
+    if(syncTimer) flushPendingSync();
+    else if(syncConfig) pullLatest(true);
+  }
+});
+window.addEventListener('pagehide', flushPendingSync);
 
 async function pullLatest(silent){
   if(!syncConfig) return;
