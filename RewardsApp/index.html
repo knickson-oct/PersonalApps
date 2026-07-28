@@ -5,48 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Trail Quest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@600;700;800;900&family=Inter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --sky:#3FB8E8;
-    --sky-deep:#1C8FC9;
-    --sun:#FFC93C;
-    --grass:#57B96B;
-    --coral:#FF6F5E;
-    --cream:#FFF8EA;
-    --ink:#233752;
-    --path:#E4CFA1;
+    --forest:#2B6E55;
+    --forest-deep:#1D4E3D;
+    --forest-light:#4E9578;
+    --gold:#D9A441;
+    --gold-light:#F0C775;
+    --ember:#D96A34;
+    --ember-btn:#B85A2C;
+    --teal:#2A7F8C;
+    --berry:#A23E4C;
+    --paper:#F3EEDD;
+    --ink:#1B2A3D;
+    --path:#D8C79E;
     --card:#FFFFFF;
-    --shadow: 0 6px 0 rgba(35,55,82,0.12);
+    --shadow: 0 3px 10px rgba(27,42,61,0.14);
+    /* legacy aliases so every existing class below keeps working unchanged */
+    --sky:var(--forest);
+    --sky-deep:var(--teal);
+    --sun:var(--gold);
+    --grass:var(--forest);
+    --coral:var(--ember);
+    --cream:var(--paper);
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
   body{
     margin:0;
-    font-family:'Nunito',sans-serif;
+    font-family:'Inter',sans-serif;
     background:
-      radial-gradient(circle at 15% 8%, #ffffff55 0%, transparent 40%),
-      linear-gradient(180deg, var(--sky) 0%, var(--sky) 30%, #BFE9F5 55%, var(--cream) 56%, var(--cream) 100%);
+      repeating-radial-gradient(circle at 12% -10%, transparent 0, transparent 38px, rgba(27,42,61,0.035) 39px, rgba(27,42,61,0.035) 40px),
+      linear-gradient(180deg, var(--forest) 0%, var(--forest) 22%, var(--forest-deep) 23%, var(--forest-deep) 27%, var(--paper) 28%, var(--paper) 100%);
     color:var(--ink);
     min-height:100%;
     overscroll-behavior:none;
     -webkit-tap-highlight-color: transparent;
     user-select:none;
   }
-  h1,h2,h3,.display{font-family:'Baloo 2',sans-serif;}
+  h1,h2,h3,.display{font-family:'Rubik',sans-serif;letter-spacing:-0.01em;}
+  .stat-num{font-family:'IBM Plex Mono',monospace;font-weight:700;letter-spacing:-0.02em;}
   button{font-family:inherit;}
-
-  /* Sun + clouds */
-  .sun{position:fixed;top:18px;right:22px;width:56px;height:56px;border-radius:50%;
-    background:var(--sun); box-shadow:0 0 0 8px #FFC93C33; z-index:0;}
-  .cloud{position:fixed;background:#fff;border-radius:50px;opacity:.9;z-index:0;}
-  .cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%;}
-  .c1{width:70px;height:26px;top:40px;left:8%;}
-  .c1::before{width:34px;height:34px;top:-16px;left:8px;}
-  .c1::after{width:26px;height:26px;top:-12px;left:36px;}
-  .c2{width:50px;height:20px;top:90px;left:60%;}
-  .c2::before{width:24px;height:24px;top:-11px;left:6px;}
-  .c2::after{width:18px;height:18px;top:-8px;left:26px;}
 
   .app{position:relative;z-index:1;max-width:520px;margin:0 auto;min-height:100vh;
     display:flex;flex-direction:column;padding:16px 16px 40px;}
@@ -54,12 +54,13 @@
   /* Header */
   .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
   .brand{display:flex;align-items:center;gap:8px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,0.12);}
-  .brand .flag{font-size:26px;}
-  .brand span.title{font-weight:800;font-size:22px;letter-spacing:0.5px;}
-  .gear{background:rgba(255,255,255,0.35);border:none;border-radius:14px;width:40px;height:40px;
+  .brand .flag{font-size:24px;}
+  .brand span.title{font-family:'Rubik',sans-serif;font-weight:800;font-size:20px;
+    letter-spacing:0.8px;text-transform:uppercase;}
+  .gear{background:rgba(255,255,255,0.35);border:none;border-radius:10px;width:40px;height:40px;
     font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 
-  .sync-badge{display:block;width:100%;border:none;border-radius:12px;padding:7px 10px;
+  .sync-badge{display:block;width:100%;border:none;border-radius:9px;padding:7px 10px;
     font-size:12px;font-weight:800;cursor:pointer;text-align:center;margin-top:2px;font-family:inherit;
     background:rgba(255,255,255,0.55);color:var(--ink);}
   .sync-badge.synced{background:#E4F7E8;color:#2C7A3F;}
@@ -70,10 +71,10 @@
   .explorers{display:flex;gap:10px;margin:14px 0 6px;}
 
   /* Lobby (profile picker front screen) */
-  .lobby-title{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:22px;color:#fff;
+  .lobby-title{font-family:'Rubik',sans-serif;font-weight:800;font-size:22px;color:#fff;
     text-shadow:0 2px 0 rgba(0,0,0,0.12);text-align:center;margin:16px 0 12px;}
   .lobby-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;}
-  .lobby-card{position:relative;background:#fff;border:3px solid transparent;border-radius:24px;
+  .lobby-card{position:relative;background:#fff;border:2px solid transparent;border-radius:15px;
     padding:16px 10px 14px;text-align:center;cursor:pointer;box-shadow:var(--shadow);
     transition:transform .18s cubic-bezier(.34,1.56,.64,1), border-color .18s ease;}
   .lobby-card:active{transform:scale(0.95);}
@@ -81,30 +82,26 @@
     filter:drop-shadow(0 4px 4px rgba(35,55,82,0.22));
     transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
   .lobby-card:hover .lc-avatar svg{transform:scale(1.05);}
-  .lobby-card .lc-name{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;margin-top:6px;}
+  .lobby-card .lc-name{font-family:'Rubik',sans-serif;font-weight:800;font-size:18px;margin-top:6px;}
   .lobby-card .lc-pts{font-weight:800;font-size:14px;color:var(--sky-deep);margin-top:1px;}
   .lobby-card .lc-lock{position:absolute;top:10px;right:12px;font-size:16px;}
-  .lobby-card.add-card{display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:rgba(255,255,255,0.55);border:3px dashed rgba(255,255,255,0.9);color:#fff;min-height:150px;}
-  .lobby-card.add-card .plus{font-size:40px;font-weight:800;line-height:1;font-family:'Baloo 2',sans-serif;}
-  .lobby-card.add-card .add-label{font-weight:800;font-size:14px;margin-top:4px;}
 
   /* Back button + profile header */
-  .back-btn{background:rgba(255,255,255,0.85);border:none;border-radius:14px;padding:9px 16px;
+  .back-btn{background:rgba(255,255,255,0.85);border:none;border-radius:10px;padding:9px 16px;
     font-weight:800;font-size:14px;color:var(--ink);cursor:pointer;font-family:inherit;
     box-shadow:var(--shadow);margin:12px 0 4px;}
   .back-btn:active{transform:scale(0.97);}
-  .profile-header{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:22px;
+  .profile-header{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;
     padding:10px 14px;box-shadow:var(--shadow);margin:10px 0;cursor:pointer;}
   .profile-header:active .profile-avatar svg{transform:scale(0.92);}
   .profile-avatar svg{width:56px;height:auto;display:block;
     filter:drop-shadow(0 3px 3px rgba(35,55,82,0.22));
     transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
   .profile-avatar.avatar-pop svg{animation:avatarPop .55s ease-out;}
-  .profile-head-name{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:20px;}
+  .profile-head-name{font-family:'Rubik',sans-serif;font-weight:800;font-size:20px;}
   .profile-head-hint{font-size:11px;font-weight:800;color:#a0adc0;margin-top:1px;}
 
-  .explorer-btn{flex:1;background:rgba(255,255,255,0.85);border:3px solid transparent;border-radius:20px;
+  .explorer-btn{flex:1;background:rgba(255,255,255,0.85);border:2px solid transparent;border-radius:13px;
     padding:10px 8px;text-align:center;cursor:pointer;box-shadow:var(--shadow);}
   .explorer-btn.active{border-color:var(--coral);background:#fff;}
   .explorer-btn .avatar{display:flex;align-items:center;justify-content:center;}
@@ -143,14 +140,14 @@
   .explorer-btn .dressup-hint{display:block;font-size:9.5px;font-weight:800;color:#a0adc0;margin-top:2px;}
 
   /* Trail progress */
-  .trail-card{background:var(--card);border-radius:22px;padding:18px 16px 14px;box-shadow:var(--shadow);margin:14px 0;}
+  .trail-card{background:var(--card);border-radius:14px;padding:18px 16px 14px;box-shadow:var(--shadow);margin:14px 0;}
   .trail-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
   .trail-head h2{margin:0;font-size:18px;}
   .trail-head .goal-label{font-size:13px;font-weight:700;color:#7a8aa3;}
   .trail-track{position:relative;height:54px;}
   .trail-line{position:absolute;left:6px;right:6px;top:26px;height:10px;background:var(--path);
-    border-radius:10px;overflow:hidden;}
-  .trail-fill{height:100%;background:linear-gradient(90deg, var(--grass), #7ED18C);border-radius:10px;
+    border-radius:8px;overflow:hidden;}
+  .trail-fill{height:100%;background:linear-gradient(90deg, var(--grass), var(--forest-light));border-radius:8px;
     transition:width .5s ease;}
   .trail-flag-end{position:absolute;right:-2px;top:6px;font-size:26px;}
   .hiker{position:absolute;top:-14px;transition:left .5s ease;transform:translateX(-50%);
@@ -164,30 +161,30 @@
   .section-title{display:flex;align-items:center;gap:8px;margin:18px 0 10px;}
   .section-title h2{margin:0;font-size:19px;}
   .section-title .badge{background:var(--sun);color:var(--ink);font-weight:800;font-size:12px;
-    padding:2px 10px;border-radius:12px;}
+    padding:2px 10px;border-radius:9px;}
 
   /* View toggle */
   .view-tabs{display:flex;gap:8px;margin:16px 0 4px;background:rgba(255,255,255,0.5);
-    padding:4px;border-radius:16px;}
-  .view-tab{flex:1;border:none;background:transparent;padding:9px 8px;border-radius:12px;
+    padding:4px;border-radius:11px;}
+  .view-tab{flex:1;border:none;background:transparent;padding:9px 8px;border-radius:9px;
     font-weight:800;font-size:14px;color:var(--ink);cursor:pointer;font-family:inherit;}
   .view-tab.active{background:#fff;box-shadow:var(--shadow);}
 
   /* Weekly view */
-  .week-card{background:var(--card);border-radius:22px;padding:16px 16px 10px;box-shadow:var(--shadow);margin:14px 0 6px;}
+  .week-card{background:var(--card);border-radius:14px;padding:16px 16px 10px;box-shadow:var(--shadow);margin:14px 0 6px;}
   .week-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
   .week-head h2{margin:0;font-size:18px;}
   .week-total{font-weight:800;color:var(--sky-deep);font-size:14px;}
   .week-chart{display:flex;justify-content:space-between;align-items:flex-end;height:110px;gap:6px;}
   .week-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
   .week-bar-track{flex:1;display:flex;align-items:flex-end;width:100%;justify-content:center;}
-  .week-bar{width:60%;min-width:14px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,#7ED18C,var(--grass));
+  .week-bar{width:60%;min-width:14px;border-radius:7px 8px 4px 4px;background:linear-gradient(180deg,var(--forest-light),var(--grass));
     transition:height .4s ease;}
-  .week-bar-col.today .week-bar{background:linear-gradient(180deg,#FFDD7A,var(--sun));}
+  .week-bar-col.today .week-bar{background:linear-gradient(180deg,var(--gold-light),var(--sun));}
   .week-bar-label{font-size:11px;font-weight:800;color:#8798af;margin-top:6px;}
   .week-bar-col.today .week-bar-label{color:var(--ink);}
   .week-bar-pts{font-size:11px;font-weight:700;color:var(--sky-deep);margin-top:1px;}
-  .trend-card{background:var(--card);border-radius:22px;padding:16px 14px;box-shadow:var(--shadow);
+  .trend-card{background:var(--card);border-radius:14px;padding:16px 14px;box-shadow:var(--shadow);
     margin:0 0 6px;overflow-x:auto;}
   .trend-table{display:grid;grid-template-columns:minmax(88px,1.3fr) repeat(7, 28px) 36px;
     align-items:center;gap:6px 4px;min-width:340px;}
@@ -204,15 +201,15 @@
   .trend-empty{grid-column:1 / -1;text-align:center;color:#8798af;font-weight:700;padding:14px 0;font-size:13px;}
 
   /* Journey / roll-ups */
-  .journey-hero{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:22px;
+  .journey-hero{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;
     padding:12px 16px;box-shadow:var(--shadow);margin:14px 0;}
   .journey-hero-avatar svg{width:52px;height:auto;display:block;filter:drop-shadow(0 3px 3px rgba(35,55,82,0.2));}
-  .journey-hero-name{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:20px;}
+  .journey-hero-name{font-family:'Rubik',sans-serif;font-weight:800;font-size:20px;}
   .rollup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
-  .rollup-card{background:var(--card);border-radius:20px;padding:14px;box-shadow:var(--shadow);
+  .rollup-card{background:var(--card);border-radius:13px;padding:14px;box-shadow:var(--shadow);
     position:relative;overflow:hidden;}
   .rollup-card .rc-label{font-size:12px;font-weight:800;color:#8798af;text-transform:uppercase;letter-spacing:0.4px;}
-  .rollup-card .rc-net{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:34px;line-height:1.1;margin-top:2px;}
+  .rollup-card .rc-net{font-family:'Rubik',sans-serif;font-weight:800;font-size:34px;line-height:1.1;margin-top:2px;}
   .rollup-card .rc-sub{font-size:11.5px;font-weight:700;color:#7a8aa3;margin-top:2px;}
   .rollup-card .rc-emoji{position:absolute;right:10px;top:10px;font-size:22px;opacity:0.5;}
   .rollup-card.day{background:linear-gradient(180deg,#FFF7E4,#fff);}
@@ -225,7 +222,7 @@
 
   /* Ledger */
   .ledger{display:flex;flex-direction:column;gap:7px;}
-  .ledger-day{background:var(--card);border-radius:16px;padding:8px 12px;box-shadow:var(--shadow);}
+  .ledger-day{background:var(--card);border-radius:11px;padding:8px 12px;box-shadow:var(--shadow);}
   .ledger-date{font-weight:800;font-size:12.5px;color:#5a6b85;margin-bottom:5px;}
   .ledger-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:2px 0;}
   .ledger-row .lr-icon{font-size:16px;width:22px;text-align:center;}
@@ -237,7 +234,7 @@
 
   /* Grown-up deduct button */
   .grownup-deduct{display:block;width:100%;margin:12px 0 2px;border:2px dashed #E0B4AE;
-    background:#FFF5F3;color:#B3392B;border-radius:14px;padding:10px;font-weight:800;font-size:13px;
+    background:#FFF5F3;color:#B3392B;border-radius:10px;padding:10px;font-weight:800;font-size:13px;
     font-family:inherit;cursor:pointer;}
   .grownup-deduct:active{transform:scale(0.98);}
 
@@ -245,7 +242,7 @@
   .deduct-help{font-size:13px;color:#5a6b85;line-height:1.5;margin:0 0 12px;}
   .deduct-list{display:flex;flex-direction:column;gap:9px;}
   .deduct-item{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #F0D8D3;
-    border-radius:16px;padding:12px 14px;cursor:pointer;}
+    border-radius:11px;padding:12px 14px;cursor:pointer;}
   .deduct-item:active{transform:scale(0.98);background:#FFF5F3;}
   .deduct-item .di-icon{font-size:24px;width:34px;text-align:center;}
   .deduct-item .di-name{flex:1;font-weight:800;font-size:15px;}
@@ -265,10 +262,10 @@
   .pin-dots.wrong .pin-dot{background:var(--coral);}
   @keyframes pinShake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-9px);}40%,80%{transform:translateX(9px);}}
   .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:280px;margin:0 auto;}
-  .pin-key{border:none;background:#fff;border-radius:16px;padding:16px 0;font-size:24px;font-weight:800;
-    font-family:'Baloo 2',sans-serif;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 rgba(35,55,82,0.12);
+  .pin-key{border:none;background:#fff;border-radius:11px;padding:16px 0;font-size:24px;font-weight:800;
+    font-family:'Rubik',sans-serif;color:var(--ink);cursor:pointer;box-shadow:0 3px 6px rgba(27,42,61,0.16);
     transition:transform .1s ease;}
-  .pin-key:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(35,55,82,0.12);}
+  .pin-key:active{transform:translateY(2px);box-shadow:0 1px 2px rgba(27,42,61,0.14);}
   .pin-key.wide{grid-column:span 1;font-size:20px;color:#7a8aa3;}
   .pin-key.blank{background:transparent;box-shadow:none;cursor:default;}
 
@@ -278,9 +275,9 @@
 
   /* Home stats strip */
   .home-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 4px;}
-  .home-stat{background:var(--card);border-radius:16px;padding:10px 4px;box-shadow:var(--shadow);text-align:center;}
+  .home-stat{background:var(--card);border-radius:11px;padding:10px 4px;box-shadow:var(--shadow);text-align:center;}
   .home-stat.now{background:linear-gradient(180deg,#FFF3D6,#fff);}
-  .home-stat .hs-val{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:22px;line-height:1.05;}
+  .home-stat .hs-val{font-family:'Rubik',sans-serif;font-weight:800;font-size:22px;line-height:1.05;}
   .home-stat .hs-label{font-size:9.5px;font-weight:800;color:#8798af;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;}
   .home-stat .hs-val.pos{color:var(--grass);}
   .home-stat .hs-val.neg{color:var(--coral);}
@@ -291,8 +288,8 @@
 
   /* Task list */
   .tasks{display:flex;flex-direction:column;gap:10px;}
-  .task{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;
-    padding:12px 14px;box-shadow:var(--shadow);cursor:pointer;border:3px solid transparent;
+  .task{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:12px;
+    padding:12px 14px;box-shadow:var(--shadow);cursor:pointer;border:2px solid transparent;
     transition:transform .12s ease, border-color .12s ease;}
   .task:active{transform:scale(0.97);}
   .task.done{border-color:var(--grass);background:#F2FBF3;}
@@ -300,15 +297,15 @@
   .task .info{flex:1;}
   .task .info .name{font-weight:800;font-size:16px;}
   .task .info .pts{font-size:13px;color:var(--sky-deep);font-weight:700;}
-  .task .check{width:30px;height:30px;border-radius:50%;border:3px solid #DCE4EE;
+  .task .check{width:30px;height:30px;border-radius:50%;border:2px solid #DCE4EE;
     display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
   .task.done .check{background:var(--grass);border-color:var(--grass);color:#fff;}
   .empty-note{text-align:center;color:#8798af;font-weight:700;padding:20px 0;}
 
   /* Rewards */
   .rewards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .reward{background:var(--card);border-radius:18px;padding:14px 10px;text-align:center;box-shadow:var(--shadow);
-    cursor:pointer;border:3px solid transparent;}
+  .reward{background:var(--card);border-radius:12px;padding:14px 10px;text-align:center;box-shadow:var(--shadow);
+    cursor:pointer;border:2px solid transparent;}
   .reward .icon{font-size:30px;}
   .reward .name{font-weight:800;font-size:14px;margin-top:4px;}
   .reward .cost{font-size:12px;font-weight:700;color:var(--sky-deep);margin-top:2px;}
@@ -321,25 +318,25 @@
   .overlay{position:fixed;inset:0;background:rgba(20,30,50,0.55);display:none;
     align-items:flex-end;justify-content:center;z-index:20;}
   .overlay.show{display:flex;}
-  .sheet{background:var(--cream);width:100%;max-width:520px;border-radius:26px 26px 0 0;
+  .sheet{background:var(--cream);width:100%;max-width:520px;border-radius:16px 26px 0 0;
     padding:20px 18px 28px;max-height:86vh;overflow-y:auto;}
   .sheet h3{margin-top:0;}
   .sheet-close{float:right;background:#DCE4EE;border:none;width:34px;height:34px;border-radius:50%;
     font-size:16px;cursor:pointer;}
   .row-inline{display:flex;gap:8px;align-items:center;margin:10px 0;}
-  .field{width:100%;padding:10px 12px;border-radius:12px;border:2px solid #DCE4EE;font-family:inherit;font-size:15px;}
+  .field{width:100%;padding:10px 12px;border-radius:9px;border:2px solid #DCE4EE;font-family:inherit;font-size:15px;}
   .field.small{width:70px;text-align:center;}
-  .btn{border:none;border-radius:14px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer;}
-  .btn-primary{background:var(--coral);color:#fff;box-shadow:0 4px 0 #C74C3E;}
+  .btn{border:none;border-radius:10px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer;}
+  .btn-primary{background:var(--ember-btn);color:#fff;box-shadow:0 3px 8px rgba(169,74,30,0.4);}
   .btn-secondary{background:#DCE4EE;color:var(--ink);}
   .btn-full{width:100%;}
-  .manage-row{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px;flex-wrap:wrap;}
+  .manage-row{display:flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px;flex-wrap:wrap;}
   .manage-row .icon{font-size:22px;display:flex;align-items:center;justify-content:center;}
   .manage-row .icon svg{width:30px;height:auto;display:block;
     filter:drop-shadow(0 2px 2px rgba(35,55,82,0.18));}
   .avatar-grid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
-  .avatar-pick{background:linear-gradient(180deg,#ffffff,#F1F5FA);border:3px solid #DCE4EE;
-    border-radius:18px;width:62px;height:66px;padding:4px;cursor:pointer;display:flex;
+  .avatar-pick{background:linear-gradient(180deg,#ffffff,#F1F5FA);border:2px solid #DCE4EE;
+    border-radius:12px;width:62px;height:66px;padding:4px;cursor:pointer;display:flex;
     align-items:center;justify-content:center;
     transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-color .2s ease, background .2s ease;}
   .avatar-pick svg{width:100%;height:auto;display:block;
@@ -355,37 +352,52 @@
   .manage-row .field{font-size:14px;padding:8px 10px;}
   .manage-row .field.small{width:56px;}
   .tabs{display:flex;gap:6px;margin-bottom:14px;}
-  .tab{flex:1;text-align:center;padding:8px;border-radius:12px;background:#fff;font-weight:800;cursor:pointer;font-size:13px;}
+  .tab{flex:1;text-align:center;padding:8px;border-radius:9px;background:#fff;font-weight:800;cursor:pointer;font-size:13px;}
   .tab.active{background:var(--ink);color:#fff;}
   .tabpane{display:none;}
   .tabpane.active{display:block;}
   .emoji-pick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
-  .emoji-pick button{font-size:20px;background:#fff;border:2px solid #DCE4EE;border-radius:10px;
+  .emoji-pick button{font-size:20px;background:#fff;border:2px solid #DCE4EE;border-radius:8px;
     width:40px;height:40px;cursor:pointer;}
   .emoji-pick button.sel{border-color:var(--coral);background:#FFE7E3;}
   .sync-help{font-size:13px;color:#5a6b85;line-height:1.5;margin:0 0 12px;}
   .sync-note{font-size:11.5px;color:#8798af;line-height:1.5;margin:8px 0 12px;}
   .sync-status-line{font-size:12px;font-weight:700;color:#5a6b85;text-align:center;margin-top:10px;}
 
+  /* Theme picker */
+  .theme-grid{display:flex;flex-direction:column;gap:10px;}
+  .theme-card{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #DCE4EE;
+    border-radius:16px;padding:12px 14px;cursor:pointer;}
+  .theme-card:active{transform:scale(0.98);}
+  .theme-card.sel{border-color:var(--ink);background:#F7F5EE;}
+  .theme-swatches{display:flex;flex-shrink:0;}
+  .theme-swatches span{width:16px;height:28px;margin-left:-6px;border-radius:5px;border:2px solid #fff;}
+  .theme-swatches span:first-child{margin-left:0;}
+  .theme-card-text{flex:1;}
+  .theme-card-name{font-weight:800;font-size:15px;}
+  .theme-card-desc{font-size:12px;color:#7a8aa3;font-weight:700;margin-top:1px;}
+  .theme-card-check{font-size:18px;color:var(--forest);opacity:0;}
+  .theme-card.sel .theme-card-check{opacity:1;}
+
   /* Camp Locker (kid-facing dress-up) */
   .locker-sheet{background:linear-gradient(180deg,#EAF7FD,var(--cream) 40%);}
   .locker-stage{position:relative;display:flex;align-items:center;justify-content:center;
     background:radial-gradient(circle at 50% 40%, #ffffff, #DCF0F9);
-    border-radius:22px;padding:10px;margin-bottom:10px;}
+    border-radius:14px;padding:10px;margin-bottom:10px;}
   .locker-preview svg{width:132px;height:auto;display:block;
     filter:drop-shadow(0 6px 6px rgba(35,55,82,0.22));}
   .locker-preview.avatar-pop svg{animation:avatarPop .55s ease-out;}
   .dice-btn{position:absolute;right:10px;bottom:10px;border:none;background:#fff;
     width:48px;height:48px;border-radius:50%;font-size:24px;cursor:pointer;
-    box-shadow:0 4px 0 rgba(35,55,82,0.15);transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+    box-shadow:0 3px 7px rgba(27,42,61,0.2);transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
   .dice-btn:active{transform:scale(0.86) rotate(25deg);}
 
   .locker-unlock{text-align:center;font-size:12px;font-weight:800;color:#5a6b85;margin-bottom:10px;}
 
   .locker-tabs{display:flex;gap:4px;margin-bottom:12px;}
-  .locker-tab{flex:1;border:none;background:#fff;border-radius:12px;padding:6px 1px;
+  .locker-tab{flex:1;border:none;background:#fff;border-radius:9px;padding:6px 1px;
     font-size:17px;cursor:pointer;font-family:inherit;line-height:1.1;min-width:0;
-    box-shadow:0 3px 0 rgba(35,55,82,0.1);transition:transform .15s ease;}
+    box-shadow:0 2px 5px rgba(27,42,61,0.12);transition:transform .15s ease;}
   .locker-tab span{display:block;font-size:8.5px;font-weight:800;color:#7a8aa3;margin-top:1px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .locker-tab.active{background:var(--ink);}
@@ -394,7 +406,7 @@
 
   .locker-options{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;
     margin-bottom:14px;min-height:76px;}
-  .opt{position:relative;background:#fff;border:3px solid #DCE4EE;border-radius:18px;
+  .opt{position:relative;background:#fff;border:2px solid #DCE4EE;border-radius:12px;
     cursor:pointer;display:flex;align-items:center;justify-content:center;padding:3px;
     transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-color .2s ease;}
   .opt:active{transform:scale(0.9);}
@@ -417,7 +429,7 @@
 
   /* Celebration toast */
   .toast{position:fixed;left:50%;top:16%;transform:translate(-50%,-20px);background:#fff;padding:16px 22px;
-    border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.18);text-align:center;z-index:60;opacity:0;
+    border-radius:13px;box-shadow:0 10px 30px rgba(0,0,0,0.18);text-align:center;z-index:60;opacity:0;
     transition:all .35s ease;pointer-events:none;}
   .toast.show{opacity:1;transform:translate(-50%,0);}
   .toast .big{font-size:40px;}
@@ -425,20 +437,16 @@
 </style>
 </head>
 <body>
-<div class="sun"></div>
-<div class="cloud c1"></div>
-<div class="cloud c2"></div>
-
 <div class="app">
   <div class="topbar">
-    <div class="brand"><span class="flag">🚩</span><span class="title">Trail Quest</span></div>
+    <div class="brand"><span class="flag" id="brandIcon">🚩</span><span class="title" id="brandTitle">Trail Quest</span></div>
     <button class="gear" id="gearBtn" title="Grown-up settings">⚙️</button>
   </div>
 
   <button class="sync-badge" id="syncBadge">⚠️ Not connected — tap to set up sharing</button>
 
   <div id="lobbyScreen">
-    <p class="lobby-title">Who's exploring today?</p>
+    <p class="lobby-title" id="lobbyTitle">Who's exploring today?</p>
     <div class="lobby-grid" id="lobbyGrid"></div>
   </div>
 
@@ -449,7 +457,7 @@
       <div class="profile-avatar" id="profileAvatar"></div>
       <div class="profile-head-text">
         <div class="profile-head-name" id="profileHeadName">Explorer</div>
-        <div class="profile-head-hint">✏️ tap me to dress up</div>
+        <div class="profile-head-hint" id="profileHint">✏️ tap me to dress up</div>
       </div>
     </div>
 
@@ -461,7 +469,7 @@
       <div class="trail-track">
         <div class="trail-line"><div class="trail-fill" id="trailFill" style="width:0%"></div></div>
         <div class="hiker" id="hiker" style="left:0%">🧑‍🦰</div>
-        <div class="trail-flag-end">🏕️</div>
+        <div class="trail-flag-end" id="trailFlagEnd">🏕️</div>
       </div>
       <div class="trail-sub" id="trailSub">0 points</div>
     </div>
@@ -476,12 +484,12 @@
       <div class="home-stats" id="homeStats"></div>
       <button class="grownup-deduct" id="myPinBtn" style="border-color:#B7CDE8;background:#F1F7FD;color:#2C5C8F;">🔒 My secret PIN</button>
 
-      <div class="section-title"><h2>Today's Quests</h2><span class="badge" id="questCount">0/0</span></div>
+      <div class="section-title"><h2 id="questsSectionTitle">Today's Quests</h2><span class="badge" id="questCount">0/0</span></div>
       <div class="tasks" id="taskList"></div>
 
       <button class="grownup-deduct" id="openDeductBtn">🧑‍🏫 Grown-up: take a point away</button>
 
-      <div class="section-title"><h2>Reward Camp</h2></div>
+      <div class="section-title"><h2 id="rewardsSectionTitle">Reward Camp</h2></div>
       <div class="rewards" id="rewardList"></div>
     </div>
 
@@ -510,7 +518,7 @@
     </div>
   </div>
 
-  <footer>Tap a quest when it's done. Ask a grown-up to unlock rewards. 🌲</footer>
+  <footer id="footerText">Tap a quest when it's done. Ask a grown-up to unlock rewards. 🌲</footer>
 </div>
 
 <!-- Grown-up settings overlay -->
@@ -519,10 +527,11 @@
     <button class="sheet-close" id="closeSettings">✕</button>
     <h3>Grown-up Settings</h3>
     <div class="tabs">
-      <div class="tab active" data-tab="explorersTab">Explorers</div>
-      <div class="tab" data-tab="tasksTab">Quests</div>
-      <div class="tab" data-tab="rewardsTab">Rewards</div>
+      <div class="tab active" data-tab="explorersTab" id="tabExplorersLabel">Explorers</div>
+      <div class="tab" data-tab="tasksTab" id="tabQuestsLabel">Quests</div>
+      <div class="tab" data-tab="rewardsTab" id="tabRewardsLabel">Rewards</div>
       <div class="tab" data-tab="behaviourTab">Behaviour</div>
+      <div class="tab" data-tab="themeTab">Theme</div>
       <div class="tab" data-tab="syncTab">Sync</div>
     </div>
 
@@ -564,6 +573,11 @@
       </div>
       <div class="emoji-pick" id="penaltyEmojiPick"></div>
       <button class="btn btn-primary btn-full" id="addPenaltyBtn">Add Reason</button>
+    </div>
+
+    <div class="tabpane" id="themeTab">
+      <p class="sync-help">Pick the look and feel that fits your explorers best. This changes colours, icons, and wording for everyone sharing this app.</p>
+      <div class="theme-grid" id="themeGrid"></div>
     </div>
 
     <div class="tabpane" id="syncTab">
@@ -666,6 +680,85 @@
 <script>
 /* ---------- Data ---------- */
 const STORAGE_KEY = 'trailquest_v1';
+
+/* ---------- Themes ----------
+   Each theme swaps a full palette (via CSS custom properties, so every
+   existing component re-colours automatically) plus the wording and icons
+   a kid actually sees, so the app isn't stuck being "adventure" for kids
+   who'd rather be an astronaut, a diver, or a player. */
+const THEMES = {
+  trail: {
+    name:'Trail Quest', desc:'Outdoor adventure & camp',
+    palette:{forest:'#2B6E55', forestDeep:'#1D4E3D', forestLight:'#4E9578', gold:'#D9A441', goldLight:'#F0C775',
+      ember:'#D96A34', emberBtn:'#B85A2C', teal:'#2A7F8C', berry:'#A23E4C', paper:'#F3EEDD'},
+    swatches:['#2B6E55','#D9A441','#D96A34','#2A7F8C'],
+    icon:'🚩', endFlag:'🏕️',
+    vocab:{
+      appName:'Trail Quest',
+      lobbyQuestion:"Who's exploring today?", backLabel:'← All explorers', dressUpHint:'✏️ tap me to dress up',
+      questsTitle:"Today's Quests", rewardsTitle:'Reward Camp', lockerSuffix:'Camp Locker',
+      footer:"Tap a quest when it's done. Ask a grown-up to unlock rewards. 🌲",
+      tabExplorers:'Explorers', tabQuests:'Quests', tabRewards:'Rewards',
+      goalPrefix:'next:', goalAllReached:'all camps reached', goalNone:'no rewards yet',
+      pinBtn:'🔒 My secret PIN', pinSub:'Enter your secret PIN to change points',
+      deductBtn:'🧑‍🏫 Grown-up: take a point away'
+    }
+  },
+  space: {
+    name:'Space Mission', desc:'Astronauts & rockets',
+    palette:{forest:'#35407A', forestDeep:'#232B57', forestLight:'#6B7FD1', gold:'#E8B23D', goldLight:'#F5D384',
+      ember:'#C13F8F', emberBtn:'#9A2F70', teal:'#2FA8C9', berry:'#B84A3E', paper:'#EEEEF6'},
+    swatches:['#35407A','#E8B23D','#C13F8F','#2FA8C9'],
+    icon:'🚀', endFlag:'🪐',
+    vocab:{
+      appName:'Space Mission',
+      lobbyQuestion:"Who's launching today?", backLabel:'← All astronauts', dressUpHint:'✏️ tap me to suit up',
+      questsTitle:"Today's Missions", rewardsTitle:'Mission Rewards', lockerSuffix:'Space Locker',
+      footer:'Complete a mission when it\'s done. Ask mission control to unlock rewards. 🛰️',
+      tabExplorers:'Astronauts', tabQuests:'Missions', tabRewards:'Rewards',
+      goalPrefix:'next:', goalAllReached:'all missions complete', goalNone:'no rewards yet',
+      pinBtn:'🔒 My secret code', pinSub:'Enter your secret code to change points',
+      deductBtn:'🧑‍🚀 Mission control: remove a point'
+    }
+  },
+  ocean: {
+    name:'Ocean Explorers', desc:'Diving & sea creatures',
+    palette:{forest:'#1F6E7A', forestDeep:'#144B54', forestLight:'#55A6AE', gold:'#E0954A', goldLight:'#F0BE85',
+      ember:'#D9524A', emberBtn:'#B33F38', teal:'#3A8FC7', berry:'#A23E4C', paper:'#EEF3EC'},
+    swatches:['#1F6E7A','#E0954A','#D9524A','#3A8FC7'],
+    icon:'🐠', endFlag:'🏝️',
+    vocab:{
+      appName:'Ocean Explorers',
+      lobbyQuestion:"Who's diving in today?", backLabel:'← All divers', dressUpHint:'✏️ tap me to gear up',
+      questsTitle:"Today's Dives", rewardsTitle:'Treasure Chest', lockerSuffix:'Dive Locker',
+      footer:'Tap a dive when it\'s done. Ask a grown-up to open the treasure chest. 🫧',
+      tabExplorers:'Divers', tabQuests:'Dives', tabRewards:'Treasure',
+      goalPrefix:'next:', goalAllReached:'all treasure found', goalNone:'no treasure picked',
+      pinBtn:'🔒 My secret code', pinSub:'Enter your secret code to change points',
+      deductBtn:'🤿 Grown-up: take a point away'
+    }
+  },
+  arcade: {
+    name:'Arcade Legends', desc:'Video games & high scores',
+    palette:{forest:'#5A3EA6', forestDeep:'#3B2670', forestLight:'#8B72D6', gold:'#E8A93D', goldLight:'#F2CD7A',
+      ember:'#D6367B', emberBtn:'#AB2A61', teal:'#2FC9D9', berry:'#A23E4C', paper:'#EFEEF5'},
+    swatches:['#5A3EA6','#E8A93D','#D6367B','#2FC9D9'],
+    icon:'🕹️', endFlag:'🏆',
+    vocab:{
+      appName:'Arcade Legends',
+      lobbyQuestion:"Who's playing today?", backLabel:'← All players', dressUpHint:'✏️ tap me to customize',
+      questsTitle:"Today's Levels", rewardsTitle:'Prize Machine', lockerSuffix:'Character Select',
+      footer:'Clear a level when it\'s done. Ask a grown-up to open the prize machine. 🎮',
+      tabExplorers:'Players', tabQuests:'Levels', tabRewards:'Prizes',
+      goalPrefix:'next:', goalAllReached:'all levels cleared', goalNone:'no prizes picked',
+      pinBtn:'🔒 My secret code', pinSub:'Enter your secret code to change points',
+      deductBtn:'🎮 Grown-up: take a point away'
+    }
+  }
+};
+const THEME_IDS = Object.keys(THEMES);
+function currentTheme(){ return THEMES[state.theme] || THEMES.trail; }
+
 const TASK_EMOJIS = ['🦷','🛏️','🧸','🎒','👕','🧼','📚','🍽️','🐾','🧹','🥾','☂️','🚿','⏰','📝','🧦'];
 const REWARD_EMOJIS = ['📺','🍦','🎬','🏞️','🎮','🧁','🎨','🚲','🛍️','⭐','🍕','🌙'];
 const PENALTY_EMOJIS = ['🗣️','🙉','💢','🌪️','😠','🚫','⏰','📵','🥊','🤥','🧦','🍽️'];
@@ -1516,6 +1609,7 @@ function defaultData(){
       {id:'p3', name:'Being unkind', icon:'💢', points:2},
       {id:'p4', name:'Making a mess on purpose', icon:'🌪️', points:2}
     ],
+    theme: 'trail',
     lastResetDate: todayISO()
   };
 }
@@ -1584,6 +1678,7 @@ function applyDailyReset(data){
     {id:'p3', name:'Being unkind', icon:'💢', points:2},
     {id:'p4', name:'Making a mess on purpose', icon:'🌪️', points:2}
   ];
+  if(!data.theme || !THEMES[data.theme]) data.theme = 'trail';
   data.explorers.forEach(ex => {
     if(!ex.tasksDoneToday) ex.tasksDoneToday = [];
     if(!ex.history) ex.history = {};
@@ -1749,6 +1844,7 @@ async function pullLatest(showBadge){
   if(result && result.exists){
     state = applyDailyReset(result.data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    applyTheme();
     render();
   }
 }
@@ -1759,6 +1855,7 @@ async function initSync(){
   if(result && result.exists){
     state = applyDailyReset(result.data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    applyTheme();
     render();
   } else if(result && !result.exists){
     // No file yet in the repo — create it from this device's current data
@@ -1801,9 +1898,43 @@ function requireUnlock(ex, onOk){
     mode: 'verify',
     explorer: ex,
     title: `${ex.name}'s PIN`,
-    sub: 'Enter your secret PIN to change points',
+    sub: currentTheme().vocab.pinSub,
     onSuccess: () => { sessionUnlocked.add(ex.id); onOk(); }
   });
+}
+
+/* ---------- Theme application ----------
+   Repaints the CSS custom properties (so every existing component
+   re-colours for free) and re-texts the handful of kid-facing strings
+   that carry the theme's personality. */
+function applyTheme(){
+  const t = currentTheme();
+  const root = document.documentElement.style;
+  root.setProperty('--forest', t.palette.forest);
+  root.setProperty('--forest-deep', t.palette.forestDeep);
+  root.setProperty('--forest-light', t.palette.forestLight);
+  root.setProperty('--gold', t.palette.gold);
+  root.setProperty('--gold-light', t.palette.goldLight);
+  root.setProperty('--ember', t.palette.ember);
+  root.setProperty('--ember-btn', t.palette.emberBtn);
+  root.setProperty('--teal', t.palette.teal);
+  root.setProperty('--berry', t.palette.berry);
+  root.setProperty('--paper', t.palette.paper);
+
+  document.title = t.vocab.appName;
+  const setText = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
+  setText('brandIcon', t.icon);
+  setText('brandTitle', t.vocab.appName);
+  setText('lobbyTitle', t.vocab.lobbyQuestion);
+  setText('backToLobby', t.vocab.backLabel);
+  setText('profileHint', t.vocab.dressUpHint);
+  setText('questsSectionTitle', t.vocab.questsTitle);
+  setText('rewardsSectionTitle', t.vocab.rewardsTitle);
+  setText('footerText', t.vocab.footer);
+  setText('tabExplorersLabel', t.vocab.tabExplorers);
+  setText('tabQuestsLabel', t.vocab.tabQuests);
+  setText('tabRewardsLabel', t.vocab.tabRewards);
+  setText('trailFlagEnd', t.endFlag);
 }
 
 /* ---------- Helpers ---------- */
@@ -1849,24 +1980,10 @@ function renderLobby(){
       (ex.pin ? '<span class="lc-lock">🔒</span>' : '') +
       `<div class="lc-avatar">${avatarSVG(ex.avatar, 78)}</div>` +
       `<div class="lc-name">${escapeHtml(ex.name)}</div>` +
-      `<div class="lc-pts">${ex.points} pts</div>`;
+      `<div class="lc-pts stat-num">${ex.points} pts</div>`;
     card.onclick = () => enterProfile(ex.id);
     grid.appendChild(card);
   });
-  // Quick add card routes to the grown-up Explorers settings
-  const add = document.createElement('div');
-  add.className = 'lobby-card add-card';
-  add.innerHTML = '<div class="plus">+</div><div class="add-label">Add explorer</div>';
-  add.onclick = () => {
-    settingsOverlay.classList.add('show');
-    editingTaskIds.clear(); editingRewardIds.clear(); editingPenaltyIds.clear();
-    renderManageLists(); buildEmojiPickers(); renderSyncTab();
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.tabpane').forEach(p=>p.classList.remove('active'));
-    document.querySelector('.tab[data-tab="explorersTab"]').classList.add('active');
-    document.getElementById('explorersTab').classList.add('active');
-  };
-  grid.appendChild(add);
 }
 
 function enterProfile(exId){
@@ -1908,7 +2025,7 @@ function renderHomeStats(){
     const sign = (!isNow && val > 0) ? '+' : '';
     const tone = isNow ? '' : (val > 0 ? 'pos' : (val < 0 ? 'neg' : ''));
     return `<div class="home-stat ${isNow ? 'now' : ''}">
-      <div class="hs-val ${tone}">${sign}${val}</div>
+      <div class="hs-val stat-num ${tone}">${sign}${val}</div>
       <div class="hs-label">${label}</div>
     </div>`;
   };
@@ -1918,9 +2035,12 @@ function renderHomeStats(){
     cell('Month', r.month.net, '', false) +
     cell('Year', r.year.net, '', false);
 
-  // Keep the My-PIN button label in sync with lock state
+  // Keep the My-PIN button label in sync with lock state and theme
   const pinBtn = document.getElementById('myPinBtn');
-  if(pinBtn) pinBtn.textContent = ex.pin ? '🔒 My secret PIN (on)' : '🔒 My secret PIN';
+  const pinLabel = currentTheme().vocab.pinBtn;
+  if(pinBtn) pinBtn.textContent = ex.pin ? `${pinLabel} (on)` : pinLabel;
+  const deductBtn = document.getElementById('openDeductBtn');
+  if(deductBtn) deductBtn.textContent = currentTheme().vocab.deductBtn;
 }
 
 document.querySelectorAll('.view-tab').forEach(tab => {
@@ -1958,7 +2078,7 @@ function renderJourneyView(){
     el.innerHTML = `
       <span class="rc-emoji">${c.emoji}</span>
       <div class="rc-label">${c.label}</div>
-      <div class="rc-net ${cls}">${sign}${net}</div>
+      <div class="rc-net stat-num ${cls}">${sign}${net}</div>
       <div class="rc-sub">⬆ ${c.data.earned} earned · ⬇ ${c.data.lost} lost</div>`;
     grid.appendChild(el);
   });
@@ -2107,6 +2227,7 @@ document.querySelector('.profile-header').onclick = () => {
 
 function renderTrail(){
   const ex = getActiveExplorer();
+  const t = currentTheme();
   document.getElementById('explorerName').textContent = ex.name;
   const goal = nextGoal(ex);
   const fillEl = document.getElementById('trailFill');
@@ -2120,19 +2241,19 @@ function renderTrail(){
     hiker.style.left = pct + '%';
     hiker.innerHTML = avatarSVG(ex.avatar, 40);
     sub.textContent = `${ex.points} / ${goal.points} pts toward ${goal.name} ${goal.icon}`;
-    goalLabel.textContent = `next: ${goal.name}`;
+    goalLabel.textContent = `${t.vocab.goalPrefix} ${goal.name}`;
   } else if(state.rewards.length){
     fillEl.style.width = '100%';
     hiker.style.left = '100%';
     hiker.innerHTML = avatarSVG(ex.avatar, 40);
     sub.textContent = `${ex.points} pts — every reward unlocked! 🎉`;
-    goalLabel.textContent = 'all camps reached';
+    goalLabel.textContent = t.vocab.goalAllReached;
   } else {
     fillEl.style.width = '0%';
     hiker.style.left = '0%';
     hiker.innerHTML = avatarSVG(ex.avatar, 40);
     sub.textContent = `${ex.points} points`;
-    goalLabel.textContent = 'no rewards yet';
+    goalLabel.textContent = t.vocab.goalNone;
   }
 }
 
@@ -2500,7 +2621,7 @@ function askRemove(title, onYes){
 
 /* ---------- Confetti + toast ---------- */
 function launchConfetti(big){
-  const colors = ['#3FB8E8','#FFC93C','#57B96B','#FF6F5E','#B685FF'];
+  const colors = currentTheme().swatches;
   const count = big ? 40 : 22;
   for(let i=0;i<count;i++){
     const piece = document.createElement('div');
@@ -2554,7 +2675,7 @@ document.querySelectorAll('.locker-tab').forEach(tab => {
 
 function renderLocker(){
   const ex = getActiveExplorer();
-  document.getElementById('lockerTitle').textContent = `${ex.name}'s Camp Locker`;
+  document.getElementById('lockerTitle').textContent = `${ex.name}'s ${currentTheme().vocab.lockerSuffix}`;
   renderLockerPreview();
   renderLockerUnlockNote();
   renderLockerOptions();
@@ -2739,6 +2860,7 @@ document.getElementById('gearBtn').onclick = () => {
   renderManageLists();
   buildEmojiPickers();
   renderSyncTab();
+  renderThemeTab();
 };
 document.getElementById('closeSettings').onclick = () => settingsOverlay.classList.remove('show');
 settingsOverlay.onclick = (e) => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('show'); };
@@ -2765,6 +2887,33 @@ function renderSyncTab(){
     : 'Not connected yet — data is only saved on this device.';
 }
 
+function renderThemeTab(){
+  const grid = document.getElementById('themeGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  THEME_IDS.forEach(id => {
+    const t = THEMES[id];
+    const card = document.createElement('div');
+    card.className = 'theme-card' + (state.theme === id ? ' sel' : '');
+    card.innerHTML = `
+      <div class="theme-swatches">${t.swatches.map(c => `<span style="background:${c}"></span>`).join('')}</div>
+      <div class="theme-card-text">
+        <div class="theme-card-name">${t.icon} ${t.name}</div>
+        <div class="theme-card-desc">${t.desc}</div>
+      </div>
+      <span class="theme-card-check">✓</span>`;
+    card.onclick = () => {
+      if(state.theme === id) return;
+      state.theme = id;
+      save(state);
+      applyTheme();
+      render();
+      renderThemeTab();
+    };
+    grid.appendChild(card);
+  });
+}
+
 document.getElementById('syncConnectBtn').onclick = async () => {
   const owner = document.getElementById('syncOwner').value.trim();
   const repo = document.getElementById('syncRepo').value.trim();
@@ -2784,6 +2933,7 @@ document.getElementById('syncConnectBtn').onclick = async () => {
   if(result && result.exists){
     state = applyDailyReset(result.data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    applyTheme();
     render();
     document.getElementById('syncStatusLine').textContent = `Connected — pulled existing shared data from ${owner}/${repo}.`;
   } else if(result && !result.exists){
@@ -3062,6 +3212,7 @@ function escapeHtml(str){
 }
 
 /* ---------- Init ---------- */
+applyTheme();
 render();
 initSync();
 </script>
