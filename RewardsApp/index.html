@@ -49,7 +49,7 @@
   button{font-family:inherit;}
 
   .app{position:relative;z-index:1;max-width:520px;margin:0 auto;min-height:100vh;
-    display:flex;flex-direction:column;padding:16px 16px 40px;}
+    display:flex;flex-direction:column;padding:16px 16px 72px;}
 
   /* Header */
   .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
@@ -60,12 +60,18 @@
   .gear{background:rgba(255,255,255,0.35);border:none;border-radius:10px;width:40px;height:40px;
     font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 
-  .sync-badge{display:block;width:100%;border:none;border-radius:9px;padding:7px 10px;
-    font-size:12px;font-weight:800;cursor:pointer;text-align:center;margin-top:2px;font-family:inherit;
-    background:rgba(255,255,255,0.55);color:var(--ink);}
-  .sync-badge.synced{background:#E4F7E8;color:#2C7A3F;}
-  .sync-badge.syncing{background:#FFF3D6;color:#9A6B00;}
-  .sync-badge.error{background:#FFE1DC;color:#B3392B;}
+  .sync-badge{display:flex;align-items:center;justify-content:center;gap:8px;
+    position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;
+    border:none;padding:13px 16px calc(13px + env(safe-area-inset-bottom));
+    font-size:15px;font-weight:800;cursor:pointer;text-align:center;font-family:inherit;
+    background:#DCE4EE;color:var(--ink);z-index:30;
+    box-shadow:0 -2px 10px rgba(27,42,61,0.18);}
+  .sync-badge .sb-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:currentColor;}
+  .sync-badge.synced{background:var(--forest);color:#fff;}
+  .sync-badge.syncing{background:var(--gold);color:#1B2A3D;}
+  .sync-badge.error{background:var(--berry);color:#fff;}
+  .sync-badge.error .sb-dot{animation:sbPulse 1s ease-in-out infinite;}
+  @keyframes sbPulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
 
   /* Explorer switcher */
   .explorers{display:flex;gap:10px;margin:14px 0 6px;}
@@ -85,6 +91,7 @@
   .lobby-card .lc-name{font-family:'Rubik',sans-serif;font-weight:800;font-size:18px;margin-top:6px;}
   .lobby-card .lc-pts{font-weight:800;font-size:14px;color:var(--sky-deep);margin-top:1px;}
   .lobby-card .lc-lock{position:absolute;top:10px;right:12px;font-size:16px;}
+  .lobby-card .lc-theme-icon{position:absolute;top:10px;left:12px;font-size:15px;}
 
   /* Back button + profile header */
   .back-btn{background:rgba(255,255,255,0.85);border:none;border-radius:10px;padding:9px 16px;
@@ -316,7 +323,7 @@
 
   /* Overlays */
   .overlay{position:fixed;inset:0;background:rgba(20,30,50,0.55);display:none;
-    align-items:flex-end;justify-content:center;z-index:20;}
+    align-items:flex-end;justify-content:center;z-index:40;}
   .overlay.show{display:flex;}
   .sheet{background:var(--cream);width:100%;max-width:520px;border-radius:16px 26px 0 0;
     padding:20px 18px 28px;max-height:86vh;overflow-y:auto;}
@@ -363,9 +370,20 @@
   .sync-help{font-size:13px;color:#5a6b85;line-height:1.5;margin:0 0 12px;}
   .sync-note{font-size:11.5px;color:#8798af;line-height:1.5;margin:8px 0 12px;}
   .sync-status-line{font-size:12px;font-weight:700;color:#5a6b85;text-align:center;margin-top:10px;}
+  .advanced-toggle{display:block;width:100%;background:none;border:none;color:#7a8aa3;
+    font-weight:800;font-size:12.5px;text-align:center;padding:14px 0 6px;cursor:pointer;font-family:inherit;}
+  .advanced-panel{background:#F7F5EE;border-radius:12px;padding:10px 10px 4px;margin-top:4px;}
 
   /* Theme picker */
   .theme-grid{display:flex;flex-direction:column;gap:10px;}
+  .theme-explorer-picker{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .theme-explorer-btn{display:flex;flex-direction:column;align-items:center;gap:2px;
+    background:#fff;border:2px solid #DCE4EE;border-radius:12px;padding:6px 8px;cursor:pointer;
+    font-family:inherit;min-width:56px;}
+  .theme-explorer-btn svg{width:32px;height:auto;display:block;}
+  .theme-explorer-btn span{font-size:10.5px;font-weight:800;color:#5a6b85;max-width:56px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .theme-explorer-btn.sel{border-color:var(--forest);background:#F2F7F4;}
   .theme-card{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #DCE4EE;
     border-radius:16px;padding:12px 14px;cursor:pointer;}
   .theme-card:active{transform:scale(0.98);}
@@ -482,7 +500,10 @@
 
     <div id="todayView">
       <div class="home-stats" id="homeStats"></div>
-      <button class="grownup-deduct" id="myPinBtn" style="border-color:#B7CDE8;background:#F1F7FD;color:#2C5C8F;">🔒 My secret PIN</button>
+      <div class="row-inline">
+        <button class="grownup-deduct" id="myThemeBtn" style="flex:1;border-color:#D8BFEA;background:#F8F2FC;color:#6B3FA0;">🎨 My Theme</button>
+        <button class="grownup-deduct" id="myPinBtn" style="flex:1;border-color:#B7CDE8;background:#F1F7FD;color:#2C5C8F;">🔒 My secret PIN</button>
+      </div>
 
       <div class="section-title"><h2 id="questsSectionTitle">Today's Quests</h2><span class="badge" id="questCount">0/0</span></div>
       <div class="tasks" id="taskList"></div>
@@ -576,18 +597,15 @@
     </div>
 
     <div class="tabpane" id="themeTab">
-      <p class="sync-help">Pick the look and feel that fits your explorers best. This changes colours, icons, and wording for everyone sharing this app.</p>
+      <p class="sync-help">Each explorer can have their own look. Kids can also change this themselves from their own profile with the 🎨 My Theme button. Pick who you're setting below:</p>
+      <div class="theme-explorer-picker" id="themeExplorerPicker"></div>
       <div class="theme-grid" id="themeGrid"></div>
     </div>
 
     <div class="tabpane" id="syncTab">
-      <p class="sync-help">Store data as a JSON file in a GitHub repo so every device sees the same points and quests. Host the app itself on GitHub Pages from the same repo.</p>
-      <div class="row-inline"><input class="field" id="syncOwner" placeholder="GitHub username or org"></div>
-      <div class="row-inline"><input class="field" id="syncRepo" placeholder="Repository name"></div>
-      <div class="row-inline"><input class="field" id="syncBranch" placeholder="Branch (default: main)"></div>
-      <div class="row-inline"><input class="field" id="syncPath" placeholder="File path (default: trailquest-data.json)"></div>
-      <div class="row-inline"><input class="field" id="syncToken" type="password" placeholder="Personal access token"></div>
-      <p class="sync-note">Use a <strong>fine-grained</strong> token scoped only to this repo, with "Contents: Read and write" permission. It's stored in this browser's local storage only — anyone with device access could read it, so don't reuse a token with broader access.</p>
+      <p class="sync-help">This device just needs a token to join the shared points data.</p>
+      <div class="row-inline"><input class="field" id="syncToken" type="password" placeholder="Paste your access token here"></div>
+      <p class="sync-note">Use a <strong>fine-grained</strong> token scoped only to the data repo, with "Contents: Read and write" permission. It's stored in this browser's local storage only — anyone with device access could read it, so don't reuse a token with broader access.</p>
       <button class="btn btn-primary btn-full" id="syncConnectBtn">Save &amp; Connect</button>
       <div class="row-inline" style="margin-top:8px;">
         <button class="btn btn-secondary" id="syncPullBtn" style="flex:1;">Pull Latest</button>
@@ -595,6 +613,15 @@
       </div>
       <button class="btn btn-secondary btn-full" id="syncDisconnectBtn" style="margin-top:8px;">Disconnect</button>
       <p class="sync-status-line" id="syncStatusLine"></p>
+
+      <button class="advanced-toggle" id="syncAdvancedToggle">⚙️ Advanced: repo details ▾</button>
+      <div class="advanced-panel" id="syncAdvancedPanel" style="display:none;">
+        <div class="row-inline"><input class="field" id="syncOwner" placeholder="GitHub username or org"></div>
+        <div class="row-inline"><input class="field" id="syncRepo" placeholder="Repository name"></div>
+        <div class="row-inline"><input class="field" id="syncBranch" placeholder="Branch (default: main)"></div>
+        <div class="row-inline"><input class="field" id="syncPath" placeholder="File path (default: trailquest-data.json)"></div>
+        <p class="sync-note">These are pre-filled for this deployment — only change them if you know you need to.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -677,6 +704,15 @@
   </div>
 </div>
 
+<div class="overlay" id="myThemeOverlay">
+  <div class="sheet">
+    <button class="sheet-close" id="closeMyTheme">✕</button>
+    <h3 id="myThemeTitle">My Theme</h3>
+    <p class="sync-help">Pick the look that's you — it changes your colours, icons, and wording.</p>
+    <div class="theme-grid" id="myThemeGrid"></div>
+  </div>
+</div>
+
 <script>
 /* ---------- Data ---------- */
 const STORAGE_KEY = 'trailquest_v1';
@@ -707,7 +743,7 @@ const THEMES = {
   space: {
     name:'Space Mission', desc:'Astronauts & rockets',
     palette:{forest:'#35407A', forestDeep:'#232B57', forestLight:'#6B7FD1', gold:'#E8B23D', goldLight:'#F5D384',
-      ember:'#C13F8F', emberBtn:'#9A2F70', teal:'#2FA8C9', berry:'#B84A3E', paper:'#EEEEF6'},
+      ember:'#C13F8F', emberBtn:'#9A2F70', teal:'#237F98', berry:'#B84A3E', paper:'#EEEEF6'},
     swatches:['#35407A','#E8B23D','#C13F8F','#2FA8C9'],
     icon:'🚀', endFlag:'🪐',
     vocab:{
@@ -724,7 +760,7 @@ const THEMES = {
   ocean: {
     name:'Ocean Explorers', desc:'Diving & sea creatures',
     palette:{forest:'#1F6E7A', forestDeep:'#144B54', forestLight:'#55A6AE', gold:'#E0954A', goldLight:'#F0BE85',
-      ember:'#D9524A', emberBtn:'#B33F38', teal:'#3A8FC7', berry:'#A23E4C', paper:'#EEF3EC'},
+      ember:'#D9524A', emberBtn:'#B33F38', teal:'#317AAB', berry:'#A23E4C', paper:'#EEF3EC'},
     swatches:['#1F6E7A','#E0954A','#D9524A','#3A8FC7'],
     icon:'🐠', endFlag:'🏝️',
     vocab:{
@@ -741,7 +777,7 @@ const THEMES = {
   arcade: {
     name:'Arcade Legends', desc:'Video games & high scores',
     palette:{forest:'#5A3EA6', forestDeep:'#3B2670', forestLight:'#8B72D6', gold:'#E8A93D', goldLight:'#F2CD7A',
-      ember:'#D6367B', emberBtn:'#AB2A61', teal:'#2FC9D9', berry:'#A23E4C', paper:'#EFEEF5'},
+      ember:'#D6367B', emberBtn:'#AB2A61', teal:'#1E808A', berry:'#A23E4C', paper:'#EFEEF5'},
     swatches:['#5A3EA6','#E8A93D','#D6367B','#2FC9D9'],
     icon:'🕹️', endFlag:'🏆',
     vocab:{
@@ -754,10 +790,36 @@ const THEMES = {
       pinBtn:'🔒 My secret code', pinSub:'Enter your secret code to change points',
       deductBtn:'🎮 Grown-up: take a point away'
     }
+  },
+  unicorn: {
+    name:'Unicorn Magic', desc:'Rainbows & mythical magic',
+    palette:{forest:'#6B3FA0', forestDeep:'#4A2B73', forestLight:'#A87FD1', gold:'#F0B6D9', goldLight:'#FAD9EC',
+      ember:'#C23B7C', emberBtn:'#9A2E62', teal:'#1B7C85', berry:'#A23E64', paper:'#FBF5FC'},
+    swatches:['#6B3FA0','#F0B6D9','#C23B7C','#1B7C85'],
+    icon:'🦄', endFlag:'🌈',
+    vocab:{
+      appName:'Unicorn Magic',
+      lobbyQuestion:"Who's ready for magic today?", backLabel:'← All unicorns', dressUpHint:'✏️ tap me to sparkle',
+      questsTitle:"Today's Enchantments", rewardsTitle:'Rainbow Rewards', lockerSuffix:'Magic Stable',
+      footer:'Cast a spell when it\'s done. Ask a grown-up to open the rainbow. 🌟',
+      tabExplorers:'Unicorns', tabQuests:'Enchantments', tabRewards:'Treasures',
+      goalPrefix:'next:', goalAllReached:'all magic unlocked', goalNone:'no treasures picked',
+      pinBtn:'🔒 My secret spell', pinSub:'Say your secret spell to change points',
+      deductBtn:'🦄 Grown-up: take a point away'
+    }
   }
 };
 const THEME_IDS = Object.keys(THEMES);
-function currentTheme(){ return THEMES[state.theme] || THEMES.trail; }
+function themeOf(ex){ return THEMES[ex && ex.theme] || THEMES.trail; }
+/* The lobby is a shared neutral space — theming only kicks in once you're
+   inside a specific child's own profile, so entering feels like stepping
+   into their space. */
+function currentTheme(){
+  if(typeof screen !== 'undefined' && screen === 'profile'){
+    return themeOf(getActiveExplorer());
+  }
+  return THEMES.trail;
+}
 
 const TASK_EMOJIS = ['🦷','🛏️','🧸','🎒','👕','🧼','📚','🍽️','🐾','🧹','🥾','☂️','🚿','⏰','📝','🧦'];
 const REWARD_EMOJIS = ['📺','🍦','🎬','🏞️','🎮','🧁','🎨','🚲','🛍️','⭐','🍕','🌙'];
@@ -1582,8 +1644,8 @@ function defaultData(){
   return {
     activeExplorer: 'e1',
     explorers: [
-      {id:'e1', name:'Explorer 1', avatar:'a1', points:0, lifetime:0, tasksDoneToday:[], history:{}},
-      {id:'e2', name:'Explorer 2', avatar:'a2', points:0, lifetime:0, tasksDoneToday:[], history:{}}
+      {id:'e1', name:'Explorer 1', avatar:'a1', theme:'trail', points:0, lifetime:0, tasksDoneToday:[], history:{}},
+      {id:'e2', name:'Explorer 2', avatar:'a2', theme:'trail', points:0, lifetime:0, tasksDoneToday:[], history:{}}
     ],
     tasks: [
       {id:'t1', name:'Brush teeth', icon:'🦷', points:1},
@@ -1678,13 +1740,17 @@ function applyDailyReset(data){
     {id:'p3', name:'Being unkind', icon:'💢', points:2},
     {id:'p4', name:'Making a mess on purpose', icon:'🌪️', points:2}
   ];
-  if(!data.theme || !THEMES[data.theme]) data.theme = 'trail';
+  if(!data.theme || !THEMES[data.theme]) data.theme = 'trail'; // now just the default handed to new explorers
   data.explorers.forEach(ex => {
     if(!ex.tasksDoneToday) ex.tasksDoneToday = [];
     if(!ex.history) ex.history = {};
     if(typeof ex.lifetime !== 'number') ex.lifetime = 0;
     // Older saves stored a preset id string; upgrade to an editable config
     ex.avatar = normalizeAvatar(ex.avatar);
+    // Theme used to be one global setting shared by everyone — give each
+    // explorer their own, seeded from whatever the family had picked so
+    // existing setups don't visually change until someone picks something new.
+    if(!ex.theme || !THEMES[ex.theme]) ex.theme = data.theme;
     // Ensure every history day has a deductions log
     Object.values(ex.history).forEach(day => {
       if(!day.deductions) day.deductions = [];
@@ -1721,6 +1787,23 @@ function save(data){
    The JSON data file lives inside a GitHub repo (ideally the same repo the app
    is hosted from via GitHub Pages), so every device reading/writing the same
    repo sees the same points, quests, and rewards. */
+
+/* Baked-in defaults for THIS deployment, so a new device only has to paste a
+   token — nobody should have to remember or retype the repo details.
+   Edit these four lines if you ever move the data file or change accounts;
+   everything else in the Sync tab adapts automatically. */
+const DEFAULT_SYNC = {
+  owner: (function(){
+    // Auto-detect from the GitHub Pages hostname (<owner>.github.io) when possible,
+    // so forking/renaming the app repo doesn't require touching this file.
+    const m = location.hostname.match(/^([^.]+)\.github\.io$/i);
+    return m ? m[1] : 'KNickson-oct';
+  })(),
+  repo: 'personalapps-private',
+  branch: 'main',
+  path: 'RewardsApp/trailquest-data.json'
+};
+
 const SYNC_CONFIG_KEY = 'trailquest_sync_config';
 let syncConfig = null;
 try{ syncConfig = JSON.parse(localStorage.getItem(SYNC_CONFIG_KEY)) || null; }catch(e){ syncConfig = null; }
@@ -1756,18 +1839,20 @@ function updateSyncBadge(){
   const badge = document.getElementById('syncBadge');
   if(!badge) return;
   badge.classList.remove('synced','syncing','error');
+  let text = '';
   if(!syncConfig){
-    badge.textContent = '⚠️ Not connected — tap to set up sharing';
+    text = '⚠️ Not connected — tap to set up sharing';
   } else if(syncState === 'syncing'){
     badge.classList.add('syncing');
-    badge.textContent = '⏳ Syncing…';
+    text = 'Syncing…';
   } else if(syncState === 'error'){
     badge.classList.add('error');
-    badge.textContent = '❌ Sync error — tap to check settings';
+    text = 'Sync error — tap to retry';
   } else {
     badge.classList.add('synced');
-    badge.textContent = `☁️ Synced with ${syncConfig.owner}/${syncConfig.repo}`;
+    text = `Synced with ${syncConfig.owner}/${syncConfig.repo}`;
   }
+  badge.innerHTML = `<span class="sb-dot"></span><span>${text}</span>`;
 }
 
 async function fetchFromGitHub(cfg){
@@ -1798,6 +1883,23 @@ async function pushToGitHub(){
   if(!syncConfig) return;
   setSyncState('syncing');
   try{
+    // Always fetch the freshest sha right before writing. Relying on a sha
+    // cached from an earlier fetch (or none at all, right after the app
+    // reopens) was the cause of spurious "sync error" states — GitHub
+    // rejects a write with a stale or missing sha for an existing file.
+    try{
+      const shaRes = await fetch(`${githubApiUrl(syncConfig)}?ref=${encodeURIComponent(syncConfig.branch)}&_=${Date.now()}`, {
+        headers: githubHeaders(syncConfig)
+      });
+      if(shaRes.ok){
+        const shaJson = await shaRes.json();
+        currentSha = shaJson.sha;
+      } else if(shaRes.status === 404){
+        currentSha = null;
+      }
+      // Any other pre-fetch hiccup: fall through and try with whatever sha we already have.
+    }catch(e){ /* ignore — proceed with existing currentSha as a best effort */ }
+
     const body = {
       message: `Trail Quest update ${new Date().toISOString()}`,
       content: utf8ToBase64(JSON.stringify(state, null, 2)),
@@ -1809,7 +1911,8 @@ async function pushToGitHub(){
       headers: {...githubHeaders(syncConfig), 'Content-Type':'application/json'},
       body: JSON.stringify(body)
     });
-    if(res.status === 409){
+    if(res.status === 409 || res.status === 422){
+      // Belt-and-braces: something changed between our pre-fetch and this write. Retry once.
       const fresh = await fetch(`${githubApiUrl(syncConfig)}?ref=${encodeURIComponent(syncConfig.branch)}`, {headers: githubHeaders(syncConfig)});
       if(fresh.ok){
         const freshJson = await fresh.json();
@@ -1851,7 +1954,15 @@ async function pullLatest(showBadge){
 
 async function initSync(){
   if(!syncConfig){ updateSyncBadge(); return; }
-  const result = await fetchFromGitHub(syncConfig);
+  // Reopening the app (especially as a home-screen PWA) sometimes catches the network
+  // interface a beat before it's reconnected, so retry the first fetch a couple of
+  // times rather than immediately reporting a sync error on every cold start.
+  let result = null;
+  for(let attempt = 0; attempt < 3; attempt++){
+    result = await fetchFromGitHub(syncConfig);
+    if(result) break;
+    await new Promise(r => setTimeout(r, 900));
+  }
   if(result && result.exists){
     state = applyDailyReset(result.data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -1976,8 +2087,10 @@ function renderLobby(){
   state.explorers.forEach(ex => {
     const card = document.createElement('div');
     card.className = 'lobby-card';
+    const t = themeOf(ex);
     card.innerHTML =
       (ex.pin ? '<span class="lc-lock">🔒</span>' : '') +
+      `<span class="lc-theme-icon" title="${escapeHtml(t.name)}">${t.icon}</span>` +
       `<div class="lc-avatar">${avatarSVG(ex.avatar, 78)}</div>` +
       `<div class="lc-name">${escapeHtml(ex.name)}</div>` +
       `<div class="lc-pts stat-num">${ex.points} pts</div>`;
@@ -1999,12 +2112,14 @@ function enterProfile(exId){
   document.getElementById('todayView').style.display = '';
   document.getElementById('weekView').style.display = 'none';
   document.getElementById('journeyView').style.display = 'none';
+  applyTheme();
   render();
 }
 
 function goToLobby(){
   sessionUnlocked.clear();
   screen = 'lobby';
+  applyTheme();
   render();
 }
 
@@ -2866,6 +2981,11 @@ document.getElementById('closeSettings').onclick = () => settingsOverlay.classLi
 settingsOverlay.onclick = (e) => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('show'); };
 
 document.getElementById('syncBadge').onclick = () => {
+  if(syncConfig && syncState === 'error'){
+    // Quick self-heal on tap, since a stale local sha was the most common cause
+    pullLatest();
+    return;
+  }
   settingsOverlay.classList.add('show');
   renderSyncTab();
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -2875,26 +2995,41 @@ document.getElementById('syncBadge').onclick = () => {
 };
 
 function renderSyncTab(){
-  document.getElementById('syncOwner').value = syncConfig ? syncConfig.owner : '';
-  document.getElementById('syncRepo').value = syncConfig ? syncConfig.repo : '';
-  document.getElementById('syncBranch').value = syncConfig ? syncConfig.branch : '';
-  document.getElementById('syncPath').value = syncConfig ? syncConfig.path : '';
+  document.getElementById('syncOwner').value = syncConfig ? syncConfig.owner : DEFAULT_SYNC.owner;
+  document.getElementById('syncRepo').value = syncConfig ? syncConfig.repo : DEFAULT_SYNC.repo;
+  document.getElementById('syncBranch').value = syncConfig ? syncConfig.branch : DEFAULT_SYNC.branch;
+  document.getElementById('syncPath').value = syncConfig ? syncConfig.path : DEFAULT_SYNC.path;
   document.getElementById('syncToken').value = '';
-  document.getElementById('syncToken').placeholder = syncConfig ? 'Already saved — leave blank to keep it' : 'Personal access token';
+  document.getElementById('syncToken').placeholder = syncConfig ? 'Already saved — leave blank to keep it' : 'Paste your access token here';
   const statusLine = document.getElementById('syncStatusLine');
   statusLine.textContent = syncConfig
     ? `Connected to ${syncConfig.owner}/${syncConfig.repo} (${syncConfig.path})`
-    : 'Not connected yet — data is only saved on this device.';
+    : 'Details are pre-filled — just add your token above and tap Connect.';
+
+  // If this device is using non-default repo details, surface them rather than hiding a customisation
+  const usingCustom = syncConfig && (
+    syncConfig.owner !== DEFAULT_SYNC.owner || syncConfig.repo !== DEFAULT_SYNC.repo ||
+    syncConfig.branch !== DEFAULT_SYNC.branch || syncConfig.path !== DEFAULT_SYNC.path
+  );
+  const panel = document.getElementById('syncAdvancedPanel');
+  const toggle = document.getElementById('syncAdvancedToggle');
+  if(usingCustom){
+    panel.style.display = '';
+    toggle.textContent = '⚙️ Advanced: repo details ▴';
+  } else {
+    panel.style.display = 'none';
+    toggle.textContent = '⚙️ Advanced: repo details ▾';
+  }
 }
 
-function renderThemeTab(){
-  const grid = document.getElementById('themeGrid');
-  if(!grid) return;
-  grid.innerHTML = '';
+/* Renders the theme swatch grid into any container, scoped to a specific explorer.
+   Shared by the parent Settings tab and the kid-facing "My Theme" overlay. */
+function renderThemeSwatches(gridEl, ex, onPicked){
+  gridEl.innerHTML = '';
   THEME_IDS.forEach(id => {
     const t = THEMES[id];
     const card = document.createElement('div');
-    card.className = 'theme-card' + (state.theme === id ? ' sel' : '');
+    card.className = 'theme-card' + ((ex.theme || 'trail') === id ? ' sel' : '');
     card.innerHTML = `
       <div class="theme-swatches">${t.swatches.map(c => `<span style="background:${c}"></span>`).join('')}</div>
       <div class="theme-card-text">
@@ -2903,22 +3038,77 @@ function renderThemeTab(){
       </div>
       <span class="theme-card-check">✓</span>`;
     card.onclick = () => {
-      if(state.theme === id) return;
-      state.theme = id;
+      if(ex.theme === id) return;
+      ex.theme = id;
       save(state);
-      applyTheme();
-      render();
-      renderThemeTab();
+      renderThemeSwatches(gridEl, ex, onPicked);
+      if(onPicked) onPicked(id);
     };
-    grid.appendChild(card);
+    gridEl.appendChild(card);
   });
 }
 
+let themeTabTargetId = null;
+
+function renderThemeTab(){
+  const pickerWrap = document.getElementById('themeExplorerPicker');
+  const grid = document.getElementById('themeGrid');
+  if(!grid || !pickerWrap) return;
+
+  if(!themeTabTargetId || !state.explorers.find(e => e.id === themeTabTargetId)){
+    themeTabTargetId = state.activeExplorer;
+  }
+
+  pickerWrap.innerHTML = '';
+  state.explorers.forEach(ex => {
+    const btn = document.createElement('button');
+    btn.className = 'theme-explorer-btn' + (ex.id === themeTabTargetId ? ' sel' : '');
+    btn.innerHTML = `${avatarSVG(ex.avatar, 32)}<span>${escapeHtml(ex.name)}</span>`;
+    btn.onclick = () => { themeTabTargetId = ex.id; renderThemeTab(); };
+    pickerWrap.appendChild(btn);
+  });
+
+  const targetEx = state.explorers.find(e => e.id === themeTabTargetId) || state.explorers[0];
+  renderThemeSwatches(grid, targetEx, () => {
+    // Live-update the visible app immediately if we just changed the theme
+    // for whoever is actually the currently open profile.
+    if(screen === 'profile' && state.activeExplorer === targetEx.id){
+      applyTheme();
+      render();
+    }
+  });
+}
+
+/* ---------- Kid-facing "My Theme" ---------- */
+const myThemeOverlay = document.getElementById('myThemeOverlay');
+document.getElementById('closeMyTheme').onclick = () => myThemeOverlay.classList.remove('show');
+myThemeOverlay.onclick = (e) => { if(e.target === myThemeOverlay) myThemeOverlay.classList.remove('show'); };
+
+document.getElementById('myThemeBtn').onclick = () => {
+  const ex = getActiveExplorer();
+  requireUnlock(ex, () => {
+    document.getElementById('myThemeTitle').textContent = `${ex.name}'s Theme`;
+    renderThemeSwatches(document.getElementById('myThemeGrid'), ex, () => {
+      applyTheme();
+      render();
+      renderLobby(); // keep the lobby's theme-icon badge in sync for next visit
+    });
+    myThemeOverlay.classList.add('show');
+  });
+};
+
+document.getElementById('syncAdvancedToggle').onclick = () => {
+  const panel = document.getElementById('syncAdvancedPanel');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : '';
+  document.getElementById('syncAdvancedToggle').textContent = showing ? '⚙️ Advanced: repo details ▾' : '⚙️ Advanced: repo details ▴';
+};
+
 document.getElementById('syncConnectBtn').onclick = async () => {
-  const owner = document.getElementById('syncOwner').value.trim();
-  const repo = document.getElementById('syncRepo').value.trim();
-  const branch = document.getElementById('syncBranch').value.trim() || 'main';
-  const path = document.getElementById('syncPath').value.trim() || 'trailquest-data.json';
+  const owner = document.getElementById('syncOwner').value.trim() || DEFAULT_SYNC.owner;
+  const repo = document.getElementById('syncRepo').value.trim() || DEFAULT_SYNC.repo;
+  const branch = document.getElementById('syncBranch').value.trim() || DEFAULT_SYNC.branch;
+  const path = document.getElementById('syncPath').value.trim() || DEFAULT_SYNC.path;
   const tokenInput = document.getElementById('syncToken').value.trim();
   const token = tokenInput || (syncConfig ? syncConfig.token : '');
   if(!owner || !repo || !token){
@@ -3166,7 +3356,7 @@ document.getElementById('addExplorerBtn').onclick = () => {
   const nameInput = document.getElementById('newExplorerName');
   const name = nameInput.value.trim();
   if(!name){ nameInput.focus(); return; }
-  state.explorers.push({id:'e'+Date.now(), name, avatar:normalizeAvatar(pickedAvatarId), points:0, lifetime:0, tasksDoneToday:[], history:{}});
+  state.explorers.push({id:'e'+Date.now(), name, avatar:normalizeAvatar(pickedAvatarId), theme: state.theme || 'trail', points:0, lifetime:0, tasksDoneToday:[], history:{}});
   nameInput.value = '';
   save(state); render(); renderManageLists();
 };
