@@ -383,6 +383,9 @@
   .advanced-toggle{display:block;width:100%;background:none;border:none;color:#7a8aa3;
     font-weight:800;font-size:12.5px;text-align:center;padding:14px 0 6px;cursor:pointer;font-family:inherit;}
   .advanced-panel{background:#F7F5EE;border-radius:12px;padding:10px 10px 4px;margin-top:4px;}
+  .setup-steps{margin:8px 0 12px;padding-left:20px;font-size:12.5px;color:#3a4a63;line-height:1.6;}
+  .setup-steps li{margin-bottom:6px;}
+  .setup-steps code{background:#E4E9F0;padding:1px 5px;border-radius:4px;font-size:11.5px;}
 
   /* Theme picker */
   .theme-grid{display:flex;flex-direction:column;gap:10px;}
@@ -654,6 +657,19 @@
         <div class="row-inline"><input class="field" id="syncBranch" placeholder="Branch (default: main)"></div>
         <div class="row-inline"><input class="field" id="syncPath" placeholder="File path (default: trailquest-data.json)"></div>
         <p class="sync-note">These are pre-filled for this deployment — only change them if you know you need to.</p>
+      </div>
+
+      <button class="advanced-toggle" id="differentFamilyToggle">👨‍👩‍👧‍👦 A different family using this app? →</button>
+      <div class="advanced-panel" id="differentFamilyPanel" style="display:none;">
+        <p class="sync-note">This app can be shared — everyone uses the same page, but each family keeps completely separate, private data. To set up your own:</p>
+        <ol class="setup-steps">
+          <li>On <strong>github.com</strong>, create your own <strong>private</strong> repository (any name, e.g. <em>our-family-rewards</em>)</li>
+          <li>In that repo, add any file (like a README) so it has a <code>main</code> branch</li>
+          <li>Go to <strong>Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong> and generate one scoped to <strong>only that repo</strong>, with <strong>Contents: Read and write</strong></li>
+          <li>Tap the button below, then fill in your own username, repo name, and token</li>
+        </ol>
+        <button class="btn btn-secondary btn-full" id="setUpOwnFamilyBtn">Use my own separate storage</button>
+        <p class="sync-note">Your data will never be visible to whoever owns this page, and theirs won't be visible to you — you're each writing to your own private repo.</p>
       </div>
     </div>
   </div>
@@ -1686,8 +1702,8 @@ function defaultData(){
   return {
     activeExplorer: 'e1',
     explorers: [
-      {id:'e1', name:'Explorer 1', avatar:'a1', theme:'trail', points:0, lifetime:0, tasksDoneToday:[], history:{}},
-      {id:'e2', name:'Explorer 2', avatar:'a2', theme:'trail', points:0, lifetime:0, tasksDoneToday:[], history:{}}
+      {id:'e1', name:'Kid 1', avatar:'a1', theme:'trail', points:0, lifetime:0, tasksDoneToday:[], history:{}},
+      {id:'e2', name:'Kid 2', avatar:'a2', theme:'trail', points:0, lifetime:0, tasksDoneToday:[], history:{}}
     ],
     tasks: [
       {id:'t1', name:'Brush teeth', icon:'🦷', points:1, assignedTo:[]},
@@ -1937,7 +1953,7 @@ async function fetchFromGitHub(cfg, silent){
 }
 
 async function pushToGitHub(){
-  if(!syncConfig) return;
+  if(!syncConfig) return false;
   setSyncState('syncing');
 
   // A phone's connection blips constantly (cellular handoff, wifi sleep, a
@@ -1992,7 +2008,7 @@ async function pushToGitHub(){
       const resJson = await res.json();
       currentSha = resJson.content.sha;
       setSyncState('synced');
-      return;
+      return true;
     }catch(e){
       console.error(`Sync push error (attempt ${attempt}/${attempts})`, e);
       if(attempt < attempts){
@@ -2002,6 +2018,7 @@ async function pushToGitHub(){
       }
     }
   }
+  return false;
 }
 
 function scheduleSync(){
@@ -2061,8 +2078,12 @@ async function initSync(){
     applyTheme();
     render();
   } else if(result && !result.exists){
-    // No file yet in the repo — create it from this device's current data
-    await pushToGitHub();
+    // This is a device that was already connected before — the file having
+    // vanished since is unusual (revoked token, renamed repo/path) and not
+    // something to silently "fix" by pushing possibly-stale local data over
+    // whatever should be there. Surface it instead; use Settings → Sync →
+    // Push Now if recreating it is genuinely what's wanted.
+    setSyncState('error');
   }
   updateSyncBadge();
   // Light periodic pull so other devices' changes show up without a manual refresh.
@@ -3311,21 +3332,80 @@ document.getElementById('syncAdvancedToggle').onclick = () => {
   document.getElementById('syncAdvancedToggle').textContent = showing ? '⚙️ Advanced: repo details ▾' : '⚙️ Advanced: repo details ▴';
 };
 
+document.getElementById('differentFamilyToggle').onclick = () => {
+  const panel = document.getElementById('differentFamilyPanel');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : '';
+  document.getElementById('differentFamilyToggle').textContent = showing
+    ? '👨‍👩‍👧‍👦 A different family using this app? →'
+    : '👨‍👩‍👧‍👦 A different family using this app? ▴';
+};
+
+document.getElementById('setUpOwnFamilyBtn').onclick = () => {
+  // Clear the host family's pre-filled details so nobody accidentally connects
+  // to storage that isn't theirs — branch stays, since "main" is universal.
+  document.getElementById('syncOwner').value = '';
+  document.getElementById('syncRepo').value = '';
+  document.getElementById('syncBranch').value = 'main';
+  document.getElementById('syncPath').value = 'trailquest-data.json';
+  document.getElementById('syncToken').value = '';
+
+  const advPanel = document.getElementById('syncAdvancedPanel');
+  advPanel.style.display = '';
+  document.getElementById('syncAdvancedToggle').textContent = '⚙️ Advanced: repo details ▴';
+
+  document.getElementById('differentFamilyPanel').style.display = 'none';
+  document.getElementById('differentFamilyToggle').textContent = '👨‍👩‍👧‍👦 A different family using this app? →';
+
+  document.getElementById('syncStatusLine').textContent = 'Fill in your own GitHub username, repo, and token above, then Save & Connect.';
+  document.getElementById('syncOwner').focus();
+};
+
 document.getElementById('syncConnectBtn').onclick = async () => {
-  const owner = document.getElementById('syncOwner').value.trim() || DEFAULT_SYNC.owner;
-  const repo = document.getElementById('syncRepo').value.trim() || DEFAULT_SYNC.repo;
+  // Owner/repo deliberately do NOT fall back to this deployment's defaults here —
+  // renderSyncTab() already pre-fills them for the common case. If a different
+  // family has cleared these via "Use my own separate storage", leaving them
+  // blank should surface the validation message below, not silently reconnect
+  // to whoever's storage this app happens to be pre-configured for.
+  const owner = document.getElementById('syncOwner').value.trim();
+  const repo = document.getElementById('syncRepo').value.trim();
   const branch = document.getElementById('syncBranch').value.trim() || DEFAULT_SYNC.branch;
   const path = document.getElementById('syncPath').value.trim() || DEFAULT_SYNC.path;
-  const tokenInput = document.getElementById('syncToken').value.trim();
+  // Strip ALL whitespace, not just leading/trailing — messaging apps and mobile
+  // keyboards are notorious for inserting a stray line break or space into a
+  // long pasted token, and a genuine token never contains whitespace anyway.
+  const tokenInput = document.getElementById('syncToken').value.replace(/\s+/g, '');
   const token = tokenInput || (syncConfig ? syncConfig.token : '');
   if(!owner || !repo || !token){
     document.getElementById('syncStatusLine').textContent = 'Username, repo, and a token are all required.';
     return;
   }
-  syncConfig = {owner, repo, branch, path, token};
+  const candidateConfig = {owner, repo, branch, path, token};
+  document.getElementById('syncStatusLine').textContent = 'Connecting…';
+
+  // Before ever creating or overwriting the shared file, confirm this token can
+  // actually see the repo at all. GitHub returns the same "404 not found" for a
+  // genuinely missing file as it does for "this token has no access to this
+  // private repo" — without this check, a bad/mistyped token looks identical to
+  // "nobody has synced yet", and would wrongly push a brand-new blank file over
+  // whatever's already there.
+  let repoAccessible = false;
+  try{
+    const repoRes = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`, {
+      headers: githubHeaders(candidateConfig)
+    });
+    repoAccessible = repoRes.ok;
+  }catch(e){ repoAccessible = false; }
+
+  if(!repoAccessible){
+    document.getElementById('syncStatusLine').textContent =
+      `Can't access ${owner}/${repo} with this token — double-check it was copied exactly (no missing characters) and has Contents: Read & write on this repo. Nothing was changed.`;
+    return;
+  }
+
+  syncConfig = candidateConfig;
   localStorage.setItem(SYNC_CONFIG_KEY, JSON.stringify(syncConfig));
   currentSha = null;
-  document.getElementById('syncStatusLine').textContent = 'Connecting…';
   const result = await fetchFromGitHub(syncConfig);
   if(result && result.exists){
     state = applyDailyReset(result.data);
@@ -3334,8 +3414,10 @@ document.getElementById('syncConnectBtn').onclick = async () => {
     render();
     document.getElementById('syncStatusLine').textContent = `Connected — pulled existing shared data from ${owner}/${repo}.`;
   } else if(result && !result.exists){
-    await pushToGitHub();
-    document.getElementById('syncStatusLine').textContent = `Connected — created the shared data file in ${owner}/${repo} from this device's data.`;
+    const pushed = await pushToGitHub();
+    document.getElementById('syncStatusLine').textContent = pushed
+      ? `Connected — created the shared data file in ${owner}/${repo} from this device's data.`
+      : `Connected, but creating the shared file failed — check the sync badge and try "Push Now" below.`;
   } else {
     document.getElementById('syncStatusLine').textContent = 'Could not reach GitHub — check the details and token permissions.';
   }
