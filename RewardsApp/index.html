@@ -661,15 +661,9 @@
 
       <button class="advanced-toggle" id="differentFamilyToggle">👨‍👩‍👧‍👦 A different family using this app? →</button>
       <div class="advanced-panel" id="differentFamilyPanel" style="display:none;">
-        <p class="sync-note">This app can be shared — everyone uses the same page, but each family keeps completely separate, private data. To set up your own:</p>
-        <ol class="setup-steps">
-          <li>On <strong>github.com</strong>, create your own <strong>private</strong> repository (any name, e.g. <em>our-family-rewards</em>)</li>
-          <li>In that repo, add any file (like a README) so it has a <code>main</code> branch</li>
-          <li>Go to <strong>Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong> and generate one scoped to <strong>only that repo</strong>, with <strong>Contents: Read and write</strong></li>
-          <li>Tap the button below, then fill in your own username, repo name, and token</li>
-        </ol>
-        <button class="btn btn-secondary btn-full" id="setUpOwnFamilyBtn">Use my own separate storage</button>
-        <p class="sync-note">Your data will never be visible to whoever owns this page, and theirs won't be visible to you — you're each writing to your own private repo.</p>
+        <p class="sync-note">Other families can use this same page — you'll each get your own separate data file, so nobody sees anyone else's points or quests. You'll need a token from whoever set this app up (it's not something you can create yourself, since it's their storage).</p>
+        <button class="btn btn-secondary btn-full" id="setUpOwnFamilyBtn">Get my own family's file</button>
+        <p class="sync-note">This picks a fresh file name just for your family. Paste in the token you were given, tap Save &amp; Connect, then use those exact same details on every device your family uses.</p>
       </div>
     </div>
   </div>
@@ -1871,8 +1865,13 @@ const DEFAULT_SYNC = {
   })(),
   repo: 'personalapps-private',
   branch: 'main',
-  path: 'RewardsApp/trailquest-data.json'
+  path: 'RewardsApp/rewardsapp-data.json'
 };
+// Earlier deployments used the app's old internal codename for the data file.
+// A brand-new device (like a family member's) has nothing locally to tell it
+// this file was ever renamed, so the connect flow checks here first before
+// ever assuming "nothing exists yet, start fresh".
+const LEGACY_SYNC_PATHS = ['RewardsApp/trailquest-data.json'];
 
 const SYNC_CONFIG_KEY = 'trailquest_sync_config';
 let syncConfig = null;
@@ -3342,12 +3341,17 @@ document.getElementById('differentFamilyToggle').onclick = () => {
 };
 
 document.getElementById('setUpOwnFamilyBtn').onclick = () => {
-  // Clear the host family's pre-filled details so nobody accidentally connects
-  // to storage that isn't theirs — branch stays, since "main" is universal.
-  document.getElementById('syncOwner').value = '';
-  document.getElementById('syncRepo').value = '';
-  document.getElementById('syncBranch').value = 'main';
-  document.getElementById('syncPath').value = 'trailquest-data.json';
+  // Owner/repo/branch stay exactly as pre-filled — everyone shares the same
+  // repo. Only the FILE within it needs to be unique per family, since a
+  // fine-grained token's permission applies to the whole repo either way;
+  // the filename is genuinely the only thing separating one family from
+  // another here. This is only generated here, once, for a brand-new family —
+  // it must never be regenerated per-device, or a family's own multiple
+  // phones would each invent a different filename and stop sharing data
+  // with each other.
+  const folder = DEFAULT_SYNC.path.includes('/') ? DEFAULT_SYNC.path.slice(0, DEFAULT_SYNC.path.lastIndexOf('/') + 1) : '';
+  const familyId = Math.random().toString(36).slice(2, 8);
+  document.getElementById('syncPath').value = `${folder}rewardsapp-data-${familyId}.json`;
   document.getElementById('syncToken').value = '';
 
   const advPanel = document.getElementById('syncAdvancedPanel');
@@ -3357,18 +3361,17 @@ document.getElementById('setUpOwnFamilyBtn').onclick = () => {
   document.getElementById('differentFamilyPanel').style.display = 'none';
   document.getElementById('differentFamilyToggle').textContent = '👨‍👩‍👧‍👦 A different family using this app? →';
 
-  document.getElementById('syncStatusLine').textContent = 'Fill in your own GitHub username, repo, and token above, then Save & Connect.';
-  document.getElementById('syncOwner').focus();
+  document.getElementById('syncStatusLine').textContent = "A fresh file name has been filled in for your family. Paste in the token you were given below, then Save & Connect. Use these exact same details on every device your family uses.";
+  document.getElementById('syncToken').focus();
 };
 
 document.getElementById('syncConnectBtn').onclick = async () => {
-  // Owner/repo deliberately do NOT fall back to this deployment's defaults here —
-  // renderSyncTab() already pre-fills them for the common case. If a different
-  // family has cleared these via "Use my own separate storage", leaving them
-  // blank should surface the validation message below, not silently reconnect
-  // to whoever's storage this app happens to be pre-configured for.
-  const owner = document.getElementById('syncOwner').value.trim();
-  const repo = document.getElementById('syncRepo').value.trim();
+  // Everyone — your own family and any other family using this page — shares
+  // the same repo, so owner/repo/branch can safely fall back to this
+  // deployment's defaults. Only the file PATH is meant to differ per family;
+  // "Get my own family's file" above generates a fresh one automatically.
+  const owner = document.getElementById('syncOwner').value.trim() || DEFAULT_SYNC.owner;
+  const repo = document.getElementById('syncRepo').value.trim() || DEFAULT_SYNC.repo;
   const branch = document.getElementById('syncBranch').value.trim() || DEFAULT_SYNC.branch;
   const path = document.getElementById('syncPath').value.trim() || DEFAULT_SYNC.path;
   // Strip ALL whitespace, not just leading/trailing — messaging apps and mobile
@@ -3414,14 +3417,51 @@ document.getElementById('syncConnectBtn').onclick = async () => {
     render();
     document.getElementById('syncStatusLine').textContent = `Connected — pulled existing shared data from ${owner}/${repo}.`;
   } else if(result && !result.exists){
-    const pushed = await pushToGitHub();
-    document.getElementById('syncStatusLine').textContent = pushed
-      ? `Connected — created the shared data file in ${owner}/${repo} from this device's data.`
-      : `Connected, but creating the shared file failed — check the sync badge and try "Push Now" below.`;
+    // Only check legacy filenames when this is the standard default path this
+    // deployment normally uses — i.e. plausibly your own family reconnecting
+    // after the rename. A DIFFERENT family's freshly-generated unique filename
+    // must never fall back to this — it would otherwise "discover" your old
+    // data and copy it into what's supposed to be their own new, empty file.
+    const migrated = (path === DEFAULT_SYNC.path) ? await tryMigrateLegacyData(candidateConfig) : false;
+    if(migrated){
+      document.getElementById('syncStatusLine').textContent =
+        `Connected — found your family's existing data under the old file name and copied it to ${path}.`;
+    } else {
+      const pushed = await pushToGitHub();
+      document.getElementById('syncStatusLine').textContent = pushed
+        ? `Connected — created the shared data file in ${owner}/${repo} from this device's data.`
+        : `Connected, but creating the shared file failed — check the sync badge and try "Push Now" below.`;
+    }
   } else {
     document.getElementById('syncStatusLine').textContent = 'Could not reach GitHub — check the details and token permissions.';
   }
 };
+
+/* Looks for this family's data under any filename this app used to default to
+   before being renamed. If found, adopts it as the current state and copies
+   it forward to the new path — a one-time, automatic, invisible migration
+   rather than requiring anyone to manually rename anything on GitHub. */
+async function tryMigrateLegacyData(cfg){
+  for(const legacyPath of LEGACY_SYNC_PATHS){
+    if(legacyPath === cfg.path) continue;
+    try{
+      const res = await fetch(
+        `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${legacyPath}?ref=${encodeURIComponent(cfg.branch)}&_=${Date.now()}`,
+        { headers: githubHeaders(cfg) }
+      );
+      if(!res.ok) continue; // not found under this legacy name either — try the next one
+      const json = await res.json();
+      const legacyData = JSON.parse(base64ToUtf8(json.content));
+      state = applyDailyReset(legacyData);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      applyTheme();
+      currentSha = null; // this is a create at the NEW path, not an update — no sha to reuse
+      const pushed = await pushToGitHub();
+      if(pushed){ render(); return true; }
+    }catch(e){ console.error('Legacy data migration check failed', e); }
+  }
+  return false;
+}
 
 document.getElementById('syncPullBtn').onclick = async () => {
   if(!syncConfig){ document.getElementById('syncStatusLine').textContent = 'Connect first.'; return; }
