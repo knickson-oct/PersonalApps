@@ -1878,6 +1878,7 @@ let syncConfig = null;
 try{ syncConfig = JSON.parse(localStorage.getItem(SYNC_CONFIG_KEY)) || null; }catch(e){ syncConfig = null; }
 let currentSha = null;
 let syncTimer = null;
+let syncPollStarted = false;
 let syncState = syncConfig ? 'syncing' : 'offline'; // offline | syncing | synced | error
 
 function utf8ToBase64(str){
@@ -2061,6 +2062,24 @@ async function pullLatest(silent){
 }
 
 async function initSync(){
+  // The recurring pull is started unconditionally, BEFORE any early return.
+  // Previously this lived at the end of the function, so a device that booted
+  // with no sync configured (a fresh install, or any private/incognito session)
+  // returned early and never started polling at all — connecting later in
+  // Settings did a single fetch and then went permanently quiet, so two phones
+  // would push fine but never actually receive each other's changes.
+  // The guard inside the interval means it's harmless to always start it.
+  if(!syncPollStarted){
+    syncPollStarted = true;
+    // Light periodic pull so other devices' changes show up without a manual refresh.
+    // Skipped whenever a local push is queued/in-flight, to avoid clobbering unsaved edits.
+    // Runs silently — a passing connectivity blip here shouldn't flash a red error
+    // for something the person didn't even do anything to trigger.
+    setInterval(() => {
+      if(syncConfig && !syncTimer && syncState !== 'syncing') pullLatest(true);
+    }, 20000);
+  }
+
   if(!syncConfig){ updateSyncBadge(); return; }
   // Reopening the app (especially as a home-screen PWA) sometimes catches the network
   // interface a beat before it's reconnected, so retry the first fetch a couple of
@@ -2085,13 +2104,6 @@ async function initSync(){
     setSyncState('error');
   }
   updateSyncBadge();
-  // Light periodic pull so other devices' changes show up without a manual refresh.
-  // Skipped whenever a local push is queued/in-flight, to avoid clobbering unsaved edits.
-  // Runs silently — a passing connectivity blip here shouldn't flash a red error
-  // for something the person didn't even do anything to trigger.
-  setInterval(() => {
-    if(syncConfig && !syncTimer && syncState !== 'syncing') pullLatest(true);
-  }, 60000);
 }
 
 let state = load();
