@@ -648,6 +648,18 @@
         <button class="btn btn-secondary" id="syncPushBtn" style="flex:1;">Push Now</button>
       </div>
       <button class="btn btn-secondary btn-full" id="syncDisconnectBtn" style="margin-top:8px;">Disconnect</button>
+
+      <button class="advanced-toggle" id="backupToggle">💾 Backup &amp; Restore (no internet needed) ▾</button>
+      <div class="advanced-panel" id="backupPanel" style="display:none;">
+        <p class="sync-note">A plain copy of everything — kids, points, quests, history. Works even if syncing is broken. Keep a copy somewhere safe (Notes, email to yourself).</p>
+        <button class="btn btn-secondary btn-full" id="backupExportBtn">Show my data to copy</button>
+        <textarea class="field" id="backupBox" rows="5" placeholder="Your data will appear here — tap Copy, then paste it somewhere safe." style="margin-top:8px;font-family:monospace;font-size:11px;"></textarea>
+        <div class="row-inline">
+          <button class="btn btn-secondary" id="backupCopyBtn" style="flex:1;">Copy</button>
+          <button class="btn btn-primary" id="backupImportBtn" style="flex:1;">Restore from box</button>
+        </div>
+        <p class="sync-note">To restore: paste a backup into the box above and tap Restore. This replaces everything on this device.</p>
+      </div>
       <p class="sync-status-line" id="syncStatusLine"></p>
 
       <button class="advanced-toggle" id="syncAdvancedToggle">⚙️ Advanced: repo details ▾</button>
@@ -3487,6 +3499,70 @@ document.getElementById('syncPushBtn').onclick = async () => {
   document.getElementById('syncStatusLine').textContent = 'Pushing…';
   await pushToGitHub();
   document.getElementById('syncStatusLine').textContent = 'Pushed this device\'s data to GitHub.';
+};
+
+/* ---------- Backup & Restore ----------
+   Deliberately independent of the sync layer: plain text in, plain text out.
+   If syncing ever breaks (bad token, stale cached code, GitHub down), this
+   still works and is the guaranteed way to move data between devices. */
+document.getElementById('backupToggle').onclick = () => {
+  const panel = document.getElementById('backupPanel');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none' : '';
+  document.getElementById('backupToggle').textContent = showing
+    ? '💾 Backup & Restore (no internet needed) ▾'
+    : '💾 Backup & Restore (no internet needed) ▴';
+};
+
+document.getElementById('backupExportBtn').onclick = () => {
+  document.getElementById('backupBox').value = JSON.stringify(state);
+  document.getElementById('syncStatusLine').textContent = 'Data shown below — tap Copy, then paste it somewhere safe.';
+};
+
+document.getElementById('backupCopyBtn').onclick = () => {
+  const box = document.getElementById('backupBox');
+  if(!box.value){ box.value = JSON.stringify(state); }
+  box.select();
+  box.setSelectionRange(0, 999999); // iOS needs an explicit range
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+  if(!ok && navigator.clipboard){
+    navigator.clipboard.writeText(box.value).then(
+      () => showToast('📋', 'Copied'),
+      () => showToast('⚠️', 'Select the text and copy manually')
+    );
+    return;
+  }
+  showToast(ok ? '📋' : '⚠️', ok ? 'Copied' : 'Select the text and copy manually');
+};
+
+document.getElementById('backupImportBtn').onclick = () => {
+  const raw = document.getElementById('backupBox').value.trim();
+  if(!raw){
+    document.getElementById('syncStatusLine').textContent = 'Paste a backup into the box first.';
+    return;
+  }
+  let parsed;
+  try{
+    parsed = JSON.parse(raw);
+  }catch(e){
+    document.getElementById('syncStatusLine').textContent = 'That does not look like a valid backup (could not read it).';
+    return;
+  }
+  if(!parsed || !Array.isArray(parsed.explorers)){
+    document.getElementById('syncStatusLine').textContent = 'That backup is missing its explorers — not restoring, in case it is the wrong text.';
+    return;
+  }
+  const kidNames = parsed.explorers.map(e => e.name).join(', ');
+  askRemove(`Restore ${parsed.explorers.length} explorer(s) — ${kidNames}? This replaces everything currently on this device.`, () => {
+    state = applyDailyReset(parsed);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    screen = 'lobby';
+    applyTheme();
+    render();
+    showToast('✅', 'Data restored');
+    document.getElementById('syncStatusLine').textContent = 'Restored. If you are connected to sync, use "Push Now" to send this up.';
+  });
 };
 
 document.getElementById('syncDisconnectBtn').onclick = () => {
