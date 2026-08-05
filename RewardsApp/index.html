@@ -312,13 +312,17 @@
 
   /* Rewards */
   .rewards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .reward{background:var(--card);border-radius:12px;padding:14px 10px;text-align:center;box-shadow:var(--shadow);
-    cursor:pointer;border:2px solid transparent;}
+  .reward{position:relative;background:var(--card);border-radius:12px;padding:14px 10px;text-align:center;
+    box-shadow:var(--shadow);cursor:pointer;border:2px solid transparent;}
   .reward .icon{font-size:30px;}
   .reward .name{font-weight:800;font-size:14px;margin-top:4px;}
   .reward .cost{font-size:12px;font-weight:700;color:var(--sky-deep);margin-top:2px;}
   .reward.locked{opacity:0.55;}
   .reward.claimable{border-color:var(--sun);}
+  .reward .period-badge{position:absolute;top:6px;left:6px;background:var(--forest);color:#fff;
+    font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.3px;padding:2px 6px;border-radius:8px;}
+  .reward.used-up{opacity:0.5;}
+  .reward.used-up .cost{color:var(--berry);}
 
   footer{text-align:center;margin-top:26px;font-size:12px;color:#8798af;font-weight:700;}
 
@@ -609,6 +613,8 @@
         <input class="field small" id="newRewardPts" type="number" min="1" value="30">
       </div>
       <div class="emoji-pick" id="rewardEmojiPick"></div>
+      <p class="assign-label">How often can it be claimed?</p>
+      <div class="assign-chips" id="newRewardPeriodChips"></div>
       <p class="assign-label">Who can earn this reward?</p>
       <div class="assign-chips" id="newRewardAssignChips"></div>
       <button class="btn btn-primary btn-full" id="addRewardBtn">Add Reward</button>
@@ -1722,12 +1728,12 @@ function defaultData(){
       {id:'t8', name:'Help set table', icon:'🍽️', points:1, assignedTo:[]}
     ],
     rewards: [
-      {id:'r1', name:'Screen time', icon:'📺', points:20, assignedTo:[]},
-      {id:'r2', name:'Ice cream', icon:'🍦', points:15, assignedTo:[]},
-      {id:'r3', name:'Movie night', icon:'🎬', points:35, assignedTo:[]},
-      {id:'r4', name:'Park trip', icon:'🏞️', points:30, assignedTo:[]},
-      {id:'r5', name:'Pick a game', icon:'🎮', points:25, assignedTo:[]},
-      {id:'r6', name:'Bake treats', icon:'🧁', points:40, assignedTo:[]}
+      {id:'r1', name:'Screen time', icon:'📺', points:20, assignedTo:[], period:'anytime'},
+      {id:'r2', name:'Ice cream', icon:'🍦', points:15, assignedTo:[], period:'anytime'},
+      {id:'r3', name:'Movie night', icon:'🎬', points:35, assignedTo:[], period:'anytime'},
+      {id:'r4', name:'Park trip', icon:'🏞️', points:30, assignedTo:[], period:'anytime'},
+      {id:'r5', name:'Pick a game', icon:'🎮', points:25, assignedTo:[], period:'anytime'},
+      {id:'r6', name:'Bake treats', icon:'🧁', points:40, assignedTo:[], period:'anytime'}
     ],
     penalties: [
       {id:'p1', name:'Asked more than once', icon:'🗣️', points:1},
@@ -1784,6 +1790,37 @@ function rollups(ex){
   };
 }
 
+/* Start-of-period date (inclusive) for each reward cadence, ISO string. */
+function periodStart(period){
+  const now = new Date();
+  if(period === 'daily') return isoOf(now);
+  if(period === 'weekly'){
+    const d = new Date(now);
+    const dow = (d.getDay() + 6) % 7; // 0 = Monday
+    d.setDate(d.getDate() - dow);
+    return isoOf(d);
+  }
+  if(period === 'yearly') return isoOf(new Date(now.getFullYear(), 0, 1));
+  return null; // 'anytime' has no window
+}
+
+/* Has this specific reward already been claimed within its current period
+   (today / this week / this year)? Looks at the explorer's own claim log,
+   matched by reward id so a later rename/repricing doesn't confuse it. */
+function claimedThisPeriod(ex, reward){
+  if(!reward.period || reward.period === 'anytime') return false;
+  const from = periodStart(reward.period);
+  const today = isoOf(new Date());
+  return Object.keys(ex.history).some(dateKey => {
+    if(dateKey < from || dateKey > today) return false;
+    const claims = ex.history[dateKey].claims || [];
+    return claims.some(c => c.rewardId === reward.id);
+  });
+}
+
+const PERIOD_LABELS = {anytime:null, daily:'Daily', weekly:'Weekly', yearly:'Yearly'};
+const PERIOD_WAIT_TEXT = {daily:'Back tomorrow', weekly:'Back next week', yearly:'Back next year'};
+
 function isoDateFromOffset(daysAgo){
   const d = new Date();
   d.setDate(d.getDate() - daysAgo);
@@ -1809,7 +1846,10 @@ function applyDailyReset(data){
   if(!Array.isArray(data.parents)) data.parents = [];
   // Older saves had no per-task/reward assignment — default everything existing to "all"
   data.tasks.forEach(t => { if(!Array.isArray(t.assignedTo)) t.assignedTo = []; });
-  data.rewards.forEach(r => { if(!Array.isArray(r.assignedTo)) r.assignedTo = []; });
+  data.rewards.forEach(r => {
+    if(!Array.isArray(r.assignedTo)) r.assignedTo = [];
+    if(!r.period || !['anytime','daily','weekly','yearly'].includes(r.period)) r.period = 'anytime';
+  });
   data.explorers.forEach(ex => {
     if(!ex.tasksDoneToday) ex.tasksDoneToday = [];
     if(!ex.history) ex.history = {};
@@ -2124,6 +2164,7 @@ let pickedParentAvatarId = AVATAR_IDS[0];
 let pickedTaskEmoji = TASK_EMOJIS[0];
 let pickedTaskAssignees = []; // empty = all children
 let pickedRewardAssignees = [];
+let pickedRewardPeriod = 'anytime';
 let pickedRewardEmoji = REWARD_EMOJIS[0];
 let pickedPenaltyEmoji = PENALTY_EMOJIS[0];
 let editingPenaltyIds = new Set();
@@ -2634,13 +2675,17 @@ function renderRewards(){
     return;
   }
   myRewards.slice().sort((a,b)=>a.points-b.points).forEach(r => {
-    const unlocked = ex.points >= r.points;
+    const usedUp = claimedThisPeriod(ex, r);
+    const affordable = ex.points >= r.points;
+    const unlocked = affordable && !usedUp;
     const card = document.createElement('div');
-    card.className = 'reward ' + (unlocked ? 'claimable' : 'locked');
+    card.className = 'reward ' + (unlocked ? 'claimable' : 'locked') + (usedUp ? ' used-up' : '');
+    const periodLabel = PERIOD_LABELS[r.period];
     card.innerHTML = `
+      ${periodLabel ? `<span class="period-badge">${periodLabel}</span>` : ''}
       <div class="icon">${r.icon}</div>
       <div class="name">${escapeHtml(r.name)}</div>
-      <div class="cost">${r.points} pts</div>`;
+      <div class="cost">${usedUp ? PERIOD_WAIT_TEXT[r.period] : `${r.points} pts`}</div>`;
     if(unlocked){
       card.onclick = () => claimReward(r);
     }
@@ -2921,6 +2966,7 @@ function applyPenalty(penalty, approverName){
 function claimReward(reward){
   const ex = getActiveExplorer();
   if(ex.points < reward.points) return;
+  if(claimedThisPeriod(ex, reward)) return; // already used up for this daily/weekly/yearly window
   requireParentAuth((approverName) => {
     askConfirm(`Give ${ex.name} "${reward.name}" for ${reward.points} points?`, reward.icon, () => {
       const today = todayISO();
@@ -2928,6 +2974,7 @@ function claimReward(reward){
       if(!ex.history[today].claims) ex.history[today].claims = [];
       ex.points -= reward.points;
       ex.history[today].claims.push({
+        rewardId: reward.id,
         name: reward.name,
         icon: reward.icon,
         points: reward.points,
@@ -3592,7 +3639,33 @@ function buildEmojiPickers(){
   buildPicker('penaltyEmojiPick', PENALTY_EMOJIS, pickedPenaltyEmoji, (e)=>pickedPenaltyEmoji=e);
   buildAssignChips('newTaskAssignChips', pickedTaskAssignees, (ids)=>pickedTaskAssignees=ids);
   buildAssignChips('newRewardAssignChips', pickedRewardAssignees, (ids)=>pickedRewardAssignees=ids);
+  buildPeriodChips('newRewardPeriodChips', pickedRewardPeriod, (p)=>pickedRewardPeriod=p);
   renderParentManageList();
+}
+
+/* "How often?" chip picker for reward cadence — anytime/daily/weekly/yearly. */
+function buildPeriodChips(containerOrId, current, onChange){
+  const wrap = typeof containerOrId === 'string' ? document.getElementById(containerOrId) : containerOrId;
+  if(!wrap) return;
+  let selected = current || 'anytime';
+  const options = [
+    {id:'anytime', label:'🌟 Anytime'},
+    {id:'daily',   label:'☀️ Daily'},
+    {id:'weekly',  label:'📅 Weekly'},
+    {id:'yearly',  label:'🎉 Yearly'}
+  ];
+  function renderChips(){
+    wrap.innerHTML = '';
+    options.forEach(opt => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'assign-chip' + (selected === opt.id ? ' sel' : '');
+      chip.textContent = opt.label;
+      chip.onclick = () => { selected = opt.id; onChange(selected); renderChips(); };
+      wrap.appendChild(chip);
+    });
+  }
+  renderChips();
 }
 
 /* "Who is this for?" chip picker — shared by the add-quest form and each
@@ -3762,18 +3835,23 @@ function renderManageLists(){
     if(editingRewardIds.has(r.id)){
       row.innerHTML = `<input class="field" value="${escapeHtml(r.name)}" id="editRName_${r.id}">
         <input class="field small" type="number" min="1" value="${r.points}" id="editRPts_${r.id}">
+        <p class="assign-label" style="width:100%;">How often can it be claimed?</p>
+        <div class="assign-chips" id="editRPeriod_${r.id}" style="width:100%;"></div>
         <p class="assign-label" style="width:100%;">Who can earn this reward?</p>
         <div class="assign-chips" id="editRAssign_${r.id}" style="width:100%;"></div>
         <button class="del save">Save</button>
         <button class="del cancel">Cancel</button>`;
       let editAssignValue = Array.isArray(r.assignedTo) ? [...r.assignedTo] : [];
+      let editPeriodValue = r.period || 'anytime';
       buildAssignChips(row.querySelector(`#editRAssign_${r.id}`), editAssignValue, (ids) => { editAssignValue = ids; });
+      buildPeriodChips(row.querySelector(`#editRPeriod_${r.id}`), editPeriodValue, (p) => { editPeriodValue = p; });
       row.querySelector('.save').onclick = () => {
         const nameVal = document.getElementById(`editRName_${r.id}`).value.trim();
         const ptsVal = Math.max(1, parseInt(document.getElementById(`editRPts_${r.id}`).value) || 1);
         if(nameVal) r.name = nameVal;
         r.points = ptsVal;
         r.assignedTo = editAssignValue;
+        r.period = editPeriodValue;
         editingRewardIds.delete(r.id);
         save(state); render(); renderManageLists();
       };
@@ -3782,7 +3860,8 @@ function renderManageLists(){
       const who = (!r.assignedTo || r.assignedTo.length === 0)
         ? '🌍 All'
         : r.assignedTo.map(id => state.explorers.find(e => e.id === id)?.name).filter(Boolean).join(', ') || '🌍 All';
-      row.innerHTML = `<span class="icon">${r.icon}</span><span class="meta">${escapeHtml(r.name)} — ${r.points} pts
+      const periodTag = PERIOD_LABELS[r.period] ? ` · ${PERIOD_LABELS[r.period]}` : '';
+      row.innerHTML = `<span class="icon">${r.icon}</span><span class="meta">${escapeHtml(r.name)} — ${r.points} pts${periodTag}
         <br><span class="assign-note">${escapeHtml(who)}</span></span>
         <button class="del edit">Edit</button>
         <button class="del">Remove</button>`;
@@ -3933,10 +4012,12 @@ document.getElementById('addRewardBtn').onclick = () => {
   const name = nameInput.value.trim();
   const pts = Math.max(1, parseInt(ptsInput.value) || 1);
   if(!name){ nameInput.focus(); return; }
-  state.rewards.push({id:'r'+Date.now(), name, icon:pickedRewardEmoji, points:pts, assignedTo:[...pickedRewardAssignees]});
+  state.rewards.push({id:'r'+Date.now(), name, icon:pickedRewardEmoji, points:pts, assignedTo:[...pickedRewardAssignees], period:pickedRewardPeriod});
   nameInput.value = ''; ptsInput.value = 30;
   pickedRewardAssignees = [];
+  pickedRewardPeriod = 'anytime';
   buildAssignChips('newRewardAssignChips', pickedRewardAssignees, (ids)=>pickedRewardAssignees=ids);
+  buildPeriodChips('newRewardPeriodChips', pickedRewardPeriod, (p)=>pickedRewardPeriod=p);
   save(state); render(); renderManageLists();
 };
 
