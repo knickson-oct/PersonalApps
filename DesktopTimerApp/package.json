@@ -13,6 +13,7 @@
   "build": {
     "appId": "com.personalapps.desktoptimer",
     "productName": "Desktop Timer",
+    "publish": null,
     "files": [
       "main.js",
       "preload.js",
