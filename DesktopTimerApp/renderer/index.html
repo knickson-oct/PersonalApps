@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Desktop Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;800;900&family=Inter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121A28;
+    --panel:#182236;
+    --panel-light:#1F2C44;
+    --ink:#EAF0FA;
+    --ink-dim:#8CA0BC;
+    --ok:#2FBF79;
+    --warn:#E8B23A;
+    --danger:#E05A4E;
+    --accent:#4E9EF0;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;background:transparent;overflow:hidden;}
+  body{
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    -webkit-user-select:none;
+    user-select:none;
+  }
+  button{font-family:inherit;}
+  .clock-display{font-family:'IBM Plex Mono',monospace;font-weight:700;}
+
+  .app-region-drag{-webkit-app-region:drag;}
+  .no-drag, button, input{-webkit-app-region:no-drag;}
+
+  .panel{display:none;height:100vh;width:100vw;background:var(--panel);
+    border-radius:16px;border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 10px 30px rgba(0,0,0,0.45);overflow:hidden;}
+
+  /* state tint */
+  body[data-state="warn"] .clock-display{color:#FFE6A8;}
+  body[data-state="danger"] .clock-display{color:#FFC9C2;}
+  body[data-state="done"] .clock-display{color:#FFC9C2;animation:flash 1s step-start infinite;}
+  @keyframes flash{50%{opacity:0.3;}}
+  body[data-state="ok"] .ring-fg, body[data-state="ok"] .mini-progress-fill{stroke:var(--ok);background:var(--ok);}
+  body[data-state="warn"] .ring-fg, body[data-state="warn"] .mini-progress-fill{stroke:var(--warn);background:var(--warn);}
+  body[data-state="danger"] .ring-fg, body[data-state="danger"] .mini-progress-fill{stroke:var(--danger);background:var(--danger);}
+  body[data-state="done"] .ring-fg, body[data-state="done"] .mini-progress-fill{stroke:var(--danger);background:var(--danger);}
+
+  /* ===== Compact panel ===== */
+  body[data-mode="compact"] .compact-panel{display:flex;}
+  .compact-panel{flex-direction:column;align-items:center;justify-content:center;
+    padding:10px 14px 12px;position:relative;gap:6px;}
+  .compact-topbtns{position:absolute;top:8px;right:8px;display:flex;gap:6px;}
+  .mini-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+    color:var(--ink-dim);border-radius:8px;width:24px;height:24px;font-size:12px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .mini-btn:active{background:rgba(255,255,255,0.14);}
+  .compact-clock{font-size:34px;color:var(--ink);line-height:1;margin-top:4px;}
+  .mini-progress{width:100%;height:6px;background:rgba(255,255,255,0.08);border-radius:4px;
+    overflow:hidden;margin-top:2px;}
+  .mini-progress-fill{height:100%;background:var(--ok);width:100%;transition:width .3s linear, background .3s ease;}
+  .compact-controls{display:flex;align-items:center;gap:10px;margin-top:4px;}
+  .compact-controls button{background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);
+    color:var(--ink);border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;}
+  .compact-controls button.play{background:linear-gradient(180deg,var(--ok),#1E9960);color:#06281A;
+    border:none;width:36px;height:36px;border-radius:50%;font-size:14px;padding:0;}
+  .compact-controls button.play.paused{background:linear-gradient(180deg,var(--accent),#2D6FC2);color:#06192E;}
+  .compact-controls button:active{transform:scale(0.93);}
+
+  /* ===== Expanded panel ===== */
+  body[data-mode="expanded"] .expanded-panel{display:flex;}
+  .expanded-panel{flex-direction:column;}
+  .drag-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;
+    background:var(--panel-light);border-bottom:1px solid rgba(255,255,255,0.06);}
+  .drag-bar .title{font-family:'Rubik',sans-serif;font-weight:800;font-size:13px;letter-spacing:0.5px;
+    color:var(--ink-dim);text-transform:uppercase;}
+  .drag-bar .btns{display:flex;gap:6px;}
+  .expanded-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;}
+
+  .section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;
+    color:var(--ink-dim);margin:0 0 10px;}
+  .presets{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px;}
+  .preset{background:var(--panel-light);border:1px solid rgba(255,255,255,0.07);color:var(--ink);
+    border-radius:10px;padding:10px 4px;font-weight:700;font-size:13px;cursor:pointer;}
+  .preset.active{background:rgba(78,158,240,0.18);border-color:var(--accent);color:#BFE0FF;}
+  .custom-row{display:flex;gap:8px;margin-bottom:16px;}
+  .stepper{display:flex;align-items:center;background:var(--panel-light);border-radius:10px;
+    border:1px solid rgba(255,255,255,0.07);flex:1;}
+  .stepper button{background:transparent;border:none;color:var(--ink);font-size:16px;font-weight:700;
+    width:36px;height:42px;cursor:pointer;}
+  .stepper .val{flex:1;text-align:center;font-size:16px;font-weight:700;}
+  .stepper .unit{font-size:9px;color:var(--ink-dim);text-transform:uppercase;display:block;}
+  .pin-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;}
+  .toggle{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--panel-light);border:1px solid rgba(255,255,255,0.07);border-radius:10px;
+    padding:9px;font-size:12px;font-weight:600;color:var(--ink-dim);cursor:pointer;}
+  .toggle.on{color:#BFE0FF;border-color:var(--accent);background:rgba(78,158,240,0.12);}
+  .start-btn{width:100%;background:linear-gradient(180deg,var(--ok),#1E9960);border:none;
+    color:#06281A;font-weight:800;font-size:15px;border-radius:12px;padding:14px;cursor:pointer;}
+
+  .running-view{display:none;flex-direction:column;align-items:center;flex:1;justify-content:center;}
+  .ring-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;}
+  svg.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:5;}
+  .ring-fg{fill:none;stroke:var(--ok);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .3s linear, stroke .3s ease;}
+  .expanded-clock{font-size:44px;}
+  .time-label{color:var(--ink-dim);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-top:6px;}
+  .running-controls{display:flex;gap:14px;margin-top:24px;}
+  .ctrl-btn{background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);color:var(--ink);
+    border-radius:50%;width:48px;height:48px;font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .ctrl-btn.play{width:60px;height:60px;background:linear-gradient(180deg,var(--ok),#1E9960);color:#06281A;font-size:21px;}
+  .ctrl-btn.play.paused{background:linear-gradient(180deg,var(--accent),#2D6FC2);color:#06192E;}
+  .add-time-row{display:flex;gap:8px;margin-top:18px;}
+  .add-time{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
+    color:var(--ink-dim);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body data-mode="compact" data-state="ok">
+
+<div class="panel compact-panel app-region-drag">
+  <div class="compact-topbtns">
+    <button class="mini-btn" id="expandBtnCompact" title="Expand">⤢</button>
+    <button class="mini-btn" id="closeBtnCompact" title="Hide to tray">✕</button>
+  </div>
+  <div class="clock-display compact-clock" data-role="clock">05:00</div>
+  <div class="mini-progress"><div class="mini-progress-fill" data-role="progress"></div></div>
+  <div class="compact-controls">
+    <button id="minusBtnCompact">−1m</button>
+    <button class="play" id="playBtnCompact" data-role="play">▶</button>
+    <button id="resetBtnCompact">↺</button>
+  </div>
+</div>
+
+<div class="panel expanded-panel">
+  <div class="drag-bar app-region-drag">
+    <span class="title">Desktop Timer</span>
+    <div class="btns">
+      <button class="mini-btn" id="pinBtn" title="Toggle always-on-top">📌</button>
+      <button class="mini-btn" id="collapseBtn" title="Collapse">⤡</button>
+      <button class="mini-btn" id="closeBtnExpanded" title="Hide to tray">✕</button>
+    </div>
+  </div>
+  <div class="expanded-body">
+    <div id="setupSection">
+      <p class="section-label">Quick presets</p>
+      <div class="presets" id="presets"></div>
+      <p class="section-label">Custom duration</p>
+      <div class="custom-row">
+        <div class="stepper">
+          <button id="minDown">−</button>
+          <div class="val"><span id="minVal">5</span><span class="unit">min</span></div>
+          <button id="minUp">+</button>
+        </div>
+        <div class="stepper">
+          <button id="secDown">−</button>
+          <div class="val"><span id="secVal">00</span><span class="unit">sec</span></div>
+          <button id="secUp">+</button>
+        </div>
+      </div>
+      <div class="pin-row">
+        <div class="toggle on" id="soundToggle">🔊 Sound on end</div>
+      </div>
+      <button class="start-btn" id="startBtn">Start Timer</button>
+    </div>
+
+    <div class="running-view" id="runningView">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 200 200">
+          <circle class="ring-bg" cx="100" cy="100" r="88"></circle>
+          <circle class="ring-fg" data-role="ring" cx="100" cy="100" r="88"></circle>
+        </svg>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="clock-display expanded-clock" data-role="clock">05:00</div>
+          <div class="time-label" data-role="label">remaining</div>
+        </div>
+      </div>
+      <div class="running-controls">
+        <button class="ctrl-btn" id="resetBtnExpanded" title="Reset">↺</button>
+        <button class="ctrl-btn play" id="playBtnExpanded" data-role="play" title="Play/Pause">▶</button>
+        <button class="ctrl-btn" id="newTimerBtn" title="New timer">⚙</button>
+      </div>
+      <div class="add-time-row">
+        <button class="add-time" data-add="60">+1 min</button>
+        <button class="add-time" data-add="300">+5 min</button>
+        <button class="add-time" data-add="-60">−1 min</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var PRESET_MINUTES = [1,3,5,10,15,20,30,60];
+  var STORAGE_KEY = "desktopTimer.settings.v1";
+  var RING_CIRC = 2*Math.PI*88;
+
+  var body = document.body;
+  var presetsEl = document.getElementById('presets');
+  var minVal = document.getElementById('minVal');
+  var secVal = document.getElementById('secVal');
+  var soundToggle = document.getElementById('soundToggle');
+  var startBtn = document.getElementById('startBtn');
+  var setupSection = document.getElementById('setupSection');
+  var runningView = document.getElementById('runningView');
+
+  var state = {
+    minutes: 5,
+    seconds: 0,
+    totalMs: 5*60*1000,
+    remainingMs: 5*60*1000,
+    running: false,
+    done: false,
+    soundOn: true,
+    pinned: true,
+    mode: 'compact',
+    lastTick: null,
+    rafId: null
+  };
+
+  document.querySelectorAll('[data-role="ring"]').forEach(function(el){
+    el.style.strokeDasharray = RING_CIRC.toFixed(2);
+  });
+
+  function loadSettings(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      var saved = JSON.parse(raw);
+      if(typeof saved.minutes === 'number') state.minutes = saved.minutes;
+      if(typeof saved.seconds === 'number') state.seconds = saved.seconds;
+      if(typeof saved.soundOn === 'boolean') state.soundOn = saved.soundOn;
+    }catch(e){}
+  }
+  function saveSettings(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        minutes: state.minutes, seconds: state.seconds, soundOn: state.soundOn
+      }));
+    }catch(e){}
+  }
+
+  function buildPresets(){
+    presetsEl.innerHTML = '';
+    PRESET_MINUTES.forEach(function(m){
+      var btn = document.createElement('button');
+      btn.className = 'preset';
+      btn.textContent = m + ' min';
+      btn.addEventListener('click', function(){
+        state.minutes = m; state.seconds = 0;
+        refreshSetupUI(); saveSettings();
+      });
+      presetsEl.appendChild(btn);
+    });
+  }
+
+  function refreshSetupUI(){
+    minVal.textContent = state.minutes;
+    secVal.textContent = String(state.seconds).padStart(2,'0');
+    Array.prototype.forEach.call(presetsEl.children, function(btn, i){
+      btn.classList.toggle('active', PRESET_MINUTES[i] === state.minutes && state.seconds === 0);
+    });
+    soundToggle.classList.toggle('on', state.soundOn);
+  }
+
+  document.getElementById('minUp').addEventListener('click', function(){ state.minutes=Math.min(180,state.minutes+1); refreshSetupUI(); saveSettings(); });
+  document.getElementById('minDown').addEventListener('click', function(){ state.minutes=Math.max(0,state.minutes-1); refreshSetupUI(); saveSettings(); });
+  document.getElementById('secUp').addEventListener('click', function(){ state.seconds=(state.seconds+5)%60; refreshSetupUI(); saveSettings(); });
+  document.getElementById('secDown').addEventListener('click', function(){ state.seconds=(state.seconds-5+60)%60; refreshSetupUI(); saveSettings(); });
+  soundToggle.addEventListener('click', function(){ state.soundOn=!state.soundOn; refreshSetupUI(); saveSettings(); });
+
+  function formatTime(ms){
+    var totalSec = Math.max(0, Math.round(ms/1000));
+    var h = Math.floor(totalSec/3600);
+    var m = Math.floor((totalSec%3600)/60);
+    var s = totalSec%60;
+    if(h>0) return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+
+  function playBeep(){
+    if(!state.soundOn) return;
+    try{
+      var ctx = playBeep._ctx || (playBeep._ctx = new (window.AudioContext||window.webkitAudioContext)());
+      [0,0.3,0.6].forEach(function(t){
+        var osc = ctx.createOscillator(); var gain = ctx.createGain();
+        osc.type='sine'; osc.frequency.value=880;
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime+t);
+        gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime+t+0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+t+0.25);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(ctx.currentTime+t); osc.stop(ctx.currentTime+t+0.3);
+      });
+    }catch(e){}
+  }
+
+  function render(){
+    var txt = formatTime(state.remainingMs);
+    document.querySelectorAll('[data-role="clock"]').forEach(function(el){ el.textContent = txt; });
+    document.querySelectorAll('[data-role="label"]').forEach(function(el){
+      el.textContent = state.done ? "TIME'S UP" : (state.running ? 'remaining' : 'paused');
+    });
+    document.querySelectorAll('[data-role="play"]').forEach(function(el){
+      el.textContent = state.running ? '❚❚' : '▶';
+      el.classList.toggle('paused', state.running);
+    });
+
+    var frac = state.totalMs>0 ? state.remainingMs/state.totalMs : 0;
+    frac = Math.max(0, Math.min(1, frac));
+    var st = state.done ? 'done' : (frac<=0.15 ? 'danger' : (frac<=0.4 ? 'warn' : 'ok'));
+    body.setAttribute('data-state', st);
+
+    document.querySelectorAll('[data-role="progress"]').forEach(function(el){
+      el.style.width = (frac*100).toFixed(1)+'%';
+    });
+    var offset = RING_CIRC*(1-frac);
+    document.querySelectorAll('[data-role="ring"]').forEach(function(el){
+      el.style.strokeDashoffset = offset.toFixed(2);
+    });
+  }
+
+  function tick(){
+    if(!state.running) return;
+    var now = performance.now();
+    var dt = now - state.lastTick;
+    state.lastTick = now;
+    state.remainingMs -= dt;
+    if(state.remainingMs <= 0){
+      state.remainingMs = 0; state.running=false; state.done=true;
+      playBeep(); render(); return;
+    }
+    render();
+    state.rafId = requestAnimationFrame(tick);
+  }
+
+  function startTimer(){
+    if(state.remainingMs <= 0){ state.remainingMs = state.totalMs; state.done=false; }
+    state.running = true; state.lastTick = performance.now();
+    render();
+    state.rafId = requestAnimationFrame(tick);
+  }
+  function pauseTimer(){
+    state.running = false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    render();
+  }
+  function resetTimer(){
+    state.running=false; state.done=false;
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.remainingMs = state.totalMs;
+    render();
+  }
+  function addTime(deltaMs){
+    state.remainingMs = Math.max(0, state.remainingMs + deltaMs);
+    state.totalMs = Math.max(state.totalMs, state.remainingMs);
+    if(state.remainingMs>0 && state.done) state.done=false;
+    render();
+  }
+
+  function beginFromSetup(){
+    state.totalMs = (state.minutes*60 + state.seconds)*1000;
+    if(state.totalMs<=0) state.totalMs=1000;
+    state.remainingMs = state.totalMs;
+    state.done = false;
+    setupSection.style.display = 'none';
+    runningView.style.display = 'flex';
+    startTimer();
+  }
+
+  startBtn.addEventListener('click', beginFromSetup);
+  document.getElementById('playBtnExpanded').addEventListener('click', togglePlay);
+  document.getElementById('playBtnCompact').addEventListener('click', togglePlay);
+  function togglePlay(){
+    if(state.totalMs===0){ return; }
+    if(state.done){ resetTimer(); startTimer(); return; }
+    if(state.running) pauseTimer(); else startTimer();
+  }
+
+  document.getElementById('resetBtnExpanded').addEventListener('click', resetTimer);
+  document.getElementById('resetBtnCompact').addEventListener('click', resetTimer);
+  document.getElementById('minusBtnCompact').addEventListener('click', function(){ addTime(-60000); });
+  document.getElementById('newTimerBtn').addEventListener('click', function(){
+    pauseTimer();
+    runningView.style.display = 'none';
+    setupSection.style.display = '';
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.add-time'), function(btn){
+    btn.addEventListener('click', function(){ addTime(parseInt(btn.getAttribute('data-add'),10)*1000); });
+  });
+
+  function setMode(mode){
+    state.mode = mode;
+    body.setAttribute('data-mode', mode);
+    if(window.desktopTimer) window.desktopTimer.resizeWindow(mode);
+  }
+  document.getElementById('expandBtnCompact').addEventListener('click', function(){ setMode('expanded'); });
+  document.getElementById('collapseBtn').addEventListener('click', function(){ setMode('compact'); });
+
+  document.getElementById('closeBtnCompact').addEventListener('click', function(){
+    if(window.desktopTimer) window.desktopTimer.closeWidget();
+  });
+  document.getElementById('closeBtnExpanded').addEventListener('click', function(){
+    if(window.desktopTimer) window.desktopTimer.closeWidget();
+  });
+
+  var pinBtn = document.getElementById('pinBtn');
+  pinBtn.addEventListener('click', function(){
+    state.pinned = !state.pinned;
+    pinBtn.style.opacity = state.pinned ? '1' : '0.4';
+    if(window.desktopTimer) window.desktopTimer.togglePin(state.pinned);
+  });
+
+  loadSettings();
+  buildPresets();
+  refreshSetupUI();
+  render();
+})();
+</script>
+</body>
+</html>
