@@ -7,7 +7,7 @@ const COMPACT_SIZES = [
   { width: 440, height: 244 }
 ];
 const COMPACT_SIZE = COMPACT_SIZES[0];
-const EXPANDED_SIZE = { width: 460, height: 560 };
+const EXPANDED_SIZE = { width: 460, height: 600 };
 
 let mainWindow = null;
 let tray = null;

@@ -189,6 +189,21 @@
   .colour-item input[type="color"]{width:34px;height:26px;padding:0;border:none;background:transparent;cursor:pointer;flex:none;}
   .link-btn{margin-top:10px;background:transparent;border:1px dashed rgba(255,255,255,0.18);color:var(--ink-dim);
     font-weight:700;font-size:12px;border-radius:10px;padding:8px;cursor:pointer;width:100%;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--ink-dim) 35%,transparent);border-radius:8px;
+    border:2px solid transparent;background-clip:padding-box;}
+  ::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--ink-dim) 65%,transparent);
+    border:2px solid transparent;background-clip:padding-box;}
+  ::-webkit-scrollbar-button, ::-webkit-scrollbar-corner{display:none;}
+
+  /* Timer / School Day tabs */
+  .view-tabs{display:flex;gap:6px;padding:8px 12px 0;}
+  .view-tab{flex:1;background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--ink-dim);
+    border-radius:10px;padding:7px 4px;font-weight:700;font-size:12px;cursor:pointer;}
+  .view-tab.active{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:var(--accent);
+    color:color-mix(in srgb,var(--accent) 45%,#fff);}
+  .set-time-btn{width:100%;margin-top:18px;}
 </style>
 </head>
 <body data-mode="compact" data-state="ok" data-view="timer">
@@ -207,6 +222,7 @@
       <button id="minusBtnCompact">−1m</button>
       <button class="play" id="playBtnCompact" data-role="play">▶</button>
       <button id="resetBtnCompact">↺</button>
+      <button id="setTimeCompact" title="Choose a different time">⏱ Set</button>
     </div>
     <div class="chip" data-role="chip-school"></div>
   </div>
@@ -229,6 +245,10 @@
       <button class="mini-btn" id="collapseBtn" title="Collapse">⤡</button>
       <button class="mini-btn" id="closeBtnExpanded" title="Hide to tray">✕</button>
     </div>
+  </div>
+  <div class="view-tabs">
+    <button class="view-tab active" id="tabTimer">⏱ Timer</button>
+    <button class="view-tab" id="tabSchool">🏫 School Day</button>
   </div>
   <div class="expanded-body">
 
@@ -270,13 +290,13 @@
       <div class="running-controls">
         <button class="ctrl-btn" id="resetBtnExpanded" title="Reset">↺</button>
         <button class="ctrl-btn play" id="playBtnExpanded" data-role="play" title="Play/Pause">▶</button>
-        <button class="ctrl-btn" id="newTimerBtn" title="New timer">⚙</button>
       </div>
       <div class="add-time-row">
         <button class="add-time" data-add="60">+1 min</button>
         <button class="add-time" data-add="300">+5 min</button>
         <button class="add-time" data-add="-60">−1 min</button>
       </div>
+      <button class="link-btn set-time-btn" id="newTimerBtn">✎ Choose a different time</button>
       <div class="chip" data-role="chip-school"></div>
     </div>
 
@@ -294,9 +314,6 @@
       <div class="now-line" data-role="now-line">00:00:00</div>
       <div class="weekday-pill" data-role="weekday-pill">Monday</div>
       <div class="chip" data-role="chip-timer"></div>
-      <div class="running-controls">
-        <button class="ctrl-btn" id="backFromSchoolDay" title="Back">⚙</button>
-      </div>
     </div>
 
     <div class="view-section settings-view" id="settingsSection">
@@ -647,13 +664,20 @@
     showSection('settings');
   });
 
+  function timerSection(){ return state.timerStarted && !state.done ? 'running' : 'setup'; }
+  function syncTabs(){
+    document.getElementById('tabTimer').classList.toggle('active', state.view === 'timer');
+    document.getElementById('tabSchool').classList.toggle('active', state.view === 'schoolday');
+  }
+
   function setView(view){
     if(state.view === view) return;
     state.view = view;
     body.setAttribute('data-view', view);
     document.getElementById('viewToggleCompact').classList.toggle('active', view === 'schoolday');
+    syncTabs();
     if(['setup','running','schoolday'].indexOf(state.activeSection) >= 0){
-      showSection(view === 'schoolday' ? 'schoolday' : (state.timerStarted ? 'running' : 'setup'));
+      showSection(view === 'schoolday' ? 'schoolday' : timerSection());
     }
     render();
     schoolDayTick();
@@ -663,15 +687,22 @@
   document.getElementById('viewToggleCompact').addEventListener('click', function(){
     setView(state.view === 'timer' ? 'schoolday' : 'timer');
   });
+  document.getElementById('tabTimer').addEventListener('click', function(){
+    setView('timer');
+    showSection(timerSection());
+  });
+  document.getElementById('tabSchool').addEventListener('click', function(){
+    setView('schoolday');
+    showSection('schoolday');
+  });
+  document.getElementById('setTimeCompact').addEventListener('click', function(){
+    setMode('expanded');
+    showSection('setup');
+  });
   document.getElementById('goSchoolDayBtn').addEventListener('click', function(){
     setView('schoolday');
     showSection('schoolday');
   });
-  document.getElementById('backFromSchoolDay').addEventListener('click', function(){
-    setView('timer');
-    showSection(state.timerStarted ? 'running' : 'setup');
-  });
-
   // ===== Manual timer presets/custom duration =====
   function buildPresets(){
     presetsEl.innerHTML = '';
