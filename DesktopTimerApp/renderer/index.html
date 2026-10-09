@@ -7,6 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700;800;900&family=Inter:wght@500;600;700;800&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root{
+    --on-ok:#06281A;
+    --on-accent:#06192E;
     --bg:#121A28;
     --panel:#182236;
     --panel-light:#1F2C44;
@@ -32,14 +34,14 @@
   .app-region-drag{-webkit-app-region:drag;}
   .no-drag, button, input{-webkit-app-region:no-drag;}
 
-  .panel{display:none;height:100vh;width:100vw;background:var(--panel);
+  .panel{display:none;height:100%;width:100%;background:var(--panel);
     border-radius:16px;border:1px solid rgba(255,255,255,0.08);
     box-shadow:0 10px 30px rgba(0,0,0,0.45);overflow:hidden;}
 
   /* state tint (used by both manual timer and school-day bell urgency) */
-  body[data-state="warn"] .clock-display{color:#FFE6A8;}
-  body[data-state="danger"] .clock-display{color:#FFC9C2;}
-  body[data-state="done"] .clock-display{color:#FFC9C2;animation:flash 1s step-start infinite;}
+  body[data-state="warn"] .clock-display{color:color-mix(in srgb,var(--warn) 35%,#fff);}
+  body[data-state="danger"] .clock-display{color:color-mix(in srgb,var(--danger) 35%,#fff);}
+  body[data-state="done"] .clock-display{color:color-mix(in srgb,var(--danger) 35%,#fff);animation:flash 1s step-start infinite;}
   @keyframes flash{50%{opacity:0.3;}}
   body[data-state="ok"] .ring-fg, body[data-state="ok"] .mini-progress-fill{stroke:var(--ok);background:var(--ok);}
   body[data-state="warn"] .ring-fg, body[data-state="warn"] .mini-progress-fill{stroke:var(--warn);background:var(--warn);}
@@ -55,24 +57,24 @@
     color:var(--ink-dim);border-radius:8px;width:24px;height:24px;font-size:12px;
     display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .mini-btn:active{background:rgba(255,255,255,0.14);}
-  .mini-btn.active{color:#BFE0FF;border-color:var(--accent);background:rgba(78,158,240,0.16);}
-  .compact-clock{font-size:34px;color:var(--ink);line-height:1;margin-top:4px;}
+  .mini-btn.active{color:color-mix(in srgb,var(--accent) 45%,#fff);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent);}
+  .compact-clock{font-size:var(--compact-clock,34px);color:var(--ink);line-height:1;margin-top:4px;}
   .mini-progress{width:100%;height:6px;background:rgba(255,255,255,0.08);border-radius:4px;
     overflow:hidden;margin-top:2px;}
   .mini-progress-fill{height:100%;background:var(--ok);width:100%;transition:width .3s linear, background .3s ease;}
   .compact-controls{display:flex;align-items:center;gap:10px;margin-top:4px;}
   .compact-controls button{background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);
     color:var(--ink);border-radius:10px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;}
-  .compact-controls button.play{background:linear-gradient(180deg,var(--ok),#1E9960);color:#06281A;
+  .compact-controls button.play{background:linear-gradient(180deg,var(--ok),color-mix(in srgb,var(--ok) 70%,#000));color:var(--on-ok);
     border:none;width:36px;height:36px;border-radius:50%;font-size:14px;padding:0;}
-  .compact-controls button.play.paused{background:linear-gradient(180deg,var(--accent),#2D6FC2);color:#06192E;}
+  .compact-controls button.play.paused{background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#000));color:var(--on-accent);}
   .compact-controls button:active{transform:scale(0.93);}
   .compact-timer-content, .compact-schoolday-content{display:flex;flex-direction:column;align-items:center;width:100%;gap:6px;}
   body[data-view="timer"] .compact-schoolday-content{display:none;}
   body[data-view="schoolday"] .compact-timer-content{display:none;}
   .period-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
     color:var(--ink-dim);text-align:center;}
-  body[data-state="done"] .period-label{color:#FFC9C2;animation:flash 1s step-start infinite;}
+  body[data-state="done"] .period-label{color:color-mix(in srgb,var(--danger) 35%,#fff);animation:flash 1s step-start infinite;}
   .now-line{font-size:11px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
 
   /* ===== Expanded panel ===== */
@@ -90,7 +92,7 @@
   .presets{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px;}
   .preset{background:var(--panel-light);border:1px solid rgba(255,255,255,0.07);color:var(--ink);
     border-radius:10px;padding:10px 4px;font-weight:700;font-size:13px;cursor:pointer;}
-  .preset.active{background:rgba(78,158,240,0.18);border-color:var(--accent);color:#BFE0FF;}
+  .preset.active{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:var(--accent);color:color-mix(in srgb,var(--accent) 45%,#fff);}
   .custom-row{display:flex;gap:8px;margin-bottom:16px;}
   .stepper{display:flex;align-items:center;background:var(--panel-light);border-radius:10px;
     border:1px solid rgba(255,255,255,0.07);flex:1;}
@@ -102,11 +104,11 @@
   .toggle{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
     background:var(--panel-light);border:1px solid rgba(255,255,255,0.07);border-radius:10px;
     padding:9px;font-size:12px;font-weight:600;color:var(--ink-dim);cursor:pointer;}
-  .toggle.on{color:#BFE0FF;border-color:var(--accent);background:rgba(78,158,240,0.12);}
-  .start-btn{width:100%;background:linear-gradient(180deg,var(--ok),#1E9960);border:none;
-    color:#06281A;font-weight:800;font-size:15px;border-radius:12px;padding:14px;cursor:pointer;margin-bottom:10px;}
-  .schoolday-btn{width:100%;background:linear-gradient(180deg,var(--accent),#2D6FC2);border:none;
-    color:#06192E;font-weight:800;font-size:14px;border-radius:12px;padding:12px;cursor:pointer;margin-bottom:10px;}
+  .toggle.on{color:color-mix(in srgb,var(--accent) 45%,#fff);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);}
+  .start-btn{width:100%;background:linear-gradient(180deg,var(--ok),color-mix(in srgb,var(--ok) 70%,#000));border:none;
+    color:var(--on-ok);font-weight:800;font-size:15px;border-radius:12px;padding:14px;cursor:pointer;margin-bottom:10px;}
+  .schoolday-btn{width:100%;background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#000));border:none;
+    color:var(--on-accent);font-weight:800;font-size:14px;border-radius:12px;padding:12px;cursor:pointer;margin-bottom:10px;}
   .settings-btn-row{width:100%;background:transparent;border:1px dashed rgba(255,255,255,0.15);
     color:var(--ink-dim);font-weight:700;font-size:12px;border-radius:12px;padding:10px;cursor:pointer;}
 
@@ -114,17 +116,17 @@
   .view-section.active{display:flex;flex-direction:column;flex:1;}
 
   .running-view{align-items:center;justify-content:center;}
-  .ring-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;margin:0 auto;}
+  .ring-wrap{position:relative;width:var(--ring-size,200px);height:var(--ring-size,200px);display:flex;align-items:center;justify-content:center;margin:0 auto;}
   svg.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
   .ring-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:5;}
   .ring-fg{fill:none;stroke:var(--ok);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .3s linear, stroke .3s ease;}
-  .expanded-clock{font-size:44px;}
+  .expanded-clock{font-size:var(--expanded-clock,44px);}
   .time-label{color:var(--ink-dim);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-top:6px;}
   .running-controls{display:flex;gap:14px;margin-top:24px;justify-content:center;}
   .ctrl-btn{background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);color:var(--ink);
     border-radius:50%;width:48px;height:48px;font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .ctrl-btn.play{width:60px;height:60px;background:linear-gradient(180deg,var(--ok),#1E9960);color:#06281A;font-size:21px;}
-  .ctrl-btn.play.paused{background:linear-gradient(180deg,var(--accent),#2D6FC2);color:#06192E;}
+  .ctrl-btn.play{width:60px;height:60px;background:linear-gradient(180deg,var(--ok),color-mix(in srgb,var(--ok) 70%,#000));color:var(--on-ok);font-size:21px;}
+  .ctrl-btn.play.paused{background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#000));color:var(--on-accent);}
   .add-time-row{display:flex;gap:8px;margin-top:18px;justify-content:center;}
   .add-time{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
     color:var(--ink-dim);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;}
@@ -149,9 +151,44 @@
   .size-row{display:flex;gap:8px;}
   .size-btn{flex:1;background:var(--panel-light);border:1px solid rgba(255,255,255,0.07);color:var(--ink);
     border-radius:10px;padding:10px 4px;font-weight:700;font-size:12px;cursor:pointer;}
-  .size-btn.active{background:rgba(78,158,240,0.18);border-color:var(--accent);color:#BFE0FF;}
+  .size-btn.active{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:var(--accent);color:color-mix(in srgb,var(--accent) 45%,#fff);}
   .back-btn{width:100%;background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);
     color:var(--ink);font-weight:700;font-size:13px;border-radius:12px;padding:12px;cursor:pointer;margin-top:auto;}
+  .edit-times-btn{width:100%;background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);
+    color:var(--ink);font-weight:700;font-size:13px;border-radius:10px;padding:11px;cursor:pointer;}
+
+  /* ===== Timetable editor ===== */
+  .schedule-view{overflow-y:auto;}
+  .sched-tabs{display:flex;gap:8px;margin-bottom:12px;}
+  .sched-tab{flex:1;background:var(--panel-light);border:1px solid rgba(255,255,255,0.07);color:var(--ink);
+    border-radius:10px;padding:9px 4px;font-weight:700;font-size:12px;cursor:pointer;}
+  .sched-tab.active{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:var(--accent);color:color-mix(in srgb,var(--accent) 45%,#fff);}
+  .sched-hint{font-size:11px;color:var(--ink-dim);margin:0 0 10px;line-height:1.4;}
+  .sched-row{display:grid;grid-template-columns:58px 58px 1fr 26px;gap:6px;margin-bottom:6px;align-items:center;}
+  .sched-row input{width:100%;min-width:0;text-align:center;background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);
+    color:var(--ink);border-radius:8px;padding:7px 6px;font-size:12px;color-scheme:dark;}
+  .sched-row input:nth-child(3){text-align:left;padding-left:10px;}
+  .sched-row input:focus{outline:none;border-color:var(--accent);}
+  .sched-row.invalid input{border-color:var(--danger);}
+  .sched-row .del{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:var(--ink-dim);
+    border-radius:8px;width:26px;height:30px;cursor:pointer;font-size:12px;}
+  .sched-cols{display:grid;grid-template-columns:58px 58px 1fr 26px;gap:6px;margin-bottom:4px;
+    font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-dim);}
+  .sched-actions{display:flex;gap:8px;margin:10px 0 14px;}
+  .sched-actions button{flex:1;background:transparent;border:1px dashed rgba(255,255,255,0.18);color:var(--ink-dim);
+    font-weight:700;font-size:12px;border-radius:10px;padding:9px;cursor:pointer;}
+  .chip{font-size:11px;font-weight:700;color:var(--ink-dim);background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:2px 10px;white-space:nowrap;
+    font-family:'IBM Plex Mono',monospace;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+  .chip:empty{display:none;}
+  .chip.alert{color:color-mix(in srgb,var(--danger) 35%,#fff);border-color:var(--danger);animation:flash 1s step-start infinite;}
+  .view-section .chip{margin-top:12px;}
+  .colour-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .colour-item{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--panel-light);
+    border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:6px 8px 6px 10px;font-size:11px;font-weight:600;color:var(--ink);}
+  .colour-item input[type="color"]{width:34px;height:26px;padding:0;border:none;background:transparent;cursor:pointer;flex:none;}
+  .link-btn{margin-top:10px;background:transparent;border:1px dashed rgba(255,255,255,0.18);color:var(--ink-dim);
+    font-weight:700;font-size:12px;border-radius:10px;padding:8px;cursor:pointer;width:100%;}
 </style>
 </head>
 <body data-mode="compact" data-state="ok" data-view="timer">
@@ -171,6 +208,7 @@
       <button class="play" id="playBtnCompact" data-role="play">▶</button>
       <button id="resetBtnCompact">↺</button>
     </div>
+    <div class="chip" data-role="chip-school"></div>
   </div>
 
   <div class="compact-schoolday-content">
@@ -178,6 +216,7 @@
     <div class="clock-display compact-clock" data-role="sd-clock">00:00</div>
     <div class="mini-progress"><div class="mini-progress-fill" data-role="sd-progress"></div></div>
     <div class="now-line" data-role="now-line">00:00:00</div>
+    <div class="chip" data-role="chip-timer"></div>
   </div>
 </div>
 
@@ -214,7 +253,7 @@
       </div>
       <button class="start-btn" id="startBtn">Start Timer</button>
       <button class="schoolday-btn" id="goSchoolDayBtn">🏫 School Day — live bell times</button>
-      <button class="settings-btn-row" id="goSettingsBtn">⚙ Customise message, colours &amp; size</button>
+      <button class="settings-btn-row" id="goSettingsBtn">⚙ Customise message, colours &amp; sizes</button>
     </div>
 
     <div class="view-section running-view" id="runningView">
@@ -238,6 +277,7 @@
         <button class="add-time" data-add="300">+5 min</button>
         <button class="add-time" data-add="-60">−1 min</button>
       </div>
+      <div class="chip" data-role="chip-school"></div>
     </div>
 
     <div class="view-section schoolday-view" id="schoolDayView">
@@ -253,6 +293,7 @@
       </div>
       <div class="now-line" data-role="now-line">00:00:00</div>
       <div class="weekday-pill" data-role="weekday-pill">Monday</div>
+      <div class="chip" data-role="chip-timer"></div>
       <div class="running-controls">
         <button class="ctrl-btn" id="backFromSchoolDay" title="Back">⚙</button>
       </div>
@@ -269,7 +310,22 @@
         <div class="swatches" id="themeSwatches"></div>
       </div>
 
-      <p class="section-label">Size</p>
+      <p class="section-label">Customise colours</p>
+      <div class="settings-field">
+        <div class="colour-grid" id="colourGrid"></div>
+        <button class="link-btn" id="resetColoursBtn">Reset colours to the scheme above</button>
+      </div>
+
+      <p class="section-label">Countdown clock size</p>
+      <div class="settings-field">
+        <div class="size-row" id="clockButtons">
+          <button class="size-btn" data-clock="0">Normal</button>
+          <button class="size-btn" data-clock="1">Large</button>
+          <button class="size-btn" data-clock="2">Huge</button>
+        </div>
+      </div>
+
+      <p class="section-label">Window size</p>
       <div class="settings-field">
         <div class="size-row" id="sizeButtons">
           <button class="size-btn" data-size="0.8">Small</button>
@@ -278,7 +334,27 @@
         </div>
       </div>
 
+      <p class="section-label">School day timetable</p>
+      <div class="settings-field">
+        <button class="edit-times-btn" id="editTimesBtn">✎ Edit period times</button>
+      </div>
+
       <button class="back-btn" id="settingsBackBtn">← Back</button>
+    </div>
+
+    <div class="view-section schedule-view" id="scheduleSection">
+      <div class="sched-tabs">
+        <button class="sched-tab active" data-sched="default">Mon · Tue · Wed · Fri</button>
+        <button class="sched-tab" data-sched="thu">Thursday</button>
+      </div>
+      <p class="sched-hint">Use 24-hour times (e.g. 13:55). Changes save automatically and take effect straight away. Rows are sorted by start time when you leave this page; red rows are ignored until fixed.</p>
+      <div class="sched-cols"><span>Start</span><span>End</span><span>Name</span><span></span></div>
+      <div id="schedRows"></div>
+      <div class="sched-actions">
+        <button id="schedAddBtn">+ Add period</button>
+        <button id="schedResetBtn">Reset to defaults</button>
+      </div>
+      <button class="back-btn" id="schedBackBtn">← Back</button>
     </div>
 
   </div>
@@ -299,30 +375,48 @@
     mono:     { label:'Mono',     swatch:'#D8D8D8', bg:'#141414', panel:'#1E1E1E', panelLight:'#2A2A2A', ink:'#F5F5F5', inkDim:'#9A9A9A', ok:'#D8D8D8', warn:'#B0B0B0', danger:'#FFFFFF', accent:'#D8D8D8' }
   };
 
-  // Mon/Tue/Wed/Fri schedule
-  var SCHEDULE_DEFAULT = [
-    { start:[8,15],  end:[8,40],  label:'Student Entrance Opens' },
-    { start:[8,40],  end:[8,50],  label:'Form Time' },
-    { start:[8,50],  end:[9,50],  label:'Period 1' },
-    { start:[9,50],  end:[10,45], label:'Period 2' },
-    { start:[10,45], end:[11,5],  label:'Break Time' },
-    { start:[11,5],  end:[12,0],  label:'Period 3' },
-    { start:[12,0],  end:[12,55], label:'Period 4' },
-    { start:[12,55], end:[13,55], label:'Lunch & Enrichment' },
-    { start:[13,55], end:[14,15], label:'Form Time' },
-    { start:[14,15], end:[15,10], label:'Period 5' }
+  // Default timetables (staff can edit these in Settings; edits are saved locally)
+  var DEFAULT_SCHEDULES = {
+    default: [ // Mon, Tue, Wed, Fri
+      { start:'08:15', end:'08:40', label:'Student Entrance Opens' },
+      { start:'08:40', end:'08:50', label:'Form Time' },
+      { start:'08:50', end:'09:50', label:'Period 1' },
+      { start:'09:50', end:'10:45', label:'Period 2' },
+      { start:'10:45', end:'11:05', label:'Break Time' },
+      { start:'11:05', end:'12:00', label:'Period 3' },
+      { start:'12:00', end:'12:55', label:'Period 4' },
+      { start:'12:55', end:'13:55', label:'Lunch & Enrichment' },
+      { start:'13:55', end:'14:15', label:'Form Time' },
+      { start:'14:15', end:'15:10', label:'Period 5' }
+    ],
+    thu: [
+      { start:'08:15', end:'08:40', label:'Student Entrance Opens' },
+      { start:'08:40', end:'08:50', label:'Form Time' },
+      { start:'08:50', end:'09:50', label:'Period 1' },
+      { start:'09:50', end:'10:45', label:'Period 2' },
+      { start:'10:45', end:'11:05', label:'Break Time' },
+      { start:'11:05', end:'12:00', label:'Period 3' },
+      { start:'12:00', end:'12:55', label:'Period 4' },
+      { start:'12:55', end:'13:45', label:'Lunch & Form Time' },
+      { start:'13:45', end:'14:40', label:'Period 5' }
+    ]
+  };
+  function cloneSchedule(key){ return JSON.parse(JSON.stringify(DEFAULT_SCHEDULES[key])); }
+  var COLOUR_FIELDS = [
+    { key:'panel',      label:'Background' },
+    { key:'panelLight', label:'Header & buttons' },
+    { key:'ink',        label:'Main text' },
+    { key:'inkDim',     label:'Secondary text' },
+    { key:'accent',     label:'Accent' },
+    { key:'ok',         label:'Plenty of time' },
+    { key:'warn',       label:'Time running low' },
+    { key:'danger',     label:'Almost out / alert' }
   ];
-  // Thursday schedule
-  var SCHEDULE_THU = [
-    { start:[8,15],  end:[8,40],  label:'Student Entrance Opens' },
-    { start:[8,40],  end:[8,50],  label:'Form Time' },
-    { start:[8,50],  end:[9,50],  label:'Period 1' },
-    { start:[9,50],  end:[10,45], label:'Period 2' },
-    { start:[10,45], end:[11,5],  label:'Break Time' },
-    { start:[11,5],  end:[12,0],  label:'Period 3' },
-    { start:[12,0],  end:[12,55], label:'Period 4' },
-    { start:[12,55], end:[13,45], label:'Lunch & Form Time' },
-    { start:[13,45], end:[14,40], label:'Period 5' }
+  var COLOUR_KEYS = COLOUR_FIELDS.map(function(f){ return f.key; });
+  var CLOCK_LEVELS = [
+    { compact:34, expanded:44, ring:200 },
+    { compact:52, expanded:58, ring:240 },
+    { compact:74, expanded:72, ring:280 }
   ];
   var WEEKDAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
@@ -336,7 +430,8 @@
     setup: document.getElementById('setupSection'),
     running: document.getElementById('runningView'),
     schoolday: document.getElementById('schoolDayView'),
-    settings: document.getElementById('settingsSection')
+    settings: document.getElementById('settingsSection'),
+    schedule: document.getElementById('scheduleSection')
   };
 
   var state = {
@@ -354,15 +449,20 @@
     returnSection: 'setup',
     lastTick: null,
     rafId: null,
+    schedules: { default: cloneSchedule('default'), thu: cloneSchedule('thu') },
+    timerStarted: false,
     settings: {
       endMessage: "TIME'S UP",
       theme: 'midnight',
-      scale: 1
+      scale: 1,
+      clock: 0,
+      custom: {}
     },
     sd: {
       interval: null,
       lastKey: null,
-      flashUntil: 0
+      flashUntil: 0,
+      chipText: ''
     }
   };
 
@@ -384,35 +484,66 @@
         if(typeof saved.settings.endMessage === 'string' && saved.settings.endMessage) state.settings.endMessage = saved.settings.endMessage;
         if(THEMES[saved.settings.theme]) state.settings.theme = saved.settings.theme;
         if(typeof saved.settings.scale === 'number') state.settings.scale = saved.settings.scale;
+        if(saved.settings.clock === 1 || saved.settings.clock === 2) state.settings.clock = saved.settings.clock;
+        if(saved.settings.custom && typeof saved.settings.custom === 'object'){
+          Object.keys(saved.settings.custom).forEach(function(k){
+            if(COLOUR_KEYS.indexOf(k) >= 0 && /^#[0-9a-fA-F]{6}$/.test(saved.settings.custom[k])) state.settings.custom[k] = saved.settings.custom[k];
+          });
+        }
       }
+      ['default','thu'].forEach(function(k){
+        var list = saved.schedules && saved.schedules[k];
+        if(Array.isArray(list) && list.every(function(p){ return p && typeof p.start==='string' && typeof p.end==='string' && typeof p.label==='string'; })){
+          state.schedules[k] = list;
+        }
+      });
     }catch(e){}
   }
   function saveSettings(){
     try{
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        minutes: state.minutes, seconds: state.seconds, soundOn: state.soundOn, settings: state.settings
+        minutes: state.minutes, seconds: state.seconds, soundOn: state.soundOn, settings: state.settings, schedules: state.schedules
       }));
     }catch(e){}
   }
 
   // ===== Theme + size =====
-  function applyTheme(key){
-    var t = THEMES[key] || THEMES.midnight;
+  function effectiveColours(){
+    var t = THEMES[state.settings.theme] || THEMES.midnight;
+    var out = {};
+    COLOUR_KEYS.forEach(function(k){ out[k] = state.settings.custom[k] || t[k]; });
+    return out;
+  }
+  function textOn(hex){
+    var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return (0.299*r + 0.587*g + 0.114*b) > 150 ? '#0B1310' : '#FFFFFF';
+  }
+  function applyTheme(){
+    var c = effectiveColours();
     var root = document.documentElement.style;
-    root.setProperty('--bg', t.bg);
-    root.setProperty('--panel', t.panel);
-    root.setProperty('--panel-light', t.panelLight);
-    root.setProperty('--ink', t.ink);
-    root.setProperty('--ink-dim', t.inkDim);
-    root.setProperty('--ok', t.ok);
-    root.setProperty('--warn', t.warn);
-    root.setProperty('--danger', t.danger);
-    root.setProperty('--accent', t.accent);
+    root.setProperty('--panel', c.panel);
+    root.setProperty('--panel-light', c.panelLight);
+    root.setProperty('--ink', c.ink);
+    root.setProperty('--ink-dim', c.inkDim);
+    root.setProperty('--ok', c.ok);
+    root.setProperty('--warn', c.warn);
+    root.setProperty('--danger', c.danger);
+    root.setProperty('--accent', c.accent);
+    root.setProperty('--on-ok', textOn(c.ok));
+    root.setProperty('--on-accent', textOn(c.accent));
   }
 
-  function applyScale(scale){
-    document.documentElement.style.zoom = scale;
-    if(window.desktopTimer) window.desktopTimer.resizeWindow(state.mode, scale);
+  function applyScale(){
+    var scale = state.settings.scale;
+    var lvl = CLOCK_LEVELS[state.settings.clock];
+    var root = document.documentElement.style;
+    root.setProperty('--compact-clock', lvl.compact + 'px');
+    root.setProperty('--expanded-clock', lvl.expanded + 'px');
+    root.setProperty('--ring-size', lvl.ring + 'px');
+    if(!window.desktopTimer){ root.zoom = scale; return; }
+    window.desktopTimer.resizeWindow(state.mode, scale, state.settings.clock).then(function(effective){
+      document.documentElement.style.zoom = effective;
+    });
   }
 
   function buildThemeSwatches(){
@@ -426,7 +557,8 @@
       btn.title = t.label;
       btn.addEventListener('click', function(){
         state.settings.theme = key;
-        applyTheme(key);
+        state.settings.custom = {};
+        applyTheme();
         refreshSettingsUI();
         saveSettings();
       });
@@ -438,20 +570,59 @@
     Array.prototype.forEach.call(document.querySelectorAll('#themeSwatches .swatch'), function(btn, i){
       btn.classList.toggle('active', Object.keys(THEMES)[i] === state.settings.theme);
     });
-    Array.prototype.forEach.call(document.querySelectorAll('.size-btn'), function(btn){
+    Array.prototype.forEach.call(document.querySelectorAll('.size-btn[data-size]'), function(btn){
       btn.classList.toggle('active', parseFloat(btn.getAttribute('data-size')) === state.settings.scale);
     });
+    Array.prototype.forEach.call(document.querySelectorAll('.size-btn[data-clock]'), function(btn){
+      btn.classList.toggle('active', parseInt(btn.getAttribute('data-clock'),10) === state.settings.clock);
+    });
+    var c = effectiveColours();
+    Array.prototype.forEach.call(document.querySelectorAll('#colourGrid input'), function(inp){
+      inp.value = c[inp.getAttribute('data-key')];
+    });
   }
+
+  function buildColourGrid(){
+    var grid = document.getElementById('colourGrid');
+    grid.innerHTML = '';
+    COLOUR_FIELDS.forEach(function(f){
+      var item = document.createElement('label');
+      item.className = 'colour-item';
+      var span = document.createElement('span'); span.textContent = f.label;
+      var inp = document.createElement('input'); inp.type = 'color'; inp.setAttribute('data-key', f.key);
+      inp.addEventListener('input', function(){
+        state.settings.custom[f.key] = inp.value;
+        applyTheme();
+        saveSettings();
+      });
+      item.appendChild(span); item.appendChild(inp);
+      grid.appendChild(item);
+    });
+  }
+  document.getElementById('resetColoursBtn').addEventListener('click', function(){
+    state.settings.custom = {};
+    applyTheme();
+    refreshSettingsUI();
+    saveSettings();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.size-btn[data-clock]'), function(btn){
+    btn.addEventListener('click', function(){
+      state.settings.clock = parseInt(btn.getAttribute('data-clock'),10);
+      refreshSettingsUI();
+      applyScale();
+      saveSettings();
+    });
+  });
 
   document.getElementById('endMessageInput').addEventListener('input', function(e){
     state.settings.endMessage = e.target.value || "TIME'S UP";
     saveSettings();
   });
-  Array.prototype.forEach.call(document.querySelectorAll('.size-btn'), function(btn){
+  Array.prototype.forEach.call(document.querySelectorAll('.size-btn[data-size]'), function(btn){
     btn.addEventListener('click', function(){
       state.settings.scale = parseFloat(btn.getAttribute('data-size'));
       refreshSettingsUI();
-      applyScale(state.settings.scale);
+      applyScale();
       saveSettings();
     });
   });
@@ -478,17 +649,19 @@
 
   function setView(view){
     if(state.view === view) return;
-    if(state.view === 'timer') pauseTimer();
-    if(state.view === 'schoolday') stopSchoolDay();
     state.view = view;
     body.setAttribute('data-view', view);
-    if(view === 'schoolday') startSchoolDay();
+    document.getElementById('viewToggleCompact').classList.toggle('active', view === 'schoolday');
+    if(['setup','running','schoolday'].indexOf(state.activeSection) >= 0){
+      showSection(view === 'schoolday' ? 'schoolday' : (state.timerStarted ? 'running' : 'setup'));
+    }
+    render();
+    schoolDayTick();
     saveSettings();
   }
 
   document.getElementById('viewToggleCompact').addEventListener('click', function(){
     setView(state.view === 'timer' ? 'schoolday' : 'timer');
-    document.getElementById('viewToggleCompact').classList.toggle('active', state.view === 'schoolday');
   });
   document.getElementById('goSchoolDayBtn').addEventListener('click', function(){
     setView('schoolday');
@@ -496,7 +669,7 @@
   });
   document.getElementById('backFromSchoolDay').addEventListener('click', function(){
     setView('timer');
-    showSection('setup');
+    showSection(state.timerStarted ? 'running' : 'setup');
   });
 
   // ===== Manual timer presets/custom duration =====
@@ -553,7 +726,22 @@
     }catch(e){}
   }
 
+  function updateChips(){
+    var t = '', alert = false;
+    if(state.timerStarted){
+      if(state.done){ t = '⏱ ' + state.settings.endMessage; alert = true; }
+      else t = '⏱ ' + formatTime(state.remainingMs) + (state.running ? '' : ' (paused)');
+    }
+    document.querySelectorAll('[data-role="chip-timer"]').forEach(function(el){
+      el.textContent = t; el.classList.toggle('alert', alert);
+    });
+    document.querySelectorAll('[data-role="chip-school"]').forEach(function(el){
+      el.textContent = state.sd.chipText || '';
+    });
+  }
+
   function render(){
+    updateChips();
     var txt = formatTime(state.remainingMs);
     document.querySelectorAll('[data-role="clock"]').forEach(function(el){ el.textContent = txt; });
     document.querySelectorAll('[data-role="label"]').forEach(function(el){
@@ -622,6 +810,7 @@
     if(state.totalMs<=0) state.totalMs=1000;
     state.remainingMs = state.totalMs;
     state.done = false;
+    state.timerStarted = true;
     showSection('running');
     startTimer();
   }
@@ -640,6 +829,8 @@
   document.getElementById('minusBtnCompact').addEventListener('click', function(){ addTime(-60000); });
   document.getElementById('newTimerBtn').addEventListener('click', function(){
     pauseTimer();
+    state.timerStarted = false;
+    render();
     showSection('setup');
   });
   Array.prototype.forEach.call(document.querySelectorAll('.add-time'), function(btn){
@@ -650,7 +841,7 @@
   function setMode(mode){
     state.mode = mode;
     body.setAttribute('data-mode', mode);
-    if(window.desktopTimer) window.desktopTimer.resizeWindow(mode, state.settings.scale);
+    applyScale();
   }
   document.getElementById('expandBtnCompact').addEventListener('click', function(){ setMode('expanded'); });
   document.getElementById('collapseBtn').addEventListener('click', function(){ setMode('compact'); });
@@ -670,28 +861,37 @@
   });
 
   // ===== School Day mode =====
-  function toMinutes(pair){ return pair[0]*60 + pair[1]; }
+  var TIME_RE = /^([01]?\d|2[0-3]):[0-5]\d$/;
+  function toMinutes(str){ var p = str.split(':'); return (+p[0])*60 + (+p[1]); }
+  function rowValid(p){
+    return TIME_RE.test(p.start) && TIME_RE.test(p.end) && toMinutes(p.end) > toMinutes(p.start);
+  }
+  function validPeriods(list){
+    return list.filter(rowValid).map(function(p){
+      return { label: p.label.trim() || 'Period', s: toMinutes(p.start), e: toMinutes(p.end) };
+    }).sort(function(a,b){ return a.s - b.s; });
+  }
   function scheduleForDate(d){
     var day = d.getDay();
-    if(day === 4) return SCHEDULE_THU;
-    if(day >= 1 && day <= 5) return SCHEDULE_DEFAULT;
+    if(day === 4) return validPeriods(state.schedules.thu);
+    if(day >= 1 && day <= 5) return validPeriods(state.schedules.default);
     return null;
   }
   function periodInfo(now){
     var sched = scheduleForDate(now);
     if(!sched) return { status:'weekend' };
+    if(!sched.length) return { status:'empty' };
     var nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
-    var first = sched[0], last = sched[sched.length-1];
-    if(nowMin < toMinutes(first.start)) return { status:'before', target:first, startMin: toMinutes(first.start) - 25 };
-    if(nowMin >= toMinutes(last.end)) return { status:'after' };
+    var next = null;
     for(var i=0;i<sched.length;i++){
       var p = sched[i];
-      var s = toMinutes(p.start), e = toMinutes(p.end);
-      if(nowMin >= s && nowMin < e){
-        return { status:'in', period:p, startMin:s, endMin:e, key:p.label+s };
+      if(nowMin >= p.s && nowMin < p.e){
+        return { status:'in', period:p, startMin:p.s, endMin:p.e, key:p.label+p.s };
       }
+      if(!next && p.s > nowMin) next = p;
     }
-    return { status:'after' };
+    if(!next) return { status:'after' };
+    return { status: next === sched[0] ? 'before' : 'gap', target:next };
   }
 
   function schoolDayTick(){
@@ -716,15 +916,20 @@
       label = info.period.label;
       clockText = formatTime(Math.max(0, remainMin)*60000);
       frac = Math.max(0, Math.min(1, remainMin / (info.endMin - info.startMin)));
-    } else if(info.status === 'before'){
+    } else if(info.status === 'before' || info.status === 'gap'){
       state.sd.lastKey = null;
-      label = 'Before School';
+      label = info.status === 'before' ? 'Before School' : 'Next: ' + info.target.label;
       var nowMinB = now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
-      clockText = formatTime(Math.max(0, toMinutes(info.target.start) - nowMinB)*60000);
+      clockText = formatTime(Math.max(0, info.target.s - nowMinB)*60000);
       frac = 1;
     } else if(info.status === 'after'){
       state.sd.lastKey = null;
       label = 'School Day Ended';
+      clockText = nowStr.slice(0,5);
+      frac = 1;
+    } else if(info.status === 'empty'){
+      state.sd.lastKey = null;
+      label = 'No timetable set';
       clockText = nowStr.slice(0,5);
       frac = 1;
     } else {
@@ -738,6 +943,8 @@
       el.textContent = inFlash ? state.settings.endMessage : label;
     });
     document.querySelectorAll('[data-role="sd-clock"]').forEach(function(el){ el.textContent = clockText; });
+    state.sd.chipText = '🏫 ' + label + ' · ' + clockText;
+    updateChips();
 
     var st = inFlash ? 'done' : (info.status==='in' ? (frac<=0.15?'danger':(frac<=0.4?'warn':'ok')) : 'ok');
     if(state.view === 'schoolday') body.setAttribute('data-state', st);
@@ -753,20 +960,98 @@
     schoolDayTick();
     state.sd.interval = setInterval(schoolDayTick, 1000);
   }
-  function stopSchoolDay(){
-    if(state.sd.interval) clearInterval(state.sd.interval);
-    state.sd.interval = null;
+  // ===== Timetable editor =====
+  var schedTab = 'default';
+  var schedRowsEl = document.getElementById('schedRows');
+
+  function sortScheduleInPlace(list){
+    list.sort(function(a,b){
+      var am = TIME_RE.test(a.start) ? toMinutes(a.start) : 99999;
+      var bm = TIME_RE.test(b.start) ? toMinutes(b.start) : 99999;
+      return am - bm;
+    });
   }
+  function minutesToStr(m){ m = Math.max(0, Math.min(23*60+59, m)); return pad2(Math.floor(m/60))+':'+pad2(m%60); }
+
+  function renderSchedRows(){
+    schedRowsEl.innerHTML = '';
+    var list = state.schedules[schedTab];
+    list.forEach(function(p, i){
+      var row = document.createElement('div');
+      row.className = 'sched-row';
+      function refreshValidity(){ row.classList.toggle('invalid', !rowValid(p)); }
+
+      function timeInput(value){
+        var el = document.createElement('input');
+        el.type = 'text'; el.maxLength = 5; el.placeholder = 'HH:MM'; el.value = value; el.title = '24-hour time, e.g. 13:55';
+        el.addEventListener('blur', function(){
+          if(TIME_RE.test(el.value)){ el.value = pad2(toMinutes(el.value) / 60 | 0) + ':' + pad2(toMinutes(el.value) % 60); }
+        });
+        return el;
+      }
+      var start = timeInput(p.start);
+      var end = timeInput(p.end);
+      var name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = p.label; name.placeholder = 'Name';
+      var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.title = 'Remove';
+
+      start.addEventListener('input', function(){ p.start = start.value; refreshValidity(); saveSettings(); });
+      end.addEventListener('input', function(){ p.end = end.value; refreshValidity(); saveSettings(); });
+      start.addEventListener('blur', function(){ p.start = start.value; saveSettings(); });
+      end.addEventListener('blur', function(){ p.end = end.value; saveSettings(); });
+      name.addEventListener('input', function(){ p.label = name.value; saveSettings(); });
+      del.addEventListener('click', function(){ list.splice(i, 1); saveSettings(); renderSchedRows(); });
+
+      row.appendChild(start); row.appendChild(end); row.appendChild(name); row.appendChild(del);
+      refreshValidity();
+      schedRowsEl.appendChild(row);
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.sched-tab'), function(btn){
+    btn.addEventListener('click', function(){
+      sortScheduleInPlace(state.schedules[schedTab]);
+      schedTab = btn.getAttribute('data-sched');
+      Array.prototype.forEach.call(document.querySelectorAll('.sched-tab'), function(b){ b.classList.toggle('active', b === btn); });
+      renderSchedRows();
+    });
+  });
+  document.getElementById('schedAddBtn').addEventListener('click', function(){
+    var list = state.schedules[schedTab];
+    var valid = validPeriods(list);
+    var startMin = valid.length ? valid[valid.length-1].e : 9*60;
+    list.push({ start: minutesToStr(startMin), end: minutesToStr(startMin + 45), label: '' });
+    saveSettings();
+    renderSchedRows();
+    var inputs = schedRowsEl.querySelectorAll('input[type="text"]');
+    if(inputs.length) inputs[inputs.length-1].focus();
+  });
+  document.getElementById('schedResetBtn').addEventListener('click', function(){
+    if(!window.confirm('Reset this timetable to the original times?')) return;
+    state.schedules[schedTab] = cloneSchedule(schedTab);
+    saveSettings();
+    renderSchedRows();
+  });
+  document.getElementById('editTimesBtn').addEventListener('click', function(){
+    renderSchedRows();
+    showSection('schedule');
+  });
+  document.getElementById('schedBackBtn').addEventListener('click', function(){
+    sortScheduleInPlace(state.schedules[schedTab]);
+    saveSettings();
+    showSection('settings');
+  });
 
   // ===== Init =====
   loadSettings();
   buildPresets();
   refreshSetupUI();
   buildThemeSwatches();
+  buildColourGrid();
   refreshSettingsUI();
-  applyTheme(state.settings.theme);
-  applyScale(state.settings.scale);
+  applyTheme();
+  applyScale();
   render();
+  startSchoolDay();
 })();
 </script>
 </body>

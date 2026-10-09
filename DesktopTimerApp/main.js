@@ -1,7 +1,12 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeImage } = require('electron');
 const path = require('path');
 
-const COMPACT_SIZE = { width: 280, height: 132 };
+const COMPACT_SIZES = [
+  { width: 280, height: 152 },
+  { width: 340, height: 192 },
+  { width: 440, height: 244 }
+];
+const COMPACT_SIZE = COMPACT_SIZES[0];
 const EXPANDED_SIZE = { width: 460, height: 560 };
 
 let mainWindow = null;
@@ -25,6 +30,7 @@ function createWindow() {
     fullscreenable: false,
     hasShadow: true,
     webPreferences: {
+      backgroundThrottling: false,
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false
@@ -76,20 +82,27 @@ function createTray() {
   });
 }
 
-ipcMain.on('resize-window', (event, payload) => {
-  if (!mainWindow) return;
-  const mode = typeof payload === 'string' ? payload : payload.mode;
-  const scale = (typeof payload === 'object' && payload.scale) ? payload.scale : 1;
+ipcMain.handle('resize-window', (event, payload) => {
+  if (!mainWindow) return 1;
+  const mode = payload.mode;
+  const requested = payload.scale || 1;
   const bounds = mainWindow.getBounds();
-  const base = mode === 'expanded' ? EXPANDED_SIZE : COMPACT_SIZE;
+  const level = [0, 1, 2].includes(payload.clock) ? payload.clock : 0;
+  const base = mode === 'expanded' ? EXPANDED_SIZE : COMPACT_SIZES[level];
+  const area = screen.getDisplayMatching(bounds).workArea;
+
+  // Never let the window be bigger than the screen, and slide it back
+  // on-screen if growing would push it past an edge.
+  const scale = Math.min(requested, area.width / base.width, area.height / base.height);
+  const width = Math.round(base.width * scale);
+  const height = Math.round(base.height * scale);
+  const x = Math.min(Math.max(bounds.x, area.x), area.x + area.width - width);
+  const y = Math.min(Math.max(bounds.y, area.y), area.y + area.height - height);
+
   mainWindow.setResizable(true);
-  mainWindow.setBounds({
-    x: bounds.x,
-    y: bounds.y,
-    width: Math.round(base.width * scale),
-    height: Math.round(base.height * scale)
-  });
+  mainWindow.setBounds({ x, y, width, height });
   mainWindow.setResizable(false);
+  return scale;
 });
 
 ipcMain.on('close-widget', () => {

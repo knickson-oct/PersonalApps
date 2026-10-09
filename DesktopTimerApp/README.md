@@ -20,6 +20,18 @@ you're working in another app — until you hide or close it.
 - **Sound alert** when the timer reaches zero, with a flashing "TIME'S UP"
   state and a progress ring/bar that shifts green → amber → red.
 
+## School Day mode and settings
+
+- **School Day** shows the live clock, the current period and a countdown to
+  the next bell. It keeps running alongside the manual timer, and each view
+  shows a small status chip for the other one.
+- **Edit period times** (Settings, then "Edit period times") lets staff change
+  the Mon/Tue/Wed/Fri and Thursday timetables. Times are 24-hour, saved
+  locally on that PC, and take effect immediately. "Reset to defaults" restores
+  the original times.
+- Settings also cover the end-of-time message, colour scheme plus every
+  individual colour, countdown clock size (Normal/Large/Huge) and window size.
+
 ## Running it (development)
 
 ```bash
