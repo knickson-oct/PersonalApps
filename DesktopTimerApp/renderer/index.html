@@ -26,6 +26,7 @@
     user-select:none;
   }
   button{font-family:inherit;}
+  input{font-family:inherit;}
   .clock-display{font-family:'IBM Plex Mono',monospace;font-weight:700;}
 
   .app-region-drag{-webkit-app-region:drag;}
@@ -35,7 +36,7 @@
     border-radius:16px;border:1px solid rgba(255,255,255,0.08);
     box-shadow:0 10px 30px rgba(0,0,0,0.45);overflow:hidden;}
 
-  /* state tint */
+  /* state tint (used by both manual timer and school-day bell urgency) */
   body[data-state="warn"] .clock-display{color:#FFE6A8;}
   body[data-state="danger"] .clock-display{color:#FFC9C2;}
   body[data-state="done"] .clock-display{color:#FFC9C2;animation:flash 1s step-start infinite;}
@@ -54,6 +55,7 @@
     color:var(--ink-dim);border-radius:8px;width:24px;height:24px;font-size:12px;
     display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .mini-btn:active{background:rgba(255,255,255,0.14);}
+  .mini-btn.active{color:#BFE0FF;border-color:var(--accent);background:rgba(78,158,240,0.16);}
   .compact-clock{font-size:34px;color:var(--ink);line-height:1;margin-top:4px;}
   .mini-progress{width:100%;height:6px;background:rgba(255,255,255,0.08);border-radius:4px;
     overflow:hidden;margin-top:2px;}
@@ -65,6 +67,13 @@
     border:none;width:36px;height:36px;border-radius:50%;font-size:14px;padding:0;}
   .compact-controls button.play.paused{background:linear-gradient(180deg,var(--accent),#2D6FC2);color:#06192E;}
   .compact-controls button:active{transform:scale(0.93);}
+  .compact-timer-content, .compact-schoolday-content{display:flex;flex-direction:column;align-items:center;width:100%;gap:6px;}
+  body[data-view="timer"] .compact-schoolday-content{display:none;}
+  body[data-view="schoolday"] .compact-timer-content{display:none;}
+  .period-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+    color:var(--ink-dim);text-align:center;}
+  body[data-state="done"] .period-label{color:#FFC9C2;animation:flash 1s step-start infinite;}
+  .now-line{font-size:11px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
 
   /* ===== Expanded panel ===== */
   body[data-mode="expanded"] .expanded-panel{display:flex;}
@@ -95,38 +104,80 @@
     padding:9px;font-size:12px;font-weight:600;color:var(--ink-dim);cursor:pointer;}
   .toggle.on{color:#BFE0FF;border-color:var(--accent);background:rgba(78,158,240,0.12);}
   .start-btn{width:100%;background:linear-gradient(180deg,var(--ok),#1E9960);border:none;
-    color:#06281A;font-weight:800;font-size:15px;border-radius:12px;padding:14px;cursor:pointer;}
+    color:#06281A;font-weight:800;font-size:15px;border-radius:12px;padding:14px;cursor:pointer;margin-bottom:10px;}
+  .schoolday-btn{width:100%;background:linear-gradient(180deg,var(--accent),#2D6FC2);border:none;
+    color:#06192E;font-weight:800;font-size:14px;border-radius:12px;padding:12px;cursor:pointer;margin-bottom:10px;}
+  .settings-btn-row{width:100%;background:transparent;border:1px dashed rgba(255,255,255,0.15);
+    color:var(--ink-dim);font-weight:700;font-size:12px;border-radius:12px;padding:10px;cursor:pointer;}
 
-  .running-view{display:none;flex-direction:column;align-items:center;flex:1;justify-content:center;}
-  .ring-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;}
+  .view-section{display:none;}
+  .view-section.active{display:flex;flex-direction:column;flex:1;}
+
+  .running-view{align-items:center;justify-content:center;}
+  .ring-wrap{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;margin:0 auto;}
   svg.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
   .ring-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:5;}
   .ring-fg{fill:none;stroke:var(--ok);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .3s linear, stroke .3s ease;}
   .expanded-clock{font-size:44px;}
   .time-label{color:var(--ink-dim);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-top:6px;}
-  .running-controls{display:flex;gap:14px;margin-top:24px;}
+  .running-controls{display:flex;gap:14px;margin-top:24px;justify-content:center;}
   .ctrl-btn{background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);color:var(--ink);
     border-radius:50%;width:48px;height:48px;font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .ctrl-btn.play{width:60px;height:60px;background:linear-gradient(180deg,var(--ok),#1E9960);color:#06281A;font-size:21px;}
   .ctrl-btn.play.paused{background:linear-gradient(180deg,var(--accent),#2D6FC2);color:#06192E;}
-  .add-time-row{display:flex;gap:8px;margin-top:18px;}
+  .add-time-row{display:flex;gap:8px;margin-top:18px;justify-content:center;}
   .add-time{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);
     color:var(--ink-dim);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+
+  .schoolday-view{align-items:center;justify-content:center;}
+  .schoolday-view .period-label{font-size:14px;margin-bottom:4px;}
+  .schoolday-view .now-line{font-size:13px;margin-top:10px;}
+  .weekday-pill{display:inline-block;background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);
+    color:var(--ink-dim);font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;
+    border-radius:20px;padding:4px 10px;margin-top:10px;}
+
+  /* ===== Settings ===== */
+  .settings-view{overflow-y:auto;}
+  .settings-field{margin-bottom:18px;}
+  .text-input{width:100%;background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);
+    color:var(--ink);border-radius:10px;padding:10px 12px;font-size:13px;}
+  .text-input:focus{outline:none;border-color:var(--accent);}
+  .swatches{display:flex;gap:10px;}
+  .swatch{width:44px;height:44px;border-radius:12px;cursor:pointer;border:2px solid transparent;
+    display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .swatch.active{border-color:#fff;}
+  .size-row{display:flex;gap:8px;}
+  .size-btn{flex:1;background:var(--panel-light);border:1px solid rgba(255,255,255,0.07);color:var(--ink);
+    border-radius:10px;padding:10px 4px;font-weight:700;font-size:12px;cursor:pointer;}
+  .size-btn.active{background:rgba(78,158,240,0.18);border-color:var(--accent);color:#BFE0FF;}
+  .back-btn{width:100%;background:var(--panel-light);border:1px solid rgba(255,255,255,0.08);
+    color:var(--ink);font-weight:700;font-size:13px;border-radius:12px;padding:12px;cursor:pointer;margin-top:auto;}
 </style>
 </head>
-<body data-mode="compact" data-state="ok">
+<body data-mode="compact" data-state="ok" data-view="timer">
 
 <div class="panel compact-panel app-region-drag">
   <div class="compact-topbtns">
+    <button class="mini-btn" id="viewToggleCompact" title="Switch view">🏫</button>
     <button class="mini-btn" id="expandBtnCompact" title="Expand">⤢</button>
     <button class="mini-btn" id="closeBtnCompact" title="Hide to tray">✕</button>
   </div>
-  <div class="clock-display compact-clock" data-role="clock">05:00</div>
-  <div class="mini-progress"><div class="mini-progress-fill" data-role="progress"></div></div>
-  <div class="compact-controls">
-    <button id="minusBtnCompact">−1m</button>
-    <button class="play" id="playBtnCompact" data-role="play">▶</button>
-    <button id="resetBtnCompact">↺</button>
+
+  <div class="compact-timer-content">
+    <div class="clock-display compact-clock" data-role="clock">05:00</div>
+    <div class="mini-progress"><div class="mini-progress-fill" data-role="progress"></div></div>
+    <div class="compact-controls">
+      <button id="minusBtnCompact">−1m</button>
+      <button class="play" id="playBtnCompact" data-role="play">▶</button>
+      <button id="resetBtnCompact">↺</button>
+    </div>
+  </div>
+
+  <div class="compact-schoolday-content">
+    <div class="period-label" data-role="period-label">—</div>
+    <div class="clock-display compact-clock" data-role="sd-clock">00:00</div>
+    <div class="mini-progress"><div class="mini-progress-fill" data-role="sd-progress"></div></div>
+    <div class="now-line" data-role="now-line">00:00:00</div>
   </div>
 </div>
 
@@ -135,12 +186,14 @@
     <span class="title">Desktop Timer</span>
     <div class="btns">
       <button class="mini-btn" id="pinBtn" title="Toggle always-on-top">📌</button>
+      <button class="mini-btn" id="settingsBtn" title="Settings">⚙</button>
       <button class="mini-btn" id="collapseBtn" title="Collapse">⤡</button>
       <button class="mini-btn" id="closeBtnExpanded" title="Hide to tray">✕</button>
     </div>
   </div>
   <div class="expanded-body">
-    <div id="setupSection">
+
+    <div class="view-section active" id="setupSection">
       <p class="section-label">Quick presets</p>
       <div class="presets" id="presets"></div>
       <p class="section-label">Custom duration</p>
@@ -160,9 +213,11 @@
         <div class="toggle on" id="soundToggle">🔊 Sound on end</div>
       </div>
       <button class="start-btn" id="startBtn">Start Timer</button>
+      <button class="schoolday-btn" id="goSchoolDayBtn">🏫 School Day — live bell times</button>
+      <button class="settings-btn-row" id="goSettingsBtn">⚙ Customise message, colours &amp; size</button>
     </div>
 
-    <div class="running-view" id="runningView">
+    <div class="view-section running-view" id="runningView">
       <div class="ring-wrap">
         <svg class="ring" viewBox="0 0 200 200">
           <circle class="ring-bg" cx="100" cy="100" r="88"></circle>
@@ -184,6 +239,48 @@
         <button class="add-time" data-add="-60">−1 min</button>
       </div>
     </div>
+
+    <div class="view-section schoolday-view" id="schoolDayView">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 200 200">
+          <circle class="ring-bg" cx="100" cy="100" r="88"></circle>
+          <circle class="ring-fg" data-role="sd-ring" cx="100" cy="100" r="88"></circle>
+        </svg>
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="period-label" data-role="period-label-expanded">—</div>
+          <div class="clock-display expanded-clock" data-role="sd-clock">00:00</div>
+        </div>
+      </div>
+      <div class="now-line" data-role="now-line">00:00:00</div>
+      <div class="weekday-pill" data-role="weekday-pill">Monday</div>
+      <div class="running-controls">
+        <button class="ctrl-btn" id="backFromSchoolDay" title="Back">⚙</button>
+      </div>
+    </div>
+
+    <div class="view-section settings-view" id="settingsSection">
+      <p class="section-label">Message when time's up</p>
+      <div class="settings-field">
+        <input class="text-input" id="endMessageInput" maxlength="40" placeholder="TIME'S UP">
+      </div>
+
+      <p class="section-label">Colour scheme</p>
+      <div class="settings-field">
+        <div class="swatches" id="themeSwatches"></div>
+      </div>
+
+      <p class="section-label">Size</p>
+      <div class="settings-field">
+        <div class="size-row" id="sizeButtons">
+          <button class="size-btn" data-size="0.8">Small</button>
+          <button class="size-btn" data-size="1">Medium</button>
+          <button class="size-btn" data-size="1.25">Large</button>
+        </div>
+      </div>
+
+      <button class="back-btn" id="settingsBackBtn">← Back</button>
+    </div>
+
   </div>
 </div>
 
@@ -192,8 +289,42 @@
   "use strict";
 
   var PRESET_MINUTES = [1,3,5,10,15,20,30,60];
-  var STORAGE_KEY = "desktopTimer.settings.v1";
+  var STORAGE_KEY = "desktopTimer.settings.v2";
   var RING_CIRC = 2*Math.PI*88;
+
+  var THEMES = {
+    midnight: { label:'Midnight', swatch:'#4E9EF0', bg:'#121A28', panel:'#182236', panelLight:'#1F2C44', ink:'#EAF0FA', inkDim:'#8CA0BC', ok:'#2FBF79', warn:'#E8B23A', danger:'#E05A4E', accent:'#4E9EF0' },
+    forest:   { label:'Forest',   swatch:'#49B88A', bg:'#0F1C16', panel:'#15261D', panelLight:'#1C3327', ink:'#EAF5EE', inkDim:'#8FB39D', ok:'#4CC98A', warn:'#E0B84A', danger:'#E06B5A', accent:'#49B88A' },
+    sunset:   { label:'Sunset',   swatch:'#E0708C', bg:'#1E1422', panel:'#2A1B30', panelLight:'#3A2740', ink:'#FBEFEF', inkDim:'#C8A7B9', ok:'#4FC08A', warn:'#F0A860', danger:'#F0615C', accent:'#E0708C' },
+    mono:     { label:'Mono',     swatch:'#D8D8D8', bg:'#141414', panel:'#1E1E1E', panelLight:'#2A2A2A', ink:'#F5F5F5', inkDim:'#9A9A9A', ok:'#D8D8D8', warn:'#B0B0B0', danger:'#FFFFFF', accent:'#D8D8D8' }
+  };
+
+  // Mon/Tue/Wed/Fri schedule
+  var SCHEDULE_DEFAULT = [
+    { start:[8,15],  end:[8,40],  label:'Student Entrance Opens' },
+    { start:[8,40],  end:[8,50],  label:'Form Time' },
+    { start:[8,50],  end:[9,50],  label:'Period 1' },
+    { start:[9,50],  end:[10,45], label:'Period 2' },
+    { start:[10,45], end:[11,5],  label:'Break Time' },
+    { start:[11,5],  end:[12,0],  label:'Period 3' },
+    { start:[12,0],  end:[12,55], label:'Period 4' },
+    { start:[12,55], end:[13,55], label:'Lunch & Enrichment' },
+    { start:[13,55], end:[14,15], label:'Form Time' },
+    { start:[14,15], end:[15,10], label:'Period 5' }
+  ];
+  // Thursday schedule
+  var SCHEDULE_THU = [
+    { start:[8,15],  end:[8,40],  label:'Student Entrance Opens' },
+    { start:[8,40],  end:[8,50],  label:'Form Time' },
+    { start:[8,50],  end:[9,50],  label:'Period 1' },
+    { start:[9,50],  end:[10,45], label:'Period 2' },
+    { start:[10,45], end:[11,5],  label:'Break Time' },
+    { start:[11,5],  end:[12,0],  label:'Period 3' },
+    { start:[12,0],  end:[12,55], label:'Period 4' },
+    { start:[12,55], end:[13,45], label:'Lunch & Form Time' },
+    { start:[13,45], end:[14,40], label:'Period 5' }
+  ];
+  var WEEKDAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
   var body = document.body;
   var presetsEl = document.getElementById('presets');
@@ -201,8 +332,12 @@
   var secVal = document.getElementById('secVal');
   var soundToggle = document.getElementById('soundToggle');
   var startBtn = document.getElementById('startBtn');
-  var setupSection = document.getElementById('setupSection');
-  var runningView = document.getElementById('runningView');
+  var sections = {
+    setup: document.getElementById('setupSection'),
+    running: document.getElementById('runningView'),
+    schoolday: document.getElementById('schoolDayView'),
+    settings: document.getElementById('settingsSection')
+  };
 
   var state = {
     minutes: 5,
@@ -214,13 +349,28 @@
     soundOn: true,
     pinned: true,
     mode: 'compact',
+    view: 'timer',
+    activeSection: 'setup',
+    returnSection: 'setup',
     lastTick: null,
-    rafId: null
+    rafId: null,
+    settings: {
+      endMessage: "TIME'S UP",
+      theme: 'midnight',
+      scale: 1
+    },
+    sd: {
+      interval: null,
+      lastKey: null,
+      flashUntil: 0
+    }
   };
 
-  document.querySelectorAll('[data-role="ring"]').forEach(function(el){
+  document.querySelectorAll('[data-role="ring"], [data-role="sd-ring"]').forEach(function(el){
     el.style.strokeDasharray = RING_CIRC.toFixed(2);
   });
+
+  function pad2(n){ return String(n).padStart(2,'0'); }
 
   function loadSettings(){
     try{
@@ -230,16 +380,126 @@
       if(typeof saved.minutes === 'number') state.minutes = saved.minutes;
       if(typeof saved.seconds === 'number') state.seconds = saved.seconds;
       if(typeof saved.soundOn === 'boolean') state.soundOn = saved.soundOn;
+      if(saved.settings){
+        if(typeof saved.settings.endMessage === 'string' && saved.settings.endMessage) state.settings.endMessage = saved.settings.endMessage;
+        if(THEMES[saved.settings.theme]) state.settings.theme = saved.settings.theme;
+        if(typeof saved.settings.scale === 'number') state.settings.scale = saved.settings.scale;
+      }
     }catch(e){}
   }
   function saveSettings(){
     try{
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        minutes: state.minutes, seconds: state.seconds, soundOn: state.soundOn
+        minutes: state.minutes, seconds: state.seconds, soundOn: state.soundOn, settings: state.settings
       }));
     }catch(e){}
   }
 
+  // ===== Theme + size =====
+  function applyTheme(key){
+    var t = THEMES[key] || THEMES.midnight;
+    var root = document.documentElement.style;
+    root.setProperty('--bg', t.bg);
+    root.setProperty('--panel', t.panel);
+    root.setProperty('--panel-light', t.panelLight);
+    root.setProperty('--ink', t.ink);
+    root.setProperty('--ink-dim', t.inkDim);
+    root.setProperty('--ok', t.ok);
+    root.setProperty('--warn', t.warn);
+    root.setProperty('--danger', t.danger);
+    root.setProperty('--accent', t.accent);
+  }
+
+  function applyScale(scale){
+    document.documentElement.style.zoom = scale;
+    if(window.desktopTimer) window.desktopTimer.resizeWindow(state.mode, scale);
+  }
+
+  function buildThemeSwatches(){
+    var wrap = document.getElementById('themeSwatches');
+    wrap.innerHTML = '';
+    Object.keys(THEMES).forEach(function(key){
+      var t = THEMES[key];
+      var btn = document.createElement('button');
+      btn.className = 'swatch';
+      btn.style.background = t.swatch;
+      btn.title = t.label;
+      btn.addEventListener('click', function(){
+        state.settings.theme = key;
+        applyTheme(key);
+        refreshSettingsUI();
+        saveSettings();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+  function refreshSettingsUI(){
+    document.getElementById('endMessageInput').value = state.settings.endMessage;
+    Array.prototype.forEach.call(document.querySelectorAll('#themeSwatches .swatch'), function(btn, i){
+      btn.classList.toggle('active', Object.keys(THEMES)[i] === state.settings.theme);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.size-btn'), function(btn){
+      btn.classList.toggle('active', parseFloat(btn.getAttribute('data-size')) === state.settings.scale);
+    });
+  }
+
+  document.getElementById('endMessageInput').addEventListener('input', function(e){
+    state.settings.endMessage = e.target.value || "TIME'S UP";
+    saveSettings();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.size-btn'), function(btn){
+    btn.addEventListener('click', function(){
+      state.settings.scale = parseFloat(btn.getAttribute('data-size'));
+      refreshSettingsUI();
+      applyScale(state.settings.scale);
+      saveSettings();
+    });
+  });
+
+  // ===== View / section switching =====
+  function showSection(name){
+    Object.keys(sections).forEach(function(k){
+      sections[k].classList.toggle('active', k === name);
+    });
+    state.activeSection = name;
+  }
+
+  document.getElementById('settingsBtn').addEventListener('click', function(){
+    state.returnSection = state.activeSection === 'settings' ? state.returnSection : state.activeSection;
+    showSection('settings');
+  });
+  document.getElementById('settingsBackBtn').addEventListener('click', function(){
+    showSection(state.returnSection);
+  });
+  document.getElementById('goSettingsBtn').addEventListener('click', function(){
+    state.returnSection = 'setup';
+    showSection('settings');
+  });
+
+  function setView(view){
+    if(state.view === view) return;
+    if(state.view === 'timer') pauseTimer();
+    if(state.view === 'schoolday') stopSchoolDay();
+    state.view = view;
+    body.setAttribute('data-view', view);
+    if(view === 'schoolday') startSchoolDay();
+    saveSettings();
+  }
+
+  document.getElementById('viewToggleCompact').addEventListener('click', function(){
+    setView(state.view === 'timer' ? 'schoolday' : 'timer');
+    document.getElementById('viewToggleCompact').classList.toggle('active', state.view === 'schoolday');
+  });
+  document.getElementById('goSchoolDayBtn').addEventListener('click', function(){
+    setView('schoolday');
+    showSection('schoolday');
+  });
+  document.getElementById('backFromSchoolDay').addEventListener('click', function(){
+    setView('timer');
+    showSection('setup');
+  });
+
+  // ===== Manual timer presets/custom duration =====
   function buildPresets(){
     presetsEl.innerHTML = '';
     PRESET_MINUTES.forEach(function(m){
@@ -253,10 +513,9 @@
       presetsEl.appendChild(btn);
     });
   }
-
   function refreshSetupUI(){
     minVal.textContent = state.minutes;
-    secVal.textContent = String(state.seconds).padStart(2,'0');
+    secVal.textContent = pad2(state.seconds);
     Array.prototype.forEach.call(presetsEl.children, function(btn, i){
       btn.classList.toggle('active', PRESET_MINUTES[i] === state.minutes && state.seconds === 0);
     });
@@ -274,8 +533,8 @@
     var h = Math.floor(totalSec/3600);
     var m = Math.floor((totalSec%3600)/60);
     var s = totalSec%60;
-    if(h>0) return h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if(h>0) return h+':'+pad2(m)+':'+pad2(s);
+    return pad2(m)+':'+pad2(s);
   }
 
   function playBeep(){
@@ -298,7 +557,7 @@
     var txt = formatTime(state.remainingMs);
     document.querySelectorAll('[data-role="clock"]').forEach(function(el){ el.textContent = txt; });
     document.querySelectorAll('[data-role="label"]').forEach(function(el){
-      el.textContent = state.done ? "TIME'S UP" : (state.running ? 'remaining' : 'paused');
+      el.textContent = state.done ? state.settings.endMessage : (state.running ? 'remaining' : 'paused');
     });
     document.querySelectorAll('[data-role="play"]').forEach(function(el){
       el.textContent = state.running ? '❚❚' : '▶';
@@ -308,7 +567,7 @@
     var frac = state.totalMs>0 ? state.remainingMs/state.totalMs : 0;
     frac = Math.max(0, Math.min(1, frac));
     var st = state.done ? 'done' : (frac<=0.15 ? 'danger' : (frac<=0.4 ? 'warn' : 'ok'));
-    body.setAttribute('data-state', st);
+    if(state.view === 'timer') body.setAttribute('data-state', st);
 
     document.querySelectorAll('[data-role="progress"]').forEach(function(el){
       el.style.width = (frac*100).toFixed(1)+'%';
@@ -358,12 +617,12 @@
   }
 
   function beginFromSetup(){
+    setView('timer');
     state.totalMs = (state.minutes*60 + state.seconds)*1000;
     if(state.totalMs<=0) state.totalMs=1000;
     state.remainingMs = state.totalMs;
     state.done = false;
-    setupSection.style.display = 'none';
-    runningView.style.display = 'flex';
+    showSection('running');
     startTimer();
   }
 
@@ -371,7 +630,7 @@
   document.getElementById('playBtnExpanded').addEventListener('click', togglePlay);
   document.getElementById('playBtnCompact').addEventListener('click', togglePlay);
   function togglePlay(){
-    if(state.totalMs===0){ return; }
+    if(state.view !== 'timer' || state.totalMs===0){ return; }
     if(state.done){ resetTimer(); startTimer(); return; }
     if(state.running) pauseTimer(); else startTimer();
   }
@@ -381,17 +640,17 @@
   document.getElementById('minusBtnCompact').addEventListener('click', function(){ addTime(-60000); });
   document.getElementById('newTimerBtn').addEventListener('click', function(){
     pauseTimer();
-    runningView.style.display = 'none';
-    setupSection.style.display = '';
+    showSection('setup');
   });
   Array.prototype.forEach.call(document.querySelectorAll('.add-time'), function(btn){
     btn.addEventListener('click', function(){ addTime(parseInt(btn.getAttribute('data-add'),10)*1000); });
   });
 
+  // ===== Mode (compact/expanded) =====
   function setMode(mode){
     state.mode = mode;
     body.setAttribute('data-mode', mode);
-    if(window.desktopTimer) window.desktopTimer.resizeWindow(mode);
+    if(window.desktopTimer) window.desktopTimer.resizeWindow(mode, state.settings.scale);
   }
   document.getElementById('expandBtnCompact').addEventListener('click', function(){ setMode('expanded'); });
   document.getElementById('collapseBtn').addEventListener('click', function(){ setMode('compact'); });
@@ -410,9 +669,103 @@
     if(window.desktopTimer) window.desktopTimer.togglePin(state.pinned);
   });
 
+  // ===== School Day mode =====
+  function toMinutes(pair){ return pair[0]*60 + pair[1]; }
+  function scheduleForDate(d){
+    var day = d.getDay();
+    if(day === 4) return SCHEDULE_THU;
+    if(day >= 1 && day <= 5) return SCHEDULE_DEFAULT;
+    return null;
+  }
+  function periodInfo(now){
+    var sched = scheduleForDate(now);
+    if(!sched) return { status:'weekend' };
+    var nowMin = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
+    var first = sched[0], last = sched[sched.length-1];
+    if(nowMin < toMinutes(first.start)) return { status:'before', target:first, startMin: toMinutes(first.start) - 25 };
+    if(nowMin >= toMinutes(last.end)) return { status:'after' };
+    for(var i=0;i<sched.length;i++){
+      var p = sched[i];
+      var s = toMinutes(p.start), e = toMinutes(p.end);
+      if(nowMin >= s && nowMin < e){
+        return { status:'in', period:p, startMin:s, endMin:e, key:p.label+s };
+      }
+    }
+    return { status:'after' };
+  }
+
+  function schoolDayTick(){
+    var now = new Date();
+    var info = periodInfo(now);
+    var nowStr = pad2(now.getHours())+':'+pad2(now.getMinutes())+':'+pad2(now.getSeconds());
+    document.querySelectorAll('[data-role="now-line"]').forEach(function(el){ el.textContent = nowStr; });
+    document.querySelectorAll('[data-role="weekday-pill"]').forEach(function(el){ el.textContent = WEEKDAY_NAMES[now.getDay()]; });
+
+    var inFlash = performance.now() < state.sd.flashUntil;
+
+    var label, clockText, frac = 1;
+    if(info.status === 'in'){
+      if(info.key !== state.sd.lastKey && state.sd.lastKey !== null){
+        state.sd.flashUntil = performance.now() + 4000;
+        playBeep();
+        inFlash = true;
+      }
+      state.sd.lastKey = info.key;
+      var nowMin = now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+      var remainMin = info.endMin - nowMin;
+      label = info.period.label;
+      clockText = formatTime(Math.max(0, remainMin)*60000);
+      frac = Math.max(0, Math.min(1, remainMin / (info.endMin - info.startMin)));
+    } else if(info.status === 'before'){
+      state.sd.lastKey = null;
+      label = 'Before School';
+      var nowMinB = now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+      clockText = formatTime(Math.max(0, toMinutes(info.target.start) - nowMinB)*60000);
+      frac = 1;
+    } else if(info.status === 'after'){
+      state.sd.lastKey = null;
+      label = 'School Day Ended';
+      clockText = nowStr.slice(0,5);
+      frac = 1;
+    } else {
+      state.sd.lastKey = null;
+      label = 'Weekend';
+      clockText = nowStr.slice(0,5);
+      frac = 1;
+    }
+
+    document.querySelectorAll('[data-role="period-label"], [data-role="period-label-expanded"]').forEach(function(el){
+      el.textContent = inFlash ? state.settings.endMessage : label;
+    });
+    document.querySelectorAll('[data-role="sd-clock"]').forEach(function(el){ el.textContent = clockText; });
+
+    var st = inFlash ? 'done' : (info.status==='in' ? (frac<=0.15?'danger':(frac<=0.4?'warn':'ok')) : 'ok');
+    if(state.view === 'schoolday') body.setAttribute('data-state', st);
+
+    document.querySelectorAll('[data-role="sd-progress"]').forEach(function(el){ el.style.width = (frac*100).toFixed(1)+'%'; });
+    var offset = RING_CIRC*(1-frac);
+    document.querySelectorAll('[data-role="sd-ring"]').forEach(function(el){ el.style.strokeDashoffset = offset.toFixed(2); });
+  }
+
+  function startSchoolDay(){
+    state.sd.lastKey = null;
+    state.sd.flashUntil = 0;
+    schoolDayTick();
+    state.sd.interval = setInterval(schoolDayTick, 1000);
+  }
+  function stopSchoolDay(){
+    if(state.sd.interval) clearInterval(state.sd.interval);
+    state.sd.interval = null;
+  }
+
+  // ===== Init =====
   loadSettings();
   buildPresets();
   refreshSetupUI();
+  buildThemeSwatches();
+  refreshSettingsUI();
+  applyTheme(state.settings.theme);
+  applyScale(state.settings.scale);
   render();
 })();
 </script>

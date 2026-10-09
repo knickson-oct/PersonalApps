@@ -76,16 +76,18 @@ function createTray() {
   });
 }
 
-ipcMain.on('resize-window', (event, mode) => {
+ipcMain.on('resize-window', (event, payload) => {
   if (!mainWindow) return;
+  const mode = typeof payload === 'string' ? payload : payload.mode;
+  const scale = (typeof payload === 'object' && payload.scale) ? payload.scale : 1;
   const bounds = mainWindow.getBounds();
-  const size = mode === 'expanded' ? EXPANDED_SIZE : COMPACT_SIZE;
+  const base = mode === 'expanded' ? EXPANDED_SIZE : COMPACT_SIZE;
   mainWindow.setResizable(true);
   mainWindow.setBounds({
     x: bounds.x,
     y: bounds.y,
-    width: size.width,
-    height: size.height
+    width: Math.round(base.width * scale),
+    height: Math.round(base.height * scale)
   });
   mainWindow.setResizable(false);
 });
